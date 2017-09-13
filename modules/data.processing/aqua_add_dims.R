@@ -1,7 +1,6 @@
 # This script adds now_time and forecast_times to Aqua dineof NC files
 # This also separates the forecasted variables from the observations
 
-# ------------- Begin Code
 aqua_add_dims <- function(inPath, inFile, outPath, verbose = FALSE, ...){
   
   # Open the netcdf file
