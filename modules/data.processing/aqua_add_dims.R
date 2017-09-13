@@ -2,10 +2,6 @@
 # This also separates the forecasted variables from the observations
 
 # ------------- Begin Code
-inPath = "Downloads/"
-inFile = "aqua.2017248.0905.235959.D.L3.modis.NAT.v09.1000m.nc4.180.combined"
-outPath = "Documents/Aqua/"
-verbose = FALSE
 aqua_add_dims <- function(inPath, inFile, outPath, verbose = FALSE, ...){
   
   # Open the netcdf file
