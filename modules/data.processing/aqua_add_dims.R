@@ -14,7 +14,7 @@ aqua_add_dims <- function(inPath, inFile, outPath, verbose = FALSE, ...){
                                Total Absorption at 443 nm, QAA Agorithm", "Gapfilled Total Absorption at 443 nm, QAA Algorithm",
                                "3 Day Forecast of SST", "3 Day Forecast of a_443_qaa"), 
                   units = c("Degree_C", "Degree_C", "m^-1", "m^-1", "Degree_C", "m^-1"))
-
+  
   # Initialize the lists where we are going to store stuff
   dat.list <- list()
   
@@ -33,8 +33,8 @@ aqua_add_dims <- function(inPath, inFile, outPath, verbose = FALSE, ...){
   dat.list[["forecast_a_443_qaa"]] = dat.list[["gapfilled_a_443_qaa"]][,,181:183]
   
   # Resizing the forecasted arrays
-  dat.list[["forecast_sst"]] = array(dat.list[["forecast_sst"]], dim = c(102,164,180))
-  dat.list[["forecast_a_443_qaa"]] = array(dat.list[["gapfilled_a_443_qaa"]], dim = c(102,164,180))
+  dat.list[["forecast_sst"]] = array(dat.list[["forecast_sst"]], dim = c(102,164,3))
+  dat.list[["forecast_a_443_qaa"]] = array(dat.list[["gapfilled_a_443_qaa"]], dim = c(102,164,3))
   
   # Removing the forecasted days from the observations
   for (j in seq_along(dat.list)){
@@ -55,32 +55,38 @@ aqua_add_dims <- function(inPath, inFile, outPath, verbose = FALSE, ...){
   ncposix <- as.POSIXct(strptime(paste0(ncyear,"-",ncmon,"-",ncday," ", nchr, ":", ncmin, ":",ncsec), "%Y-%m-%d %H:%M:%S", tz="GMT"))
   
   # Create the now_time dimension
-  now_time <- ncdf4::ncdim_def(name='now_time', units="seconds since 1970-01-01T00:00:00Z", vals=as.numeric(ncposix), create_dimvar=TRUE, unlim=TRUE)
+  now_time <- ncdf4::ncdim_def(name='now_time', units="seconds since 1970-01-01T00:00:00Z", 
+                               vals=as.numeric(ncposix), create_dimvar=TRUE, unlim=TRUE)
   
   # Add forecast time dimension for 3 days beyond the now_time, had to do these individually otherwise we had an error for
   # trying to write too many values
-  fcst_val1 <- ncposix + 1*(86400)
-  fcst_val2 <- ncposix + 2*(86400)
-  fcst_val3 <- ncposix + 3*(86400)
-  forecast_day1 <- ncdf4::ncdim_def(name='forecast_day1', units="seconds since 1970-01-01T00:00:00Z", vals=as.numeric(fcst_val1), 
-                                    create_dimvar=TRUE, unlim=TRUE)
-  forecast_day2 <- ncdf4::ncdim_def(name='forecast_day2', units="seconds since 1970-01-01T00:00:00Z", vals=as.numeric(fcst_val2), 
-                                    create_dimvar=TRUE, unlim=TRUE)
-  forecast_day3 <- ncdf4::ncdim_def(name='forecast_day3', units="seconds since 1970-01-01T00:00:00Z", vals=as.numeric(fcst_val3), 
+  fcst_val1 <- ncposix 
+  forecast_days <- ncdf4::ncdim_def(name='forecast_time', units="seconds since 1970-01-01T00:00:00Z", 
+                                    vals=c(as.integer(fcst_val1+1*86400), as.integer(fcst_val1+2*86400),as.integer(fcst_val1+3*86400)), 
                                     create_dimvar=TRUE, unlim=TRUE)
   
   # define forecast_day by lat/lon to place in one string
   # Write each dimension to the dim list
   aqua.nc$dim$time$vals  <- aqua.nc$dim$time$vals[4:183]
   aqua.nc$dim$time$len <- 180
-  dim <- list(forecast_day3, forecast_day2, forecast_day1, now_time, aqua.nc$dim$time, aqua.nc$dim$lon, aqua.nc$dim$lat)
-
+  aqua.nc$dim$time$unlim <- FALSE
+  
+  #change this to be lon, lat, time....
+  data_dim <- list(now_time,aqua.nc$dim$lon, aqua.nc$dim$lat,  aqua.nc$dim$time)
+  forecast_dim <- list(now_time, aqua.nc$dim$lon, aqua.nc$dim$lat, forecast_days)
+  
   var.list <- list()
   
   for (j in seq_along(nc.info$var.name)){
+    if(nc.info$CF.name[[j]] == 'forecast_sst' || nc.info$CF.name[[j]] == 'forecast_a_443_qaa'){
       var.list[[j]] <- ncdf4::ncvar_def(name=as.character(nc.info$CF.name[[j]]), 
                                         units=as.character(nc.info$units[[j]]), 
-                                        dim=dim, missval=NA, verbose=verbose)
+                                        dim=forecast_dim, missval=NA)
+    }else{
+      var.list[[j]] <- ncdf4::ncvar_def(name=as.character(nc.info$CF.name[[j]]), 
+                                        units=as.character(nc.info$units[[j]]), 
+                                        dim=data_dim, missval=NA)
+    }
   }
   ncdf4::nc_close(aqua.nc)
   
@@ -88,11 +94,9 @@ aqua_add_dims <- function(inPath, inFile, outPath, verbose = FALSE, ...){
   loc.file <- paste0(outPath,"/aqua.gapfilled.",ncyear,ncmon,ncday,".nc4")
   
   #writing all we need to the output file
-  loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, verbose=verbose)
+  loc <- ncdf4::nc_create(filename=loc.file, vars=var.list)
   for(j in seq_along(nc.info$CF.name)){
     ncdf4::ncvar_put(nc=loc, varid=as.character(nc.info$CF.name[j]), vals=dat.list[[j]])
   }
   ncdf4::nc_close(loc)
 }
-
-  
