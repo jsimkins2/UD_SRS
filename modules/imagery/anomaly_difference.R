@@ -78,9 +78,11 @@ library(grid)
   lat <- ncvar_get(aqua.nc, "lat")
   nc_close(aqua.nc)
   
+  sst[sst < 0] = 0
+  
   # create new vectors
   aqua.xy <- cbind(rep(lon, length(lat)), rep(lat, each=length(lon)))
-  aqua.xyv <- na.omit(cbind(aqua.xy, as.vector(sst)))
+  aqua.xyv <- cbind(aqua.xy, as.vector(sst))
   
   #rasterize
   aqua.raster <- raster(extent(range(lon), range(lat)), res=0.00980196)
@@ -96,9 +98,11 @@ library(grid)
   lat.c <- ncvar_get(clim.nc, "lat")
   nc_close(clim.nc)
   
+  sst.c[sst.c < 0] = 0
+  
   # vectorize the cliamtology data
   clim.xy <- cbind(rep(lon, length(lat)), rep(lat, each=length(lon)))
-  clim.xyv <- na.omit(cbind(clim.xy, as.vector(sst.c)))
+  clim.xyv <- cbind(clim.xy, as.vector(sst.c))
   
   # rasterize the climatology data 
   clim.raster <- raster(extent(range(lon), range(lat)), res=0.00980196)
@@ -238,7 +242,7 @@ library(grid)
   # max pixels = range lat / .00980196 * range lon / .00980196
   png(filename = "/home/james/anomalies/anomaly.png",width = 10, height = 7.6, units = "in", res = 200)
     lp = levelplot(diff, margin = FALSE, maxpixels = 18075029, xlab = "Longitude", ylab = "Latitude", 
-                   main=paste0("8-Day SST Anomalies ", emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr), cex=2) +
+                   main=paste0("Aqua 8-Day SST Anomalies ", emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr), cex=2) +
     layer(sp.polygons(usa, fill='gray16')) + layer(sp.polygons(can, fill='gray16')) + layer(sp.polygons(mex, fill='gray16')) + 
     layer(sp.polygons(cub, fill='gray16')) + layer(sp.polygons(pr, fill='gray16')) + layer(sp.polygons(jam, fill='gray16')) + 
     layer(sp.polygons(bel, fill='gray16')) + layer(sp.polygons(bah, fill='gray16')) + layer(sp.polygons(hai, fill='gray16')) + 
@@ -248,8 +252,217 @@ library(grid)
     diverge0(lp)
     trellis.focus("legend", side="right", clipp.off=TRUE, highlight=FALSE)
     grid::grid.text('DegC', y=unit(-.015, "npc"), 
-                    x=unit(.3, "npc"), gp=gpar(fontsize=8))  
+                    x=unit(.26, "npc"), gp=gpar(fontsize=8))  
     trellis.unfocus()
   garbage <- dev.off()
+
   
-cat(1)
+  
+  
+  
+  ##### --------------- AQUA PASS AND CLIMO PLOTS ------------------ #####
+  library(ggplot2)
+  
+  usa <- map_data("usa")
+  canada <- map_data("worldHires", "canada")
+  mexico <- map_data("worldHires", "mexico")# we already did this, but we can do it again
+  cuba <- map_data("worldHires", "cuba", col = 'gray16')
+  nicaragua <- map_data("worldHires", "nicaragua", col = 'gray16')
+  pr <- map_data("worldHires", "puerto rico", col = 'gray16')
+  jam <- map_data("worldHires", "jamaica", col = 'gray16')
+  cr <- map_data("worldHires", "Costa Rica", col = 'gray16')
+  bah <- map_data("worldHires", "bahamas", col = 'gray16')
+  hai <- map_data("worldHires", "haiti", col = 'gray16')
+  cay <- map_data("worldHires", "cayman islands", col = 'gray16')
+  dr <- map_data("worldHires", "Dominican Republic", col = 'gray16')
+  vi <- map_data("worldHires", "virgin islands", col = 'gray16')
+  tc <- map_data("worldHires", "turks and caicos", col = 'gray16')
+  ang <- map_data("worldHires", "anguilla", col = 'gray16')
+  bel <- map_data("worldHires", "belize", col = 'gray16')
+  els <- map_data("worldHires", "el salvador", col = 'gray16')
+  hon <- map_data("worldHires", "honduras", col = 'gray16')
+  pan <- map_data("worldHires", "panama", col = 'gray16')
+  guat <- map_data("worldHires", "Guatemala", col = 'gray16')
+  
+  color0=c(0,0,100)
+  color1=c(5,5,130)
+  color2=c(20,20,165)
+  color3=c(30,42,195)
+  color4=c(33,70,225)
+  color5=c(37,110,249)
+  color6=c(48,153,255)
+  color7=c(75,200,255)
+  color8=c(140,235,255)
+  color9=c(200,250,255)
+  color10=c(255,250,170)
+  color11=c(255,237,80)
+  color12=c(255,210,30)
+  color13=c(255,160,10)
+  color14=c(250,105,4)
+  color15=c(240,53,1)
+  color16=c(210,16,0)
+  color17=c(165,3,0)
+  color18=c(135,0,0)
+  color19=c(110,0,0)
+  
+  clr.list = list()
+  for (i in 0:19){
+    tem = eval(parse(text = paste0("color",i)))
+    clr.list[i+1] = rgb(tem[1]/255,tem[2]/255,tem[3]/255)
+  }
+  clr.ramp = colorRampPalette(clr.list)
+  
+  # Aqua Pass
+  map.p = rasterToPoints(aqua.raster)
+  df <- data.frame(map.p)
+  #Make appropriate column headings
+  colnames(df) <- c("Longitude", "Latitude", "MAP")
+  
+  png(filename = "/home/james/anomalies/pass.aqua.png",width = 10, height = 7.6, units = "in", res = 400)
+  ggplot(data=df, aes(y=Latitude, x=Longitude)) +
+    geom_raster(aes(fill=MAP)) +
+    ggtitle(paste0("8-Day Aqua SST ", emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr)) +
+    #geom_polygon(data = land, aes(x=long, y = lat, group = group), 
+    #fill = "gray16") +
+    
+    theme_bw() +
+    coord_equal() +
+    scale_fill_gradientn("SST (DegC)", limits=c(0,40), na.value = "white", colours = clr.ramp(20)) +
+    theme(plot.title = element_text(hjust = 0.5),
+          axis.title.x = element_text(size=16),
+          axis.title.y = element_text(size=16, angle=90),
+          axis.text.x = element_text(size=14),
+          axis.text.y = element_text(size=14),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.position = "right",
+          legend.key = element_blank(),
+          legend.title = element_text(size=10),
+          legend.key.height = unit(1, "in"),
+          legend.key.width = unit(.5, "in")
+    ) + geom_polygon(data = usa, aes(x=long, y = lat, group = group), 
+                     fill = "gray16", 
+                     color="black") +
+    geom_polygon(data = canada, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") + 
+    geom_polygon(data = mexico, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = cuba, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = nicaragua, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = pr, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = jam, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = cr, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = bah, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = hai, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = cay, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = dr, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = vi, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = tc, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = ang, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = bel, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = els, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = hon, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = pan, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = guat, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    coord_fixed(xlim = c(-100, -55),  ylim = c(18, 48), ratio = 1.2)
+  
+  garbage <- dev.off()
+  
+  
+  # CLIM
+  map.p = rasterToPoints(clim.raster)
+  df <- data.frame(map.p)
+  #Make appropriate column headings
+  colnames(df) <- c("Longitude", "Latitude", "MAP")
+  
+  png(filename = "/home/james/anomalies/climatology.png",width = 10, height = 7.6, units = "in", res = 400)
+  ggplot(data=df, aes(y=Latitude, x=Longitude)) +
+    geom_raster(aes(fill=MAP)) +
+    ggtitle(paste0("8-Day SST Climatology ", emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr)) +
+    #geom_polygon(data = land, aes(x=long, y = lat, group = group), 
+    #fill = "gray16") +
+    
+    theme_bw() +
+    coord_equal() +
+    scale_fill_gradientn("SST (DegC)", limits=c(0,40), na.value = "white", colours = clr.ramp(20)) +
+    theme(plot.title = element_text(hjust = 0.5),
+          axis.title.x = element_text(size=16),
+          axis.title.y = element_text(size=16, angle=90),
+          axis.text.x = element_text(size=14),
+          axis.text.y = element_text(size=14),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.position = "right",
+          legend.key = element_blank(),
+          legend.title = element_text(size=10),
+          legend.key.height = unit(1, "in"),
+          legend.key.width = unit(.5, "in")
+    ) + geom_polygon(data = usa, aes(x=long, y = lat, group = group), 
+                     fill = "gray16", 
+                     color="black") +
+    geom_polygon(data = canada, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") + 
+    geom_polygon(data = mexico, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = cuba, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = nicaragua, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = pr, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = jam, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = cr, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = bah, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = hai, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = cay, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = dr, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = vi, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = tc, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = ang, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = bel, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = els, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = hon, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = pan, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    geom_polygon(data = guat, aes(x=long, y = lat, group = group), 
+                 fill = "gray16", color="gray16") +
+    coord_fixed(xlim = c(-100, -55),  ylim = c(18, 48), ratio = 1.2)
+  
+  garbage <- dev.off()
+  
+  diff.hist = hist(diff, plot = FALSE)
+  
+  png(filename = "/home/james/anomalies/hist.anom.png",width = 10, height = 7.6, units = "in", res = 400)
+  plot(diff.hist, main = paste0(emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr, " Anomaly Histogram"), xlab = "Sea Surface Temperature (DegC)")
+  garbage <- dev.off()
+  
+  cat(1)
