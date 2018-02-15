@@ -9,7 +9,7 @@ from pyproj import Proj                  # Note to self: pyproj not installed on
 
 
 
-C_file = "http://thredds.demac.udel.edu/thredds/dodsC/GOESR_FD.nc?band01[1][1:962][1:1011],band02[1][1:962][1:1011],band03[1][1:962][1:1011]"
+C_file = "http://thredds.demac.udel.edu/thredds/dodsC/GOESR_FD.nc?band01[3][1:962][1:1011],band02[1][1:962][1:1011],band03[1][1:962][1:1011]"
 C = Dataset(C_file, 'r')
 
 R = np.sqrt(C.variables['band02'][0, 0:961, 0:1010]) # Band 2 is red (0.64 um)
