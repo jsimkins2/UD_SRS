@@ -85,11 +85,11 @@ match = sorted(match, key=int)
 
 ABI_datetime = []
 for i in match:    
-    if os.path.isfile("/home/sat_ops/goes_r/cloud_prod/nexrad/image_nxrd_goes/" + str(i) + ".png") == False:
+    if os.path.isfile("/home/sat_ops/goes_r/nexrad/image_nxrd_goes/" + str(i) + ".png") == False:
         ABI_datetime.append(i)
 
 # begin the loop that makes the images
-seq = range(1, len(ABI_datetime) + 1)
+seq = range(1, len(ABI_datetime) + 20)
 
 nxlist = []
 nex_goes_match = []
@@ -143,21 +143,35 @@ if len(ABI_datetime) > 0:
         nex = str(nex_names[i])[-20:-7]
         tem = datetime.strptime(nex, '%Y%m%d_%H%M')
         nex_dates.append(tem)
-    for i in xrange(0, len(goes_date)):
-        n = nearest(nex_dates, goes_date[i])
-        ndex = nex_dates.index(n)
-        nex_goes_match.append(ndex)
-    nex_set = list(set(nex_goes_match))
-    for i in nex_set:
+    
+    for i in xrange(0, len(nex_dates)):
         n = nearest(goes_date, nex_dates[i])
         ndex = goes_date.index(n)
         abi_match.append(ndex)
-    for i in nex_set:
+        
+        
+    abi_set = list(set(abi_match))
+    print abi_set
+    
+    for i in abi_set:
+        n = nearest(nex_dates, goes_date[i])
+        print n
+        print goes_date[i]
+        print " "
+        
+        ndex = nex_dates.index(n)
+        nex_goes_match.append(ndex)
+        
+    for i in nex_goes_match:
         nex_match.append(nxlist[i])
     
-    for i in xrange(0, len(abi_match)):
-        abi = abi_match[i]
+    print nex_match
+
+    for i in xrange(0, len(abi_set)):
+        abi = abi_set[i]
         nex = nex_match[i]
+        print ABI_datetime[abi]
+        print nex
         site = 'KDOX'
         #get the radar location (this is used to set up the basemap and plotting grid)
         loc = pyart.io.nexrad_common.get_nexrad_location(site)
@@ -180,8 +194,6 @@ if len(ABI_datetime) > 0:
                 path = date + site + '/' + site
                 #grab the last file in the file list
                 fname = bucket.get_all_keys(prefix=path)[nex]
-                print fname
-                
                 #get the file 
                 s3key = bucket.get_key(fname)
                 #save a temporary file to the local host
@@ -199,6 +211,7 @@ if len(ABI_datetime) > 0:
         # C is for Conus File OR_ABI-L2-CMIPC-M3C02_G16_s20180601912.nc
         C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C02_G16_s' + str(ABI_datetime[abi]) + '.nc'  # GOES16 East
         C = Dataset(C_file, 'r')
+        print str(ABI_datetime[abi])
         # Load the RGB arrays and apply a gamma correction (square root)
         R = C.variables['CMI'][:].data # Band 2 is red (0.64 um)
         R = np.sqrt(block_mean(R, 2))
@@ -247,8 +260,8 @@ if len(ABI_datetime) > 0:
         
         # Make a new map object for the HRRR model domain map projection
         mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-                   llcrnrlat=lat0-1.25,llcrnrlon=lon0-1.5,
-                   urcrnrlat=lat0+1.25,urcrnrlon=lon0+1.5,resolution='h')
+                    llcrnrlat=lat0-2,llcrnrlon=lon0-3,
+                    urcrnrlat=lat0+2.5,urcrnrlon=lon0+3,resolution='h')
         
         xH, yH = mH(lons, lats)
         
@@ -264,7 +277,7 @@ if len(ABI_datetime) > 0:
         colorTuple[colorTuple > 1] = 1
         
         # Now we can plot the GOES data on the HRRR map domain and projection
-        plt.figure(figsize=[8, 6])
+        plt.figure(figsize=[7, 7])
         
         # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
         newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
@@ -278,7 +291,7 @@ if len(ABI_datetime) > 0:
         # now plot the nexrad and the goes
         plt.title('GOES-16 True Color\n%s' % DATE.strftime('%B %d, %Y %H:%M UTC'))
 
-        fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=100)
+        fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
         #set up a basemap with a lambert conformal projection centered 
         # on the radar location, extending 1 degree in the meridional direction
         # and 1.5 degrees in the longitudinal in each direction away from the 
@@ -320,16 +333,16 @@ if len(ABI_datetime) > 0:
         mH.drawcoastlines(linewidth=1.5,color='k',ax=ax)
         #mark the radar location with a black dot
         mH.scatter(lon0,lat0,marker='o',s=20,color='k',ax=ax,latlon=True)
-        mH.scatter(-75.7506,39.6780,marker='*',s=10,color='k',ax=ax,latlon=True) # UDEL
+        mH.scatter(-75.7506,39.6780,marker='*',s=5,color='k',ax=ax,latlon=True) # UDEL
         #add the colorbar axes and create the colorbar based on the settings above
         cax = fig.add_axes([0.075,0.075,0.85,0.025])
         cbar = plt.colorbar(cs,ticks=ticks,norm=norm,cax=cax,orientation='horizontal')
         cbar.set_label(label,fontsize=12)
         cbar.ax.tick_params(labelsize=11)
         #add a title to the figure
-        fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity ' + 
-                time[0] + ' at ' + time[1],horizontalalignment='center',fontsize=14)
-        fig.text(0.5,0.92, 'GOES-16 True Color%s' % goes_date[abi].strftime('%Y-%m-%d at %H:%M:00 UTC'),horizontalalignment='center',fontsize=14)
+        #fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity ' + 
+                #time[0] + ' at ' + time[1],horizontalalignment='center',fontsize=14)
+        fig.text(0.5,0.95, 'GOES-16 True Color & KDOX Reflectivity %s' % goes_date[abi].strftime('%Y-%m-%d at %H:%M:00 UTC'),horizontalalignment='center',fontsize=14)
         #display the figure
         output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
         fig.savefig(output_file, dpi=200, bbox_inches='tight')
