@@ -69,10 +69,9 @@ for i in xrange(1,len(C03_names)):
 
 # we only want to do timestamps where we have all 3 bands
 from collections import OrderedDict
-smatch = sname1 + sname2 + sname3
-smatch = map(int, smatch)
-match = list(OrderedDict.fromkeys(smatch))
+match = set(sname1) & set(sname2) & set(sname3)
 match = sorted(match, key=int)
+
 
 ABI_datetime = []
 for i in match:    
@@ -155,7 +154,7 @@ if len(ABI_datetime) > 0:
         colorTuple[colorTuple > 1] = 1
         
         # Now we can plot the GOES data on the HRRR map domain and projection
-        plt.figure(figsize=[8, 6], dpi=200)
+        plt.figure(figsize=[16, 12], dpi=200)
         
         # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
         newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
@@ -167,7 +166,7 @@ if len(ABI_datetime) > 0:
         
         plt.title('GOES-16 True Color\n%s' % DATE.strftime('%B %d, %Y %H:%M UTC'))
         output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/image_conus/' + str(ABI_datetime[n]) + ".png"
-        plt.savefig(output_file, dpi=200, bbox_inches='tight')
+        plt.savefig(output_file, dpi=100, bbox_inches='tight')
         plt.close()
     
     else:

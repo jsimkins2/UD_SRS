@@ -76,9 +76,7 @@ for i in xrange(1,len(C03_names)):
 
 # we only want to do timestamps where we have all 3 bands
 from collections import OrderedDict
-smatch = sname1 + sname2 + sname3
-smatch = map(int, smatch)
-match = list(OrderedDict.fromkeys(smatch))
+match = set(sname1) & set(sname2) & set(sname3)
 match = sorted(match, key=int)
 
 # need to go to the last 10 files or so here, so we need to do seq -10 
@@ -277,7 +275,7 @@ if len(ABI_datetime) > 0:
         colorTuple[colorTuple > 1] = 1
         
         # Now we can plot the GOES data on the HRRR map domain and projection
-        plt.figure(figsize=[7, 7])
+        plt.figure(figsize=[6, 6])
         
         # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
         newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
@@ -291,7 +289,7 @@ if len(ABI_datetime) > 0:
         # now plot the nexrad and the goes
         plt.title('GOES-16 True Color\n%s' % DATE.strftime('%B %d, %Y %H:%M UTC'))
 
-        fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
+        fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(6,6),dpi=200)
         #set up a basemap with a lambert conformal projection centered 
         # on the radar location, extending 1 degree in the meridional direction
         # and 1.5 degrees in the longitudinal in each direction away from the 
@@ -342,7 +340,7 @@ if len(ABI_datetime) > 0:
         #add a title to the figure
         #fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity ' + 
                 #time[0] + ' at ' + time[1],horizontalalignment='center',fontsize=14)
-        fig.text(0.5,0.95, 'GOES-16 True Color & KDOX Reflectivity %s' % goes_date[abi].strftime('%Y-%m-%d at %H:%M:00 UTC'),horizontalalignment='center',fontsize=14)
+        fig.text(0.5,0.94, 'GOES-16 True Color & KDOX Reflectivity %s' % goes_date[abi].strftime('%Y-%m-%d at %H:%M:00Z'),horizontalalignment='center',fontsize=12)
         #display the figure
         output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
         fig.savefig(output_file, dpi=200, bbox_inches='tight')
