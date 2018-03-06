@@ -32,6 +32,8 @@ def block_mean(ar, fact):
     res.shape = (sx/fact, sy/fact)
     return res
 
+def nearest(items, pivot):
+    return min(items, key=lambda x: abs(x - pivot))
 
 
 # create a logfile with most recent 36 files (3 hours)
@@ -79,8 +81,6 @@ smatch = map(int, smatch)
 match = list(OrderedDict.fromkeys(smatch))
 match = sorted(match, key=int)
 
-
-
 # need to go to the last 10 files or so here, so we need to do seq -10 
 
 ABI_datetime = []
@@ -90,24 +90,33 @@ for i in match:
 
 # begin the loop that makes the images
 seq = range(1, len(ABI_datetime) + 1)
-if len(ABI_datetime) > 10:
-    seq = range(1, 11)
-
 
 nxlist = []
+nex_goes_match = []
+nex_names = []
+nex_dates = []
+abi_match = []
+nex_match = []
+
 for s in seq:
     nxlist.append(s*-1)
+
 nxlist=sorted(nxlist, key=int)
 
-
+goes_date = []
 if len(ABI_datetime) > 0:
-    for i in xrange(0, len(nxlist)):
+    for i in xrange(0, len(ABI_datetime)):
+        year = str(ABI_datetime[i])[0:4]
+        jday = str(ABI_datetime[i])[4:7]
+        hr = str(ABI_datetime[i])[7:9]
+        mt = str(ABI_datetime[i])[9:11]
+        goes_date.append(datetime(int(year), 1, 1, int(hr), int(mt)) + timedelta(int(jday) -1))
+    for i in xrange(0, len(ABI_datetime)):
         # the abi string is not in reverse, so we gotta change this
         #abi = int(i)*-1
         # kdox is in Dover
         #select the radar site
         site = 'KDOX'
-        
         #get the radar location (this is used to set up the basemap and plotting grid)
         loc = pyart.io.nexrad_common.get_nexrad_location(site)
         lon0 = loc[1] ; lat0 = loc[0]
@@ -116,9 +125,8 @@ if len(ABI_datetime) > 0:
         bucket = s3conn.get_bucket('noaa-nexrad-level2')
         #create a datetime object for the current time in UTC and use the
         # year, month, and day to drill down into the NEXRAD directory structure.
-        now = datetime.utcnow()
-        date = ("{:4d}".format(now.year) + '/' + "{:02d}".format(now.month) + '/' +
-                "{:02d}".format(now.day) + '/')
+        date = ("{:4d}".format(goes_date[i].year) + '/' + "{:02d}".format(goes_date[i].month) + '/' +
+                "{:02d}".format(goes_date[i].day) + '/')
         #get the bucket list for the selected date
         #Note: this returns a list of all of the radar sites with data for 
         # the selected date
@@ -129,7 +137,51 @@ if len(ABI_datetime) > 0:
                 #set up the path to the NEXRAD files
                 path = date + site + '/' + site
                 #grab the last file in the file list
-                fname = bucket.get_all_keys(prefix=path)[nxlist[i]]
+                nex_names.append(bucket.get_all_keys(prefix=path)[nxlist[i]])
+    # turn the names into datetime object            
+    for i in xrange(0,len(nex_names)):
+        nex = str(nex_names[i])[-20:-7]
+        tem = datetime.strptime(nex, '%Y%m%d_%H%M')
+        nex_dates.append(tem)
+    for i in xrange(0, len(goes_date)):
+        n = nearest(nex_dates, goes_date[i])
+        ndex = nex_dates.index(n)
+        nex_goes_match.append(ndex)
+    nex_set = list(set(nex_goes_match))
+    for i in nex_set:
+        n = nearest(goes_date, nex_dates[i])
+        ndex = goes_date.index(n)
+        abi_match.append(ndex)
+    for i in nex_set:
+        nex_match.append(nxlist[i])
+    
+    for i in xrange(0, len(abi_match)):
+        abi = abi_match[i]
+        nex = nex_match[i]
+        site = 'KDOX'
+        #get the radar location (this is used to set up the basemap and plotting grid)
+        loc = pyart.io.nexrad_common.get_nexrad_location(site)
+        lon0 = loc[1] ; lat0 = loc[0]
+        #use boto to connect to the AWS nexrad holdings directory
+        s3conn = boto.connect_s3()
+        bucket = s3conn.get_bucket('noaa-nexrad-level2')
+        #create a datetime object for the current time in UTC and use the
+        # year, month, and day to drill down into the NEXRAD directory structure.
+        date = ("{:4d}".format(goes_date[abi].year) + '/' + "{:02d}".format(goes_date[abi].month) + '/' +
+                "{:02d}".format(goes_date[abi].day) + '/')
+        #get the bucket list for the selected date
+        #Note: this returns a list of all of the radar sites with data for 
+        # the selected date
+        ls = bucket.list(prefix=date,delimiter='/')
+        for key in ls:
+            #only pull the data and save the arrays for the site we want
+            if site in key.name.split('/')[-2]:
+                #set up the path to the NEXRAD files
+                path = date + site + '/' + site
+                #grab the last file in the file list
+                fname = bucket.get_all_keys(prefix=path)[nex]
+                print fname
+                
                 #get the file 
                 s3key = bucket.get_key(fname)
                 #save a temporary file to the local host
@@ -141,25 +193,22 @@ if len(ABI_datetime) > 0:
                 #get the date and time from the radar file for plot enhancement
                 time = radar.time['units'].split(' ')[-1].split('T')
                 print(site + ': ' + time[0] + ' at ' + time[1] )
-        
                 #set up the plotting grid for the data
                 display = pyart.graph.RadarMapDisplay(radar)
                 x,y = display._get_x_y(0,True,None)
-
-
         # C is for Conus File OR_ABI-L2-CMIPC-M3C02_G16_s20180601912.nc
-        C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C02_G16_s' + str(ABI_datetime[i]) + '.nc'  # GOES16 East
+        C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C02_G16_s' + str(ABI_datetime[abi]) + '.nc'  # GOES16 East
         C = Dataset(C_file, 'r')
         # Load the RGB arrays and apply a gamma correction (square root)
         R = C.variables['CMI'][:].data # Band 2 is red (0.64 um)
         R = np.sqrt(block_mean(R, 2))
         
-        C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C03_G16_s' + str(ABI_datetime[i]) + '.nc' # GOES16 East
+        C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C03_G16_s' + str(ABI_datetime[abi]) + '.nc' # GOES16 East
         C = Dataset(C_file, 'r')
         # Load the RGB arrays and apply a gamma correction (square root)
         G = np.sqrt(C.variables['CMI'][:].data) # Band 3 is "green" (0.865 um)
         
-        C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C01_G16_s' + str(ABI_datetime[i]) + '.nc' # GOES16 East
+        C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C01_G16_s' + str(ABI_datetime[abi]) + '.nc' # GOES16 East
         C = Dataset(C_file, 'r')
         # Load the RGB arrays and apply a gamma correction (square root)
         B = np.sqrt(C.variables['CMI'][:].data) # Band 1 is blue (0.47 um)
@@ -215,7 +264,7 @@ if len(ABI_datetime) > 0:
         colorTuple[colorTuple > 1] = 1
         
         # Now we can plot the GOES data on the HRRR map domain and projection
-        plt.figure(figsize=[20, 16])
+        plt.figure(figsize=[8, 6])
         
         # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
         newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
@@ -229,14 +278,14 @@ if len(ABI_datetime) > 0:
         # now plot the nexrad and the goes
         plt.title('GOES-16 True Color\n%s' % DATE.strftime('%B %d, %Y %H:%M UTC'))
 
-        fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(9,9),dpi=100)
+        fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=100)
         #set up a basemap with a lambert conformal projection centered 
         # on the radar location, extending 1 degree in the meridional direction
         # and 1.5 degrees in the longitudinal in each direction away from the 
         # center point.
         mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-                   llcrnrlat=lat0-1.4,llcrnrlon=lon0-1.75,
-                   urcrnrlat=lat0+1.5,urcrnrlon=lon0+1.75,resolution='h')
+                    llcrnrlat=lat0-2,llcrnrlon=lon0-3,
+                    urcrnrlat=lat0+2.5,urcrnrlon=lon0+3,resolution='h')
                    
         newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
         newmap.set_array(None) # without this, the linewidth is set to zero, but the RGB color is ignored
@@ -271,26 +320,23 @@ if len(ABI_datetime) > 0:
         mH.drawcoastlines(linewidth=1.5,color='k',ax=ax)
         #mark the radar location with a black dot
         mH.scatter(lon0,lat0,marker='o',s=20,color='k',ax=ax,latlon=True)
-        mH.scatter(-75.7506,39.6780,marker='*',s=20,color='k',ax=ax,latlon=True) # UDEL
+        mH.scatter(-75.7506,39.6780,marker='*',s=10,color='k',ax=ax,latlon=True) # UDEL
         #add the colorbar axes and create the colorbar based on the settings above
         cax = fig.add_axes([0.075,0.075,0.85,0.025])
         cbar = plt.colorbar(cs,ticks=ticks,norm=norm,cax=cax,orientation='horizontal')
         cbar.set_label(label,fontsize=12)
         cbar.ax.tick_params(labelsize=11)
         #add a title to the figure
-        fig.text(0.5,0.92, site + ' (0.5$^{\circ}$) Reflectivity\n ' + 
-                time[0] + ' at ' + time[1],horizontalalignment='center',fontsize=16)
+        fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity ' + 
+                time[0] + ' at ' + time[1],horizontalalignment='center',fontsize=14)
+        fig.text(0.5,0.92, 'GOES-16 True Color%s' % goes_date[abi].strftime('%Y-%m-%d at %H:%M:00 UTC'),horizontalalignment='center',fontsize=14)
         #display the figure
-        output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[i]) + ".png"
+        output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
         fig.savefig(output_file, dpi=200, bbox_inches='tight')
         plt.close()
-        
-        
         # close and delete the temporary file holding the radar data
         localfile.close()
         os.remove(localfile.name)
-        
-
     else:
         print "Up to Date"
 
