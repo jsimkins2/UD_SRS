@@ -28,7 +28,6 @@ for i in seq:
     # kdox is in Dover
     #select the radar site
     site = 'KDOX'
-    
     #get the radar location (this is used to set up the basemap and plotting grid)
     loc = pyart.io.nexrad_common.get_nexrad_location(site)
     lon0 = loc[1] ; lat0 = loc[0]
@@ -40,6 +39,7 @@ for i in seq:
     now = datetime.utcnow()
     date = ("{:4d}".format(now.year) + '/' + "{:02d}".format(now.month) + '/' +
             "{:02d}".format(now.day) + '/')
+    print date
     #get the bucket list for the selected date
     #Note: this returns a list of all of the radar sites with data for 
     # the selected date
@@ -51,6 +51,7 @@ for i in seq:
             path = date + site + '/' + site
             #grab the last file in the file list
             fname = bucket.get_all_keys(prefix=path)[i]
+            print fname
             #get the file 
             s3key = bucket.get_key(fname)
             #save a temporary file to the local host
@@ -60,23 +61,19 @@ for i in seq:
             #use the read_nexrad_archive function from PyART to read in NEXRAD file
             radar = pyart.io.read_nexrad_archive(localfile.name)
             #get the date and time from the radar file for plot enhancement
-            time = radar.time['units'].split(' ')[-1].split('T')
-            print(site + ': ' + time[0] + ' at ' + time[1] )
-    
+            ktime = radar.time['units'].split(' ')[-1].split('T')
+            print(site + ': ' + ktime[0] + ' at ' + ktime[1] )
             #set up the plotting grid for the data
             display = pyart.graph.RadarMapDisplay(radar)
             x,y = display._get_x_y(0,True,None)
-
-    fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(9,9),dpi=100)
+    fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
     #set up a basemap with a lambert conformal projection centered 
     # on the radar location, extending 1 degree in the meridional direction
     # and 1.5 degrees in the longitudinal in each direction away from the 
     # center point.
     mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-               llcrnrlat=lat0-1.4,llcrnrlon=lon0-1.75,
-               urcrnrlat=lat0+1.5,urcrnrlon=lon0+1.75,resolution='h')
-               
-
+               llcrnrlat=lat0-2,llcrnrlon=lon0-3,
+               urcrnrlat=lat0+2.5,urcrnrlon=lon0+3,resolution='h')
     #get the plotting grid into lat/lon coordinates
     x0,y0 = mH(lon0,lat0)
     glons,glats = mH((x0+x*1000.), (y0+y*1000.),inverse=True)
@@ -107,21 +104,43 @@ for i in seq:
     mH.drawcoastlines(linewidth=1.5,color='k',ax=ax)
     #mark the radar location with a black dot
     mH.scatter(lon0,lat0,marker='o',s=20,color='k',ax=ax,latlon=True)
-    mH.scatter(-75.7506,39.6780,marker='*',s=20,color='k',ax=ax,latlon=True) # UDEL
+    mH.scatter(-75.7506,39.6780,marker='*',s=10,color='k',ax=ax,latlon=True) # UDEL
     #add the colorbar axes and create the colorbar based on the settings above
     cax = fig.add_axes([0.075,0.075,0.85,0.025])
     cbar = plt.colorbar(cs,ticks=ticks,norm=norm,cax=cax,orientation='horizontal')
     cbar.set_label(label,fontsize=12)
     cbar.ax.tick_params(labelsize=11)
     #add a title to the figure
-    fig.text(0.5,0.92, site + ' (0.5$^{\circ}$) Reflectivity\n ' + 
-            time[0] + ' at ' + time[1],horizontalalignment='center',fontsize=16)
-    #display the figure
+    # get the kdox zulu time, and convert it to local time
+    from dateutil import tz
+    import time
+    from time import mktime
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.gettz('America/New_York')
+    kd_year = str(ktime[0])[0:4]
+    kd_month = str(ktime[0])[5:7]
+    kd_day = str(ktime[0])[8:10]
+    kd_hr = str(ktime[1])[0:2]
+    kd_min= str(ktime[1])[3:5]
+    kd_sec = str(ktime[1])[6:8]
+    kdox_t1 = datetime(int(kd_year), int(kd_month), int(kd_day), int(kd_hr), int(kd_min), int(kd_sec))
+    utc = kdox_t1.replace(tzinfo=from_zone)
+    local = utc.astimezone(to_zone)
+    lt = time.localtime()
+    dst = lt.tm_isdst
+    if dst == 0:
+        et = "EDT"
+    else:
+        et = "EST"
+    kdox_newtime = kdox_t1.replace(tzinfo=from_zone)
+    kdox_local = kdox_newtime.astimezone(to_zone)
+    kdox_dt = datetime.fromtimestamp(mktime(kdox_local.timetuple()))
+    fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity\n'
+            + kdox_dt.strftime('%Y-%m-%d at %H:%M ') + et,horizontalalignment='center',fontsize=16)
+    # display the figure
     output_file = '/home/sat_ops/goes_r/nexrad/image_kdox/' + str(abs(i)) + ".png"
-    fig.savefig(output_file, dpi=200, bbox_inches='tight')
+    fig.savefig(output_file, dpi=120, bbox_inches='tight')
     plt.close()
-    
-    
     # close and delete the temporary file holding the radar data
     localfile.close()
     os.remove(localfile.name)
@@ -133,6 +152,7 @@ images = []
 dur_vals = []
 for i in xrange(1,12):
     dur_vals.append(.15)
+    
 dur_vals.append(2)
 #print dur_vals
 new_seq = range(1,13)

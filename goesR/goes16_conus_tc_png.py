@@ -72,7 +72,6 @@ from collections import OrderedDict
 match = set(sname1) & set(sname2) & set(sname3)
 match = sorted(match, key=int)
 
-
 ABI_datetime = []
 for i in match:    
     if os.path.isfile("/home/sat_ops/goes_r/cloud_prod/noaa_format/image_conus/" + str(i) + ".png") == False:
@@ -164,7 +163,28 @@ if len(ABI_datetime) > 0:
         mH.drawcountries()
         mH.drawcoastlines()
         
-        plt.title('GOES-16 True Color\n%s' % DATE.strftime('%B %d, %Y %H:%M UTC'))
+        
+        from dateutil import tz
+        import time
+        from time import mktime
+        # METHOD 1: Hardcode zones:
+        abi_time = DATE
+        from_zone = tz.gettz('UTC')
+        to_zone = tz.gettz('America/New_York')
+        utc = abi_time.replace(tzinfo=from_zone)
+        local = utc.astimezone(to_zone)
+        
+        lt = time.localtime()
+        dst = lt.tm_isdst
+        lt = time.localtime()
+        dst = lt.tm_isdst
+        if dst == 0:
+            et = "EDT"
+        else:
+            et = "EST"
+        
+        dt = datetime.fromtimestamp(mktime(lt))
+        plt.title('GOES-16 True Color\n%s' % dt.strftime('%B %d, %Y %H:%M ') + et)
         output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/image_conus/' + str(ABI_datetime[n]) + ".png"
         plt.savefig(output_file, dpi=100, bbox_inches='tight')
         plt.close()
