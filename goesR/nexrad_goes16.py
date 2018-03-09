@@ -146,11 +146,13 @@ if len(ABI_datetime) > 0:
         n = nearest(nex_dates, goes_date[i])
         select.append(n)
     
-    for i in xrange(0, len(select)):
-        a = nearest(goes_date, select[i])
+    setlist = sorted(list(set(select)))
+
+    for i in xrange(0, len(setlist)):
+        a = nearest(goes_date, setlist[i])
         adex = goes_date.index(a)
         abi_match.append(adex)
-        n = nearest(nex_dates, select[i])
+        n = nearest(nex_dates, setlist[i])
         ndex=nex_dates.index(n)
         nex_match.append(nxlist[ndex])
 
