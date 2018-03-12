@@ -32,30 +32,33 @@ def block_mean(ar, fact):
     res.shape = (sx/fact, sy/fact)
     return res
 
+# define function that finds nearest time given a list of datetime strings
 def nearest(items, pivot):
     return min(items, key=lambda x: abs(x - pivot))
 
-
-# create a logfile with most recent 36 files (3 hours)
+# create a list from logfiles - ABI bands 1,2,3 or C01,C02,C03
 with open("/home/sat_ops/goes_r/cloud_prod/noaa_format/C01_logfile.txt") as f:
     C01_names = f.readlines()
 
+# remove extra /n that comes with f.readlines
 C01_names = [x.strip() for x in C01_names] 
 
 with open("/home/sat_ops/goes_r/cloud_prod/noaa_format/C02_logfile.txt") as f:
     C02_names = f.readlines()
 
+# remove extra /n that comes with f.readlines
 C02_names = [x.strip() for x in C02_names] 
 
 with open("/home/sat_ops/goes_r/cloud_prod/noaa_format/C03_logfile.txt") as f:
     C03_names = f.readlines()
 
+# remove extra /n that comes with f.readlines
 C03_names = [x.strip() for x in C03_names] 
-
 sname1 = []
 sname2 = []
 sname3 = []
-# we're going to set C02 as the default here because it's the most important band
+
+# we're going to set C02 as the default here because it's the 'most important' band
 for i in xrange(1,len(C01_names)):
     fname = str(C01_names[i].split("_", 4)[3])
     fname = str(fname.split(".", 2)[0])
@@ -74,129 +77,65 @@ for i in xrange(1,len(C03_names)):
     fname = fname[1:]
     sname3.append(fname)
 
-# we only want to do timestamps where we have all 3 bands
+# we only want to do timestamps where we have all 3 bands, otherwise we can't make a true color
 from collections import OrderedDict
 match = set(sname1) & set(sname2) & set(sname3)
 match = sorted(match, key=int)
 
-# need to go to the last 10 files or so here, so we need to do seq -10 
-
+# if the image already exists, we don't want to duplicate it, so let's not add it to the list
 ABI_datetime = []
 for i in match:    
     if os.path.isfile("/home/sat_ops/goes_r/nexrad/image_nxrd_goes/" + str(i) + ".png") == False:
         ABI_datetime.append(i)
 
-# begin the loop that makes the images
-seq = range(1, len(ABI_datetime) + 40)
+# convert strings to datetime object
+goes_date = []
+for i in xrange(0, len(ABI_datetime)):
+    year = str(ABI_datetime[i])[0:4]
+    jday = str(ABI_datetime[i])[4:7]
+    hr = str(ABI_datetime[i])[7:9]
+    mt = str(ABI_datetime[i])[9:11]
+    goes_date.append(datetime(int(year), 1, 1, int(hr), int(mt)) + timedelta(int(jday) -1))
 
-nxlist = []
-nex_goes_match = []
-nex_names = []
+# grab the locally stored nexrad files
+with open("/home/sat_ops/goes_r/nexrad/data_nexrad.txt") as f:
+    nex_names = f.readlines()
+# remove extra /n that comes with f.readlines
+nex_names = [x.strip() for x in nex_names] 
+
 nex_dates = []
 abi_match = []
 nex_match = []
-select = []
-for s in seq:
-    nxlist.append(s*-1)
 
-nxlist=sorted(nxlist, key=int)
-
-goes_date = []
-if len(ABI_datetime) > 0:
-    for i in xrange(0, len(ABI_datetime)):
-        year = str(ABI_datetime[i])[0:4]
-        jday = str(ABI_datetime[i])[4:7]
-        hr = str(ABI_datetime[i])[7:9]
-        mt = str(ABI_datetime[i])[9:11]
-        goes_date.append(datetime(int(year), 1, 1, int(hr), int(mt)) + timedelta(int(jday) -1))
-    for j in xrange(0, len(nxlist)):
-        # the abi string is not in reverse, so we gotta change this
-        #abi = int(i)*-1
-        # kdox is in Dover
-        #select the radar site
-        site = 'KDOX'
-        #get the radar location (this is used to set up the basemap and plotting grid)
-        loc = pyart.io.nexrad_common.get_nexrad_location(site)
-        lon0 = loc[1] ; lat0 = loc[0]
-        #use boto to connect to the AWS nexrad holdings directory
-        s3conn = boto.connect_s3()
-        bucket = s3conn.get_bucket('noaa-nexrad-level2')
-        #create a datetime object for the current time in UTC and use the
-        # year, month, and day to drill down into the NEXRAD directory structure.
-        date = ("{:4d}".format(goes_date[len(goes_date)-1].year) + '/' + "{:02d}".format(goes_date[len(goes_date)-1].month) + '/' +
-                "{:02d}".format(goes_date[len(goes_date)-1].day) + '/')
-        #get the bucket list for the selected date
-        #Note: this returns a list of all of the radar sites with data for 
-        # the selected date
-        ls = bucket.list(prefix=date,delimiter='/')
-        for key in ls:
-            #only pull the data and save the arrays for the site we want
-            if site in key.name.split('/')[-2]:
-                #set up the path to the NEXRAD files
-                path = date + site + '/' + site
-                #grab the last file in the file list
-                nex_names.append(bucket.get_all_keys(prefix=path)[nxlist[j]])
-    # turn the names into datetime object            
-    for i in xrange(0,len(nex_names)):
-        nex = str(nex_names[i])[-20:-7]
-        tem = datetime.strptime(nex, '%Y%m%d_%H%M')
-        nex_dates.append(tem)
+# convert to datetime objects
+for i in xrange(0,len(nex_names)):
+    nex = str(nex_names[i])[5:]
+    tem = datetime.strptime(nex, '%Y%m%d_%H%M')
+    nex_dates.append(tem)
     
-    for i in xrange(0, len(goes_date)):
-        n = nearest(nex_dates, goes_date[i])
-        select.append(n)
+# find closest matching dates
+for i in xrange(0, len(nex_dates)):
+    a = nearest(goes_date, nex_dates[i])
+    adex = goes_date.index(a)
+    abi_match.append(adex)
     
-    setlist = sorted(list(set(select)))
+abi_match = sorted(list(set(abi_match)))
 
-    for i in xrange(0, len(setlist)):
-        a = nearest(goes_date, setlist[i])
-        adex = goes_date.index(a)
-        abi_match.append(adex)
-        n = nearest(nex_dates, setlist[i])
-        ndex=nex_dates.index(n)
-        nex_match.append(nxlist[ndex])
+for i in xrange(0, len(abi_match)):
+    n = nearest(nex_dates, goes_date[i])
+    ndex=nex_dates.index(n)
+    nex_match.append(ndex)
 
+if len(abi_match) > 0:
     for i in xrange(0, len(abi_match)):
         abi = abi_match[i]
         nex = nex_match[i]
-        print ABI_datetime[abi]
-        print nex
-        site = 'KDOX'
-        #get the radar location (this is used to set up the basemap and plotting grid)
-        loc = pyart.io.nexrad_common.get_nexrad_location(site)
-        lon0 = loc[1] ; lat0 = loc[0]
-        #use boto to connect to the AWS nexrad holdings directory
-        s3conn = boto.connect_s3()
-        bucket = s3conn.get_bucket('noaa-nexrad-level2')
-        #create a datetime object for the current time in UTC and use the
-        # year, month, and day to drill down into the NEXRAD directory structure.
-        date = ("{:4d}".format(goes_date[abi].year) + '/' + "{:02d}".format(goes_date[abi].month) + '/' +
-                "{:02d}".format(goes_date[abi].day) + '/')
-        #get the bucket list for the selected date
-        #Note: this returns a list of all of the radar sites with data for 
-        # the selected date
-        ls = bucket.list(prefix=date,delimiter='/')
-        for key in ls:
-            #only pull the data and save the arrays for the site we want
-            if site in key.name.split('/')[-2]:
-                #set up the path to the NEXRAD files
-                path = date + site + '/' + site
-                #grab the last file in the file list
-                fname = bucket.get_all_keys(prefix=path)[nex]
-                #get the file 
-                s3key = bucket.get_key(fname)
-                #save a temporary file to the local host
-                localfile = tempfile.NamedTemporaryFile(delete=False)
-                #write the contents of the NEXRAD file to the temporary file
-                s3key.get_contents_to_filename(localfile.name)
-                #use the read_nexrad_archive function from PyART to read in NEXRAD file
-                radar = pyart.io.read_nexrad_archive(localfile.name)
-                #get the date and time from the radar file for plot enhancement
-                ktime = radar.time['units'].split(' ')[-1].split('T')
-                print(site + ': ' + ktime[0] + ' at ' + ktime[1] )
-                #set up the plotting grid for the data
-                display = pyart.graph.RadarMapDisplay(radar)
-                x,y = display._get_x_y(0,True,None)
+        print goes_date[abi]
+        print nex_dates[nex]
+
+        radar = pyart.io.read_cfradial('/home/sat_ops/goes_r/nexrad/data/' + nex_names[nex])
+        display = pyart.graph.RadarMapDisplay(radar)
+        x,y = display._get_x_y(0,True,None)
         # C is for Conus File OR_ABI-L2-CMIPC-M3C02_G16_s20180601912.nc
         C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C02_G16_s' + str(ABI_datetime[abi]) + '.nc'  # GOES16 East
         C = Dataset(C_file, 'r')
@@ -239,8 +178,6 @@ if len(ABI_datetime) > 0:
         X = C.variables['x'][:] * sat_h
         Y = C.variables['y'][:] * sat_h
         
-        
-
         # map object with pyproj
         p = Proj(proj='geos', h=sat_h, lon_0=sat_lon, sweep=sat_sweep)
         # Convert map points to latitude and longitude with the magic provided by Pyproj
@@ -365,12 +302,8 @@ if len(ABI_datetime) > 0:
         output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
         fig.savefig(output_file, dpi=120, bbox_inches='tight')
         plt.close()
-        # close and delete the temporary file holding the radar data
-        localfile.close()
-        os.remove(localfile.name)
     else:
         print "Up to Date"
-
 
 
 
