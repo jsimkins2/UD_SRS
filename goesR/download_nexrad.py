@@ -21,7 +21,7 @@ import pyart.io
 import warnings
 warnings.simplefilter("ignore", category=DeprecationWarning)
 
-seq = range(1, 5)
+seq = range(1, 10)
 nxlist = []
 for s in seq:
     nxlist.append(s*-1)

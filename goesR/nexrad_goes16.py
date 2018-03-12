@@ -100,6 +100,7 @@ for i in xrange(0, len(ABI_datetime)):
 # grab the locally stored nexrad files
 with open("/home/sat_ops/goes_r/nexrad/data_nexrad.txt") as f:
     nex_names = f.readlines()
+
 # remove extra /n that comes with f.readlines
 nex_names = [x.strip() for x in nex_names] 
 
@@ -122,186 +123,208 @@ for i in xrange(0, len(nex_dates)):
 abi_match = sorted(list(set(abi_match)))
 
 for i in xrange(0, len(abi_match)):
+    print goes_date[i]
     n = nearest(nex_dates, goes_date[i])
     ndex=nex_dates.index(n)
+    print nex_dates[ndex]
     nex_match.append(ndex)
+    
+nex_match = sorted(list(set(nex_match)))
 
+# clear out abi_match and re-make so we don't have duplicates
+abi_match = []
+for i in xrange(0, len(nex_match)):
+    a = nearest(goes_date, nex_dates[nex_match[i]])
+    adex = goes_date.index(a)
+    abi_match.append(adex)
+    
 if len(abi_match) > 0:
+    # before we go in the loop, we have ot extract some info about KDOX
+    site = 'KDOX'
+    #get the radar location (this is used to set up the basemap and plotting grid)
+    loc = pyart.io.nexrad_common.get_nexrad_location(site)
+    lon0 = loc[1] ; lat0 = loc[0]
+    
     for i in xrange(0, len(abi_match)):
         abi = abi_match[i]
         nex = nex_match[i]
         print goes_date[abi]
         print nex_dates[nex]
-
-        radar = pyart.io.read_cfradial('/home/sat_ops/goes_r/nexrad/data/' + nex_names[nex])
-        display = pyart.graph.RadarMapDisplay(radar)
-        x,y = display._get_x_y(0,True,None)
-        # C is for Conus File OR_ABI-L2-CMIPC-M3C02_G16_s20180601912.nc
-        C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C02_G16_s' + str(ABI_datetime[abi]) + '.nc'  # GOES16 East
-        C = Dataset(C_file, 'r')
-        # Load the RGB arrays and apply a gamma correction (square root)
-        R = C.variables['CMI'][:].data # Band 2 is red (0.64 um)
-        R = np.sqrt(block_mean(R, 2))
         
-        C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C03_G16_s' + str(ABI_datetime[abi]) + '.nc' # GOES16 East
-        C = Dataset(C_file, 'r')
-        # Load the RGB arrays and apply a gamma correction (square root)
-        G = np.sqrt(C.variables['CMI'][:].data) # Band 3 is "green" (0.865 um)
+        diff = nex_dates[nex] - goes_date[abi]
+        time_diff = divmod(diff.days * 86400 + diff.seconds, 60)
         
-        C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C01_G16_s' + str(ABI_datetime[abi]) + '.nc' # GOES16 East
-        C = Dataset(C_file, 'r')
-        # Load the RGB arrays and apply a gamma correction (square root)
-        B = np.sqrt(C.variables['CMI'][:].data) # Band 1 is blue (0.47 um)
-        
-        # "True Green" is some linear interpolation between the three channels
-        # note that I've added some multiplying factors here to enhance contrast
-        G_true = 0.48358168 * R + 0.45706946 * B + 0.06038137 * G
-        
-        # The final RGB array :)
-        RGB = np.dstack([R, G_true, B])
-        
-        add_seconds = C.variables['t'][0]
-        DATE = datetime(2000, 1, 1, 12) + timedelta(seconds=add_seconds)
-        
-        
-        # Satellite height
-        sat_h = C.variables['goes_imager_projection'].perspective_point_height
-        
-        # Satellite longitude
-        sat_lon = C.variables['goes_imager_projection'].longitude_of_projection_origin
-        
-        # Satellite sweep
-        sat_sweep = C.variables['goes_imager_projection'].sweep_angle_axis
-        
-        # The projection x and y coordinates equals
-        # the scanning angle (in radians) multiplied by the satellite height (http://proj4.org/projections/geos.html)
-        X = C.variables['x'][:] * sat_h
-        Y = C.variables['y'][:] * sat_h
-        
-        # map object with pyproj
-        p = Proj(proj='geos', h=sat_h, lon_0=sat_lon, sweep=sat_sweep)
-        # Convert map points to latitude and longitude with the magic provided by Pyproj
-        XX, YY = np.meshgrid(X, Y)
-        lons, lats = p(XX, YY, inverse=True)
-        
-        # Make a new map object for the HRRR model domain map projection
-        mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-                    llcrnrlat=lat0-2,llcrnrlon=lon0-3,
-                    urcrnrlat=lat0+2.5,urcrnrlon=lon0+3,resolution='h')
-        
-        xH, yH = mH(lons, lats)
-        
-        # Create a color tuple for pcolormesh
-        rgb = RGB[:,:-1,:] # Using one less column is very imporant, else your image will be scrambled! (This is the stange nature of pcolormesh)
-        rgb = np.minimum(rgb, 1) # Force the maximum possible RGB value to be 1 (the lowest should be 0).
-        colorTuple = rgb.reshape((rgb.shape[0] * rgb.shape[1]), 3) # flatten array, becuase that's what pcolormesh wants.
-        colorTuple = np.insert(colorTuple, 3, 1.0, axis=1) # adding an alpha channel will plot faster?? according to stackoverflow.
-        
-        # adding this additional line here to see if it helps
-        # for some reason this helps
-        colorTuple[colorTuple < 0] = 0
-        colorTuple[colorTuple > 1] = 1
-        
-        # Now we can plot the GOES data on the HRRR map domain and projection
-        plt.figure(figsize=[7, 7])
-        
-        # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
-        newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
-        newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
-        
-        mH.drawstates()
-        mH.drawcountries()
-        mH.drawcoastlines()
-        
-        
-        # now plot the nexrad and the goes
-        plt.title('GOES-16 True Color\n%s' % DATE.strftime('%B %d, %Y %H:%M UTC'))
-
-        fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
-        #set up a basemap with a lambert conformal projection centered 
-        # on the radar location, extending 1 degree in the meridional direction
-        # and 1.5 degrees in the longitudinal in each direction away from the 
-        # center point.
-        mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-                    llcrnrlat=lat0-2,llcrnrlon=lon0-3,
-                    urcrnrlat=lat0+2.5,urcrnrlon=lon0+3,resolution='h')
-                   
-        newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
-        newmap.set_array(None) # without this, the linewidth is set to zero, but the RGB color is ignored
-        
-        #get the plotting grid into lat/lon coordinates
-        x0,y0 = mH(lon0,lat0)
-        glons,glats = mH((x0+x*1000.), (y0+y*1000.),inverse=True)
-        #read in the lowest scan angle reflectivity field in the NEXRAD file 
-        refl = np.squeeze(radar.get_field(sweep=0,field_name='reflectivity'))
-        # Mask points with no reflectivity
-        dBZ = refl
-        dBZ = np.ma.array(dBZ)
-        dBZ[dBZ == -10] = np.ma.masked
-        #set up the plotting parameters (NWSReflectivity colormap, contour levels,
-        # and colorbar tick labels)
-        cmap = 'pyart_NWSRef'
-        levs = np.linspace(0,80,41,endpoint=True)
-        ticks = np.linspace(0,80,9,endpoint=True)
-        label = 'Radar Reflectivity Factor ($\mathsf{dBZ}$)'
-        #define the plot axis to the be axis defined above
-        ax = axes
-        #normalize the colormap based on the levels provided above
-        norm = mpl.colors.BoundaryNorm(levs,256)
-        cs = mH.pcolormesh(glons,glats,dBZ,norm=norm,cmap=cmap,ax=ax,latlon=True)
-        #add geographic boundaries and lat/lon labels
-        mH.drawparallels(np.arange(20,70,0.5),labels=[1,0,0,0],fontsize=12,
-                        color='k',ax=ax,linewidth=0.001)
-        mH.drawmeridians(np.arange(-150,-50,1),labels=[0,0,1,0],fontsize=12,
-                       color='k',ax=ax,linewidth=0.001)
-        mH.drawcounties(linewidth=0.5,color='k',ax=ax)
-        mH.drawstates(linewidth=1.5,color='k',ax=ax)
-        mH.drawcoastlines(linewidth=1.5,color='k',ax=ax)
-        #mark the radar location with a black dot
-        mH.scatter(lon0,lat0,marker='o',s=20,color='k',ax=ax,latlon=True)
-        mH.scatter(-75.7506,39.6780,marker='*',s=3,color='k',ax=ax,latlon=True) # UDEL
-        #add the colorbar axes and create the colorbar based on the settings above
-        cax = fig.add_axes([0.075,0.075,0.85,0.025])
-        cbar = plt.colorbar(cs,ticks=ticks,norm=norm,cax=cax,orientation='horizontal')
-        cbar.set_label(label,fontsize=12)
-        cbar.ax.tick_params(labelsize=11)
-        #add a title to the figure
-        # need to convert to local time and grab daylight savings time info
-        from dateutil import tz
-        import time
-        from time import mktime
-
-        abi_time = goes_date[abi]
-        from_zone = tz.gettz('UTC')
-        to_zone = tz.gettz('America/New_York')
-        utc = abi_time.replace(tzinfo=from_zone)
-        local = utc.astimezone(to_zone)
-        lt = time.localtime()
-        dst = lt.tm_isdst
-        if dst == 0:
-            et = "EDT"
+        if time_diff[0] < 11:
+            
+            radar = pyart.io.read_cfradial('/home/sat_ops/goes_r/nexrad/data/' + nex_names[nex])
+            display = pyart.graph.RadarMapDisplay(radar)
+            x,y = display._get_x_y(0,True,None)
+            # C is for Conus File OR_ABI-L2-CMIPC-M3C02_G16_s20180601912.nc
+            C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C02_G16_s' + str(ABI_datetime[abi]) + '.nc'  # GOES16 East
+            C = Dataset(C_file, 'r')
+            # Load the RGB arrays and apply a gamma correction (square root)
+            R = C.variables['CMI'][:].data # Band 2 is red (0.64 um)
+            R = np.sqrt(block_mean(R, 2))
+            
+            C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C03_G16_s' + str(ABI_datetime[abi]) + '.nc' # GOES16 East
+            C = Dataset(C_file, 'r')
+            # Load the RGB arrays and apply a gamma correction (square root)
+            G = np.sqrt(C.variables['CMI'][:].data) # Band 3 is "green" (0.865 um)
+            
+            C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C01_G16_s' + str(ABI_datetime[abi]) + '.nc' # GOES16 East
+            C = Dataset(C_file, 'r')
+            # Load the RGB arrays and apply a gamma correction (square root)
+            B = np.sqrt(C.variables['CMI'][:].data) # Band 1 is blue (0.47 um)
+            
+            # "True Green" is some linear interpolation between the three channels
+            # note that I've added some multiplying factors here to enhance contrast
+            G_true = 0.48358168 * R + 0.45706946 * B + 0.06038137 * G
+            
+            # The final RGB array :)
+            RGB = np.dstack([R, G_true, B])
+            
+            add_seconds = C.variables['t'][0]
+            DATE = datetime(2000, 1, 1, 12) + timedelta(seconds=add_seconds)
+            
+            
+            # Satellite height
+            sat_h = C.variables['goes_imager_projection'].perspective_point_height
+            
+            # Satellite longitude
+            sat_lon = C.variables['goes_imager_projection'].longitude_of_projection_origin
+            
+            # Satellite sweep
+            sat_sweep = C.variables['goes_imager_projection'].sweep_angle_axis
+            
+            # The projection x and y coordinates equals
+            # the scanning angle (in radians) multiplied by the satellite height (http://proj4.org/projections/geos.html)
+            X = C.variables['x'][:] * sat_h
+            Y = C.variables['y'][:] * sat_h
+            
+            # map object with pyproj
+            p = Proj(proj='geos', h=sat_h, lon_0=sat_lon, sweep=sat_sweep)
+            # Convert map points to latitude and longitude with the magic provided by Pyproj
+            XX, YY = np.meshgrid(X, Y)
+            lons, lats = p(XX, YY, inverse=True)
+            
+            # Make a new map object for the HRRR model domain map projection
+            mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
+                        llcrnrlat=lat0-2,llcrnrlon=lon0-3,
+                        urcrnrlat=lat0+2.5,urcrnrlon=lon0+3,resolution='h')
+            
+            xH, yH = mH(lons, lats)
+            
+            # Create a color tuple for pcolormesh
+            rgb = RGB[:,:-1,:] # Using one less column is very imporant, else your image will be scrambled! (This is the stange nature of pcolormesh)
+            rgb = np.minimum(rgb, 1) # Force the maximum possible RGB value to be 1 (the lowest should be 0).
+            colorTuple = rgb.reshape((rgb.shape[0] * rgb.shape[1]), 3) # flatten array, becuase that's what pcolormesh wants.
+            colorTuple = np.insert(colorTuple, 3, 1.0, axis=1) # adding an alpha channel will plot faster?? according to stackoverflow.
+            
+            # adding this additional line here to see if it helps
+            # for some reason this helps
+            colorTuple[colorTuple < 0] = 0
+            colorTuple[colorTuple > 1] = 1
+            
+            # Now we can plot the GOES data on the HRRR map domain and projection
+            plt.figure(figsize=[7, 7])
+            
+            # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
+            newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
+            newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
+            
+            mH.drawstates()
+            mH.drawcountries()
+            mH.drawcoastlines()
+            
+            
+            # now plot the nexrad and the goes
+            plt.title('GOES-16 True Color\n%s' % DATE.strftime('%B %d, %Y %H:%M UTC'))
+    
+            fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
+            #set up a basemap with a lambert conformal projection centered 
+            # on the radar location, extending 1 degree in the meridional direction
+            # and 1.5 degrees in the longitudinal in each direction away from the 
+            # center point.
+            mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
+                        llcrnrlat=lat0-2,llcrnrlon=lon0-3,
+                        urcrnrlat=lat0+2.5,urcrnrlon=lon0+3,resolution='h')
+                       
+            newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
+            newmap.set_array(None) # without this, the linewidth is set to zero, but the RGB color is ignored
+            
+            #get the plotting grid into lat/lon coordinates
+            x0,y0 = mH(lon0,lat0)
+            glons,glats = mH((x0+x*1000.), (y0+y*1000.),inverse=True)
+            #read in the lowest scan angle reflectivity field in the NEXRAD file 
+            refl = np.squeeze(radar.get_field(sweep=0,field_name='reflectivity'))
+            # Mask points with no reflectivity
+            dBZ = refl
+            dBZ = np.ma.array(dBZ)
+            dBZ[dBZ == -10] = np.ma.masked
+            #set up the plotting parameters (NWSReflectivity colormap, contour levels,
+            # and colorbar tick labels)
+            cmap = 'pyart_NWSRef'
+            levs = np.linspace(0,80,41,endpoint=True)
+            ticks = np.linspace(0,80,9,endpoint=True)
+            label = 'Radar Reflectivity Factor ($\mathsf{dBZ}$)'
+            #define the plot axis to the be axis defined above
+            ax = axes
+            #normalize the colormap based on the levels provided above
+            norm = mpl.colors.BoundaryNorm(levs,256)
+            cs = mH.pcolormesh(glons,glats,dBZ,norm=norm,cmap=cmap,ax=ax,latlon=True)
+            #add geographic boundaries and lat/lon labels
+            mH.drawparallels(np.arange(20,70,0.5),labels=[1,0,0,0],fontsize=12,
+                            color='k',ax=ax,linewidth=0.001)
+            mH.drawmeridians(np.arange(-150,-50,1),labels=[0,0,1,0],fontsize=12,
+                           color='k',ax=ax,linewidth=0.001)
+            mH.drawcounties(linewidth=0.5,color='k',ax=ax)
+            mH.drawstates(linewidth=1.5,color='k',ax=ax)
+            mH.drawcoastlines(linewidth=1.5,color='k',ax=ax)
+            #mark the radar location with a black dot
+            mH.scatter(lon0,lat0,marker='o',s=20,color='k',ax=ax,latlon=True)
+            mH.scatter(-75.7506,39.6780,marker='*',s=3,color='k',ax=ax,latlon=True) # UDEL
+            #add the colorbar axes and create the colorbar based on the settings above
+            cax = fig.add_axes([0.075,0.075,0.85,0.025])
+            cbar = plt.colorbar(cs,ticks=ticks,norm=norm,cax=cax,orientation='horizontal')
+            cbar.set_label(label,fontsize=12)
+            cbar.ax.tick_params(labelsize=11)
+            #add a title to the figure
+            # need to convert to local time and grab daylight savings time info
+            from dateutil import tz
+            import time
+            from time import mktime
+    
+            abi_time = goes_date[abi]
+            from_zone = tz.gettz('UTC')
+            to_zone = tz.gettz('America/New_York')
+            utc = abi_time.replace(tzinfo=from_zone)
+            local = utc.astimezone(to_zone)
+            lt = time.localtime()
+            dst = lt.tm_isdst
+            if dst == 0:
+                et = "EDT"
+            else:
+                et = "EST"
+    
+            # get the kdox zulu time, and convert it to local time
+            kdox_t1 = nex_dates[nex]
+            kdox_newtime = kdox_t1.replace(tzinfo=from_zone)
+            kdox_local = kdox_newtime.astimezone(to_zone)
+    
+            fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity ' + 
+                    'at ' + kdox_local.strftime('%Y-%m-%d at %H:%M ') + et,horizontalalignment='center',fontsize=14)
+                    # should be .94 below
+            fig.text(0.5,0.92, 'GOES-16 True Color & KDOX Reflectivity %s' % local.strftime('%Y-%m-%d at %H:%M ') + et,horizontalalignment='center',fontsize=10)
+            #display the figure
+            output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
+            fig.savefig(output_file, dpi=120, bbox_inches='tight')
+            plt.close()
         else:
-            et = "EST"
-
-        # get the kdox zulu time, and convert it to local time
-        kd_year = str(ktime[0])[0:4]
-        kd_month = str(ktime[0])[5:7]
-        kd_day = str(ktime[0])[8:10]
-        kd_hr = str(ktime[1])[0:2]
-        kd_min= str(ktime[1])[3:5]
-        kd_sec = str(ktime[1])[6:8]
-        kdox_t1 = datetime(int(kd_year), int(kd_month), int(kd_day), int(kd_hr), int(kd_min), int(kd_sec))
-        kdox_newtime = kdox_t1.replace(tzinfo=from_zone)
-        kdox_local = kdox_newtime.astimezone(to_zone)
-        kdox_dt = datetime.fromtimestamp(mktime(kdox_local.timetuple()))
-        fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity ' + 
-                'at ' + kdox_dt.strftime('%Y-%m-%d at %H:%M ') + et,horizontalalignment='center',fontsize=14)
-                # should be .94 below
-        fig.text(0.5,0.92, 'GOES-16 True Color & KDOX Reflectivity %s' % local.strftime('%Y-%m-%d at %H:%M ') + et,horizontalalignment='center',fontsize=10)
-        #display the figure
-        output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
-        fig.savefig(output_file, dpi=120, bbox_inches='tight')
-        plt.close()
+            plt.figure(figsize=[7, 7])
+            fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
+            output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
+            fig.savefig(output_file, dpi=120, bbox_inches='tight')
+            plt.close()
     else:
         print "Up to Date"
 
