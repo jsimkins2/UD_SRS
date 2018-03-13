@@ -113,7 +113,7 @@ for i in xrange(0,len(nex_names)):
     nex = str(nex_names[i])[5:]
     tem = datetime.strptime(nex, '%Y%m%d_%H%M')
     nex_dates.append(tem)
-    
+
 # find closest matching dates
 for i in xrange(0, len(nex_dates)):
     a = nearest(goes_date, nex_dates[i])
@@ -154,7 +154,7 @@ if len(abi_match) > 0:
         diff = nex_dates[nex] - goes_date[abi]
         time_diff = divmod(diff.days * 86400 + diff.seconds, 60)
         
-        if time_diff[0] < 11:
+        if time_diff[0] < 11 == True:
             
             radar = pyart.io.read_cfradial('/home/sat_ops/goes_r/nexrad/data/' + nex_names[nex])
             display = pyart.graph.RadarMapDisplay(radar)

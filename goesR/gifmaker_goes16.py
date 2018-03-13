@@ -10,9 +10,8 @@ images = []
 dur_vals = []
 for i in xrange(1,imglen):
     if i != imglen:
-        dur_vals.append(.15)
+        dur_vals.append(.07)
 dur_vals.append(2)
-print dur_vals
 
 for i in img_names:
     input_file='/home/sat_ops/goes_r/cloud_prod/noaa_format/image_conus/' + str(i)
