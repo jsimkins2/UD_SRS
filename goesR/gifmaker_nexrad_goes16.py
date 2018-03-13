@@ -10,11 +10,11 @@ images = []
 dur_vals = []
 for i in xrange(1,imglen):
     if i != imglen:
-        dur_vals.append(.15)
+        dur_vals.append(.1)
 dur_vals.append(2)
 #print dur_vals
 
 for i in img_names:
     input_file='/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(i)
     images.append(imageio.imread(input_file))
-imageio.mimsave('/home/sat_ops/goes_r/nexrad/goes16_nexrad_kdox.gif', images, duration=dur_vals)
+imageio.mimsave('/home/sat_ops/goes_r/nexrad/kdox_nexrad_goes16.gif', images, duration=dur_vals)
