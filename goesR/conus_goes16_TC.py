@@ -183,8 +183,7 @@ if len(ABI_datetime) > 0:
         else:
             et = "EST"
         
-        dt = datetime.fromtimestamp(mktime(lt))
-        plt.title('GOES-16 True Color\n%s' % dt.strftime('%B %d, %Y %H:%M ') + et)
+        plt.title('GOES-16 True Color\n%s' % local.strftime('%B %d, %Y %H:%M ') + et)
         output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/image_conus/' + str(ABI_datetime[n]) + ".png"
         plt.savefig(output_file, dpi=100, bbox_inches='tight')
         plt.close()
