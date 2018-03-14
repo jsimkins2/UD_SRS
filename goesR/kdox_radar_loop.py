@@ -16,10 +16,20 @@ import boto
 import os
 import tempfile
 import matplotlib as mpl
+from dateutil import tz
+import time
+from time import mktime
 
 #suppress deprecation warnings
 import warnings
 warnings.simplefilter("ignore", category=DeprecationWarning)
+
+lt = time.localtime()
+dst = lt.tm_isdst
+if dst == 0:
+    et = "EDT"
+else:
+    et = "EST"
 
 seq = [-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1]
 for i in seq:
@@ -112,9 +122,6 @@ for i in seq:
     cbar.ax.tick_params(labelsize=11)
     #add a title to the figure
     # get the kdox zulu time, and convert it to local time
-    from dateutil import tz
-    import time
-    from time import mktime
     from_zone = tz.gettz('UTC')
     to_zone = tz.gettz('America/New_York')
     kd_year = str(ktime[0])[0:4]
@@ -126,12 +133,7 @@ for i in seq:
     kdox_t1 = datetime(int(kd_year), int(kd_month), int(kd_day), int(kd_hr), int(kd_min), int(kd_sec))
     utc = kdox_t1.replace(tzinfo=from_zone)
     local = utc.astimezone(to_zone)
-    lt = time.localtime()
-    dst = lt.tm_isdst
-    if dst == 0:
-        et = "EDT"
-    else:
-        et = "EST"
+
     kdox_newtime = kdox_t1.replace(tzinfo=from_zone)
     kdox_local = kdox_newtime.astimezone(to_zone)
     kdox_dt = datetime.fromtimestamp(mktime(kdox_local.timetuple()))
@@ -151,7 +153,7 @@ import numpy as np
 images = []
 dur_vals = []
 for i in xrange(1,12):
-    dur_vals.append(.15)
+    dur_vals.append(.1)
     
 dur_vals.append(2)
 #print dur_vals
