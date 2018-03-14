@@ -1,4 +1,4 @@
-site = 'KBOX'
+site = 'KDOX'
 # script designed for basin.ceoe.udel.edu
 # James Simkins
 import matplotlib
@@ -215,6 +215,9 @@ for n in xrange(0, len(ABI_datetime)):
     newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
     newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
     
+    mH.drawstates()
+    mH.drawcountries()
+    mH.drawcoastlines()
     # now plot the nexrad and the goes
     plt.title('GOES-16 True Color\n%s' % DATE.strftime('%B %d, %Y %H:%M UTC'))
     fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
@@ -237,15 +240,14 @@ for n in xrange(0, len(ABI_datetime)):
     mH.drawcountries()
     mH.drawcoastlines()
     
-    # convert from UTC to local time
+    # METHOD 1: Hardcode zones:
     abi_time = DATE
     from_zone = tz.gettz('UTC')
     to_zone = tz.gettz('America/New_York')
     utc = abi_time.replace(tzinfo=from_zone)
     local = utc.astimezone(to_zone)
-    
+
     plt.title('GOES-16 True Color\n%s' % local.strftime('%B %d, %Y %H:%M ') + et)
-    output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/meso/special_image/' + str(ABI_datetime[n]) + ".png"
+    output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/image_midatlantic/' + str(ABI_datetime[n]) + ".png"
     plt.savefig(output_file, dpi=100, bbox_inches='tight')
     plt.close()
-
