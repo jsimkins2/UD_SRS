@@ -18,6 +18,9 @@ import os
 import tempfile
 import matplotlib as mpl
 import pyart.io
+from dateutil import tz
+import time
+from time import mktime
 #suppress deprecation warnings
 import warnings
 warnings.simplefilter("ignore", category=DeprecationWarning)
@@ -188,6 +191,14 @@ if len(abi_match) > 0:
     loc = pyart.io.nexrad_common.get_nexrad_location(site)
     lon0 = loc[1] ; lat0 = loc[0]
     
+    # need to convert to local time and grab daylight savings time info
+    lt = time.localtime()
+    dst = lt.tm_isdst
+    if dst == 0:
+        et = "EDT"
+    else:
+        et = "EST"
+    
     for i in xrange(0, len(abi_match)):
         abi = abi_match[i]
         nex = nex_match[i]
@@ -199,6 +210,7 @@ if len(abi_match) > 0:
         
         if abs(time_diff[0]) < 11:
             
+            # read in the stored radar data
             radar = pyart.io.read_cfradial('/home/sat_ops/goes_r/cloud_prod/noaa_format/meso/data/' + nex_names[nex])
             display = pyart.graph.RadarMapDisplay(radar)
             x,y = display._get_x_y(0,True,None)
@@ -274,15 +286,7 @@ if len(abi_match) > 0:
             # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
             newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
             newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
-            
-            mH.drawstates()
-            mH.drawcountries()
-            mH.drawcoastlines()
-            
-            
-            # now plot the nexrad and the goes
-            plt.title('GOES-16 True Color\n%s' % DATE.strftime('%B %d, %Y %H:%M UTC'))
-    
+
             fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
             #set up a basemap with a lambert conformal projection centered 
             # on the radar location, extending 1 degree in the meridional direction
@@ -332,23 +336,13 @@ if len(abi_match) > 0:
             cbar.set_label(label,fontsize=12)
             cbar.ax.tick_params(labelsize=11)
             #add a title to the figure
-            # need to convert to local time and grab daylight savings time info
-            from dateutil import tz
-            import time
-            from time import mktime
-    
+
             abi_time = goes_date[abi]
             from_zone = tz.gettz('UTC')
             to_zone = tz.gettz('America/New_York')
             utc = abi_time.replace(tzinfo=from_zone)
             local = utc.astimezone(to_zone)
-            lt = time.localtime()
-            dst = lt.tm_isdst
-            if dst == 0:
-                et = "EDT"
-            else:
-                et = "EST"
-    
+
             # get the kdox zulu time, and convert it to local time
             kdox_t1 = nex_dates[nex]
             kdox_newtime = kdox_t1.replace(tzinfo=from_zone)
@@ -363,12 +357,7 @@ if len(abi_match) > 0:
             output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/meso/nex_image/' + str(ABI_datetime[abi]) + ".png"
             fig.savefig(output_file, dpi=120, bbox_inches='tight')
             plt.close()
-        else:
-            plt.figure(figsize=[7, 7])
-            fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
-            output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/meso/nex_image/' + str(ABI_datetime[abi]) + ".png"
-            fig.savefig(output_file, dpi=120, bbox_inches='tight')
-            plt.close()
+        
     else:
         print "Up to Date"
 
