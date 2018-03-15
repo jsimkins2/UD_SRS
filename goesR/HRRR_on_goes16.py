@@ -191,7 +191,3 @@ plt.savefig("Documents/deos_projects/thickness_goes16_HRRR_0207.png")
 
 
 
-
-
-
-

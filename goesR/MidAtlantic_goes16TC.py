@@ -1,4 +1,4 @@
-site = 'KDOX'
+site = 'KDIX'
 # script designed for basin.ceoe.udel.edu
 # James Simkins
 import matplotlib
@@ -90,43 +90,9 @@ for i in match:
 print ABI_datetime
 
 #get the radar location (this is used to set up the basemap and plotting grid)
+
 loc = pyart.io.nexrad_common.get_nexrad_location(site)
 lon0 = loc[1] ; lat0 = loc[0]
-#use boto to connect to the AWS nexrad holdings directory
-s3conn = boto.connect_s3()
-bucket = s3conn.get_bucket('noaa-nexrad-level2')
-#create a datetime object for the current time in UTC and use the
-# year, month, and day to drill down into the NEXRAD directory structure.
-now = datetime.utcnow()
-date = ("{:4d}".format(now.year) + '/' + "{:02d}".format(now.month) + '/' +
-        "{:02d}".format(now.day) + '/')
-print date
-#get the bucket list for the selected date
-#Note: this returns a list of all of the radar sites with data for 
-# the selected date
-ls = bucket.list(prefix=date,delimiter='/')
-for key in ls:
-    #only pull the data and save the arrays for the site we want
-    if site in key.name.split('/')[-2]:
-        #set up the path to the NEXRAD files
-        path = date + site + '/' + site
-        #grab the last file in the file list
-        fname = bucket.get_all_keys(prefix=path)[-1]
-        print fname
-        #get the file 
-        s3key = bucket.get_key(fname)
-        #save a temporary file to the local host
-        localfile = tempfile.NamedTemporaryFile(delete=False)
-        #write the contents of the NEXRAD file to the temporary file
-        s3key.get_contents_to_filename(localfile.name)
-        #use the read_nexrad_archive function from PyART to read in NEXRAD file
-        radar = pyart.io.read_nexrad_archive(localfile.name)
-        #get the date and time from the radar file for plot enhancement
-        ktime = radar.time['units'].split(' ')[-1].split('T')
-        print(site + ': ' + ktime[0] + ' at ' + ktime[1] )
-        #set up the plotting grid for the data
-        display = pyart.graph.RadarMapDisplay(radar)
-        x,y = display._get_x_y(0,True,None)
 
 # before we go in the loop for the images, let's do some stuff now before we go into the loop
 lt = time.localtime()
@@ -214,33 +180,10 @@ for n in xrange(0, len(ABI_datetime)):
     # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
     newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
     newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
-    
     mH.drawstates()
-    mH.drawcountries()
     mH.drawcoastlines()
-    # now plot the nexrad and the goes
-    plt.title('GOES-16 True Color\n%s' % DATE.strftime('%B %d, %Y %H:%M UTC'))
-    fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
-    #set up a basemap with a lambert conformal projection centered 
-    # on the radar location, extending 1 degree in the meridional direction
-    # and 1.5 degrees in the longitudinal in each direction away from the 
-    # center point.
-    mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-                llcrnrlat=lat0-5,llcrnrlon=lon0-7,
-                urcrnrlat=lat0+5,urcrnrlon=lon0+7,resolution='h')
-               
-    newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
-    newmap.set_array(None) # without this, the linewidth is set to zero, but the RGB color is ignored
-    
-    #get the plotting grid into lat/lon coordinates
-    x0,y0 = mH(lon0,lat0)
-    glons,glats = mH((x0+x*1000.), (y0+y*1000.),inverse=True)
-    
-    mH.drawstates()
-    mH.drawcountries()
-    mH.drawcoastlines()
-    
-    # METHOD 1: Hardcode zones:
+
+    # convert from UTC to local time
     abi_time = DATE
     from_zone = tz.gettz('UTC')
     to_zone = tz.gettz('America/New_York')
