@@ -1,4 +1,4 @@
-site = 'KDIX'
+site = 'KDOX'
 # script designed for basin.ceoe.udel.edu
 # James Simkins
 import matplotlib
@@ -158,8 +158,9 @@ for n in xrange(0, len(ABI_datetime)):
     
     # Make a new map object for the HRRR model domain map projection
     mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-                llcrnrlat=lat0-2,llcrnrlon=lon0-3,
-                urcrnrlat=lat0+2.5,urcrnrlon=lon0+3,resolution='h')
+                llcrnrlat=lat0-3,llcrnrlon=lon0-4,
+                urcrnrlat=lat0+3.5,urcrnrlon=lon0+4,resolution='h')
+            
     
     xH, yH = mH(lons, lats)
     
@@ -175,13 +176,14 @@ for n in xrange(0, len(ABI_datetime)):
     colorTuple[colorTuple > 1] = 1
     
     # Now we can plot the GOES data on the HRRR map domain and projection
-    plt.figure(figsize=[7, 7])
+    plt.figure(figsize=[8, 8])
     
     # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
     newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
     newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
     mH.drawstates()
-    mH.drawcoastlines()
+    mH.drawcoastlines(linewidth=0.7,color='k')
+    mH.drawcounties(linewidth=0.1,color='k')
 
     # convert from UTC to local time
     abi_time = DATE
@@ -192,5 +194,5 @@ for n in xrange(0, len(ABI_datetime)):
 
     plt.title('GOES-16 True Color\n%s' % local.strftime('%B %d, %Y %H:%M ') + et)
     output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/image_midatlantic/' + str(ABI_datetime[n]) + ".png"
-    plt.savefig(output_file, dpi=100, bbox_inches='tight')
+    plt.savefig(output_file, dpi=120, bbox_inches='tight')
     plt.close()

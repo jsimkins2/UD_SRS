@@ -281,9 +281,9 @@ if len(abi_match) > 0:
                             color='k',ax=ax,linewidth=0.001)
             mH.drawmeridians(np.arange(-150,-50,1),labels=[0,0,1,0],fontsize=12,
                            color='k',ax=ax,linewidth=0.001)
-            mH.drawcounties(linewidth=0.5,color='k',ax=ax)
-            mH.drawstates(linewidth=1.5,color='k',ax=ax)
-            mH.drawcoastlines(linewidth=1.5,color='k',ax=ax)
+            mH.drawcounties(linewidth=0.1,color='k',ax=ax)
+            mH.drawstates(linewidth=1,color='k',ax=ax)
+            mH.drawcoastlines(linewidth=0.7,color='k',ax=ax)
             #mark the radar location with a black dot
             mH.scatter(lon0,lat0,marker='o',s=20,color='k',ax=ax,latlon=True)
             mH.scatter(-75.7506,39.6780,marker='*',s=3,color='k',ax=ax,latlon=True) # UDEL

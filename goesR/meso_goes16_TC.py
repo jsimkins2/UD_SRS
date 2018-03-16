@@ -180,7 +180,7 @@ for n in xrange(0, len(ABI_datetime)):
     newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
     newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
     mH.drawstates()
-    mH.drawcoastlines()
+    mH.drawcoastlines(linewidth=0.7,color='k')
 
     # convert from UTC to local time
     abi_time = DATE

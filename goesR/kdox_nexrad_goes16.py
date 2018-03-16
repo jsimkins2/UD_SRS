@@ -220,8 +220,8 @@ if len(abi_match) > 0:
             
             # Make a new map object for the HRRR model domain map projection
             mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-                        llcrnrlat=lat0-2,llcrnrlon=lon0-3,
-                        urcrnrlat=lat0+2.5,urcrnrlon=lon0+3,resolution='h')
+                        llcrnrlat=lat0-3,llcrnrlon=lon0-4,
+                        urcrnrlat=lat0+3.5,urcrnrlon=lon0+4,resolution='h')
             
             xH, yH = mH(lons, lats)
             
@@ -243,16 +243,14 @@ if len(abi_match) > 0:
             newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
             newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
 
-            # now plot the nexrad and the goes
-
             fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
             #set up a basemap with a lambert conformal projection centered 
             # on the radar location, extending 1 degree in the meridional direction
             # and 1.5 degrees in the longitudinal in each direction away from the 
             # center point.
             mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-                        llcrnrlat=lat0-2,llcrnrlon=lon0-3,
-                        urcrnrlat=lat0+2.5,urcrnrlon=lon0+3,resolution='h')
+                        llcrnrlat=lat0-3,llcrnrlon=lon0-4,
+                        urcrnrlat=lat0+3.5,urcrnrlon=lon0+4,resolution='h')
                        
             newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
             newmap.set_array(None) # without this, the linewidth is set to zero, but the RGB color is ignored
@@ -282,9 +280,9 @@ if len(abi_match) > 0:
                             color='k',ax=ax,linewidth=0.001)
             mH.drawmeridians(np.arange(-150,-50,1),labels=[0,0,1,0],fontsize=12,
                            color='k',ax=ax,linewidth=0.001)
-            mH.drawcounties(linewidth=0.5,color='k',ax=ax)
-            mH.drawstates(linewidth=1.5,color='k',ax=ax)
-            mH.drawcoastlines(linewidth=1.5,color='k',ax=ax)
+            mH.drawcounties(linewidth=0.1,color='k',ax=ax)
+            mH.drawstates(linewidth=1,color='k',ax=ax)
+            mH.drawcoastlines(linewidth=0.7,color='k',ax=ax)
             #mark the radar location with a black dot
             mH.scatter(lon0,lat0,marker='o',s=20,color='k',ax=ax,latlon=True)
             mH.scatter(-75.7506,39.6780,marker='*',s=3,color='k',ax=ax,latlon=True) # UDEL
@@ -300,7 +298,7 @@ if len(abi_match) > 0:
             to_zone = tz.gettz('America/New_York')
             utc = abi_time.replace(tzinfo=from_zone)
             local = utc.astimezone(to_zone)
-    
+
             # get the kdox zulu time, and convert it to local time
             kdox_t1 = nex_dates[nex]
             kdox_newtime = kdox_t1.replace(tzinfo=from_zone)

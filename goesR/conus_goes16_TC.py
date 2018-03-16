@@ -161,7 +161,7 @@ if len(ABI_datetime) > 0:
         
         mH.drawstates()
         mH.drawcountries()
-        mH.drawcoastlines()
+        mH.drawcoastlines(linewidth=0.7,color='k')
         
         
         from dateutil import tz
