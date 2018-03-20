@@ -20,6 +20,7 @@ import matplotlib as mpl
 from dateutil import tz
 import time
 from time import mktime
+import matplotlib.image as image
 
 #suppress deprecation warnings
 import warnings
@@ -191,7 +192,10 @@ for n in xrange(0, len(ABI_datetime)):
     to_zone = tz.gettz('America/New_York')
     utc = abi_time.replace(tzinfo=from_zone)
     local = utc.astimezone(to_zone)
-
+    # add logo
+    im = image.imread("/home/sat_ops/goes_r/nexrad/xsmall_ud_cema.png")
+    plt.figimage(im, 10,10, zorder=1)
+    # save file
     plt.title('GOES-16 True Color\n%s' % local.strftime('%B %d, %Y %H:%M ') + et)
     output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/image_midatlantic/' + str(ABI_datetime[n]) + ".png"
     plt.savefig(output_file, dpi=120, bbox_inches='tight')

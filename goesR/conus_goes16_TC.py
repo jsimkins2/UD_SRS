@@ -11,6 +11,9 @@ from pyproj import Proj
 from scipy import ndimage
 from scipy import stats
 import os.path
+import matplotlib.image as image
+import matplotlib.image as image
+
 
 #suppress deprecation warnings
 import warnings
@@ -184,6 +187,10 @@ if len(ABI_datetime) > 0:
             et = "EST"
         
         plt.title('GOES-16 True Color\n%s' % local.strftime('%B %d, %Y %H:%M ') + et)
+        # add logo
+        im = image.imread("/home/sat_ops/goes_r/nexrad/xsmall_ud_cema.png")
+        plt.figimage(im, 15, 15, zorder=1)
+        # save file
         output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/image_conus/' + str(ABI_datetime[n]) + ".png"
         plt.savefig(output_file, dpi=100, bbox_inches='tight')
         plt.close()

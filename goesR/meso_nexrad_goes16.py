@@ -21,6 +21,8 @@ import pyart.io
 from dateutil import tz
 import time
 from time import mktime
+import matplotlib.image as image
+
 #suppress deprecation warnings
 import warnings
 warnings.simplefilter("ignore", category=DeprecationWarning)
@@ -310,7 +312,10 @@ if len(abi_match) > 0:
                     # should be .94 below
             fig.text(0.5,0.94, 'GOES-16 True Color & ' + site + ' Reflectivity \n' +
                  local.strftime('%Y-%m-%d %H:%M ') + et,horizontalalignment='center',fontsize=12)
-            #display the figure
+            # add logo
+            im = image.imread("/home/sat_ops/goes_r/nexrad/xsmall_ud_cema.png")
+            plt.figimage(im, origin = 'upper', zorder=1)
+            # save file
             output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/meso/nex_image/' + str(ABI_datetime[abi]) + ".png"
             fig.savefig(output_file, dpi=120, bbox_inches='tight')
             plt.close()

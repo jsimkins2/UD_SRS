@@ -19,6 +19,7 @@ import matplotlib as mpl
 from dateutil import tz
 import time
 from time import mktime
+import matplotlib.image as image
 
 #suppress deprecation warnings
 import warnings
@@ -140,6 +141,8 @@ for i in seq:
     fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity\n'
             + kdox_dt.strftime('%Y-%m-%d at %H:%M ') + et,horizontalalignment='center',fontsize=16)
     # display the figure
+    im = image.imread("/home/sat_ops/goes_r/nexrad/xsmall_ud_cema.png")
+    plt.figimage(im, origin = 'upper', zorder=1)
     output_file = '/home/sat_ops/goes_r/nexrad/image_kdox/' + str(abs(i)) + ".png"
     fig.savefig(output_file, dpi=120, bbox_inches='tight')
     plt.close()
