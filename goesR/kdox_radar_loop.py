@@ -138,11 +138,15 @@ for i in seq:
     kdox_newtime = kdox_t1.replace(tzinfo=from_zone)
     kdox_local = kdox_newtime.astimezone(to_zone)
     kdox_dt = datetime.fromtimestamp(mktime(kdox_local.timetuple()))
-    fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity\n'
+    fig.text(0.5,0.95, 'DEOS Radar Reflectivity\n'
             + kdox_dt.strftime('%Y-%m-%d at %H:%M ') + et,horizontalalignment='center',fontsize=16)
     # display the figure
-    im = image.imread("/home/sat_ops/goes_r/nexrad/xsmall_ud_cema.png")
-    plt.figimage(im, origin = 'upper', zorder=1)
+    im1 = image.imread("/home/sat_ops/goes_r/nexrad/cema38.png")
+    im2 = image.imread("/home/sat_ops/goes_r/nexrad/udel38.png")
+    #im[:, :, -1] = 0.5
+    plt.figimage(im1, 720, 805, zorder=1)
+    plt.figimage(im2, 13, 805, zorder=1)
+    
     output_file = '/home/sat_ops/goes_r/nexrad/image_kdox/' + str(abs(i)) + ".png"
     fig.savefig(output_file, dpi=120, bbox_inches='tight')
     plt.close()

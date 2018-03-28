@@ -41,29 +41,32 @@ def block_mean(ar, fact):
 def nearest(items, pivot):
     return min(items, key=lambda x: abs(x - pivot))
 
-# create a list from logfiles - ABI bands 1,2,3 or C01,C02,C03
+# open the logfiles for each ABI of the most recent 6 hours of data
 with open("/home/sat_ops/goes_r/cloud_prod/noaa_format/C01_logfile.txt") as f:
     C01_names = f.readlines()
 
-# remove extra /n that comes with f.readlines
 C01_names = [x.strip() for x in C01_names] 
 
 with open("/home/sat_ops/goes_r/cloud_prod/noaa_format/C02_logfile.txt") as f:
     C02_names = f.readlines()
 
-# remove extra /n that comes with f.readlines
 C02_names = [x.strip() for x in C02_names] 
 
 with open("/home/sat_ops/goes_r/cloud_prod/noaa_format/C03_logfile.txt") as f:
     C03_names = f.readlines()
 
-# remove extra /n that comes with f.readlines
 C03_names = [x.strip() for x in C03_names] 
+
+with open("/home/sat_ops/goes_r/cloud_prod/noaa_format/C13_logfile.txt") as f:
+    C13_names = f.readlines()
+
+C13_names = [x.strip() for x in C13_names] 
+
 sname1 = []
 sname2 = []
 sname3 = []
-
-# we're going to set C02 as the default here because it's the 'most important' band
+sname4 = []
+# parse the name strings so we can organize them better
 for i in xrange(1,len(C01_names)):
     fname = str(C01_names[i].split("_", 4)[3])
     fname = str(fname.split(".", 2)[0])
@@ -82,9 +85,15 @@ for i in xrange(1,len(C03_names)):
     fname = fname[1:]
     sname3.append(fname)
 
+for i in xrange(1,len(C13_names)):
+    fname = str(C13_names[i].split("_", 4)[3])
+    fname = str(fname.split(".", 2)[0])
+    fname = fname[1:]
+    sname4.append(fname)
+
 # we only want to do timestamps where we have all 3 bands, otherwise we can't make a true color
 from collections import OrderedDict
-match = set(sname1) & set(sname2) & set(sname3)
+match = set(sname1) & set(sname2) & set(sname3) & set(sname4)
 match = sorted(match, key=int)
 
 # if the image already exists, we don't want to duplicate it, so let's not add it to the list
@@ -149,6 +158,11 @@ if len(abi_match) > 0:
     #get the radar location (this is used to set up the basemap and plotting grid)
     loc = pyart.io.nexrad_common.get_nexrad_location(site)
     lon0 = loc[1] ; lat0 = loc[0]
+
+    # Make a new map object for the HRRR model domain map projection
+    mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
+                llcrnrlat=lat0-3,llcrnrlon=lon0-4,
+                urcrnrlat=lat0+3.5,urcrnrlon=lon0+4,resolution='h')
     
     # need to convert to local time and grab daylight savings time info
     lt = time.localtime()
@@ -178,17 +192,25 @@ if len(abi_match) > 0:
             # Load the RGB arrays and apply a gamma correction (square root)
             R = C.variables['CMI'][:].data # Band 2 is red (0.64 um)
             R = np.sqrt(block_mean(R, 2))
+            R = block_mean(R, 2)
             
             C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C03_G16_s' + str(ABI_datetime[abi]) + '.nc' # GOES16 East
             C = Dataset(C_file, 'r')
             # Load the RGB arrays and apply a gamma correction (square root)
             G = np.sqrt(C.variables['CMI'][:].data) # Band 3 is "green" (0.865 um)
+            G = block_mean(G, 2)
             
             C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C01_G16_s' + str(ABI_datetime[abi]) + '.nc' # GOES16 East
             C = Dataset(C_file, 'r')
             # Load the RGB arrays and apply a gamma correction (square root)
             B = np.sqrt(C.variables['CMI'][:].data) # Band 1 is blue (0.47 um)
+            B = block_mean(B, 2)
             
+            C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C13_G16_s' + str(ABI_datetime[abi]) + '.nc' # GOES16 East
+            C = Dataset(C_file, 'r')
+            # Load the RGB arrays and apply a gamma correction (square root)
+            b13 = C.variables['CMI'][:] # Band 13
+    
             # "True Green" is some linear interpolation between the three channels
             # note that I've added some multiplying factors here to enhance contrast
             G_true = 0.48358168 * R + 0.45706946 * B + 0.06038137 * G
@@ -219,11 +241,6 @@ if len(abi_match) > 0:
             XX, YY = np.meshgrid(X, Y)
             lons, lats = p(XX, YY, inverse=True)
             
-            # Make a new map object for the HRRR model domain map projection
-            mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-                        llcrnrlat=lat0-3,llcrnrlon=lon0-4,
-                        urcrnrlat=lat0+3.5,urcrnrlon=lon0+4,resolution='h')
-            
             xH, yH = mH(lons, lats)
             
             # Create a color tuple for pcolormesh
@@ -236,23 +253,20 @@ if len(abi_match) > 0:
             # for some reason this helps
             colorTuple[colorTuple < 0] = 0
             colorTuple[colorTuple > 1] = 1
-            
+
+            # change the alphas to show the b13 below the tc image
+            colorTuple[:,3][colorTuple[:,2] < 0.3] = 0.3
+            colorTuple[:,3][colorTuple[:,2] < 0.2] = 0.15
+            colorTuple[:,3][colorTuple[:,2] < 0.1] = 0.0
+    
             # Now we can plot the GOES data on the HRRR map domain and projection
-            plt.figure(figsize=[7, 7])
-            
-            # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
-            newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
-            newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
 
             fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
             #set up a basemap with a lambert conformal projection centered 
             # on the radar location, extending 1 degree in the meridional direction
             # and 1.5 degrees in the longitudinal in each direction away from the 
             # center point.
-            mH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-                        llcrnrlat=lat0-3,llcrnrlon=lon0-4,
-                        urcrnrlat=lat0+3.5,urcrnrlon=lon0+4,resolution='h')
-                       
+            m = mH.pcolormesh(xH, yH, b13, cmap='Greys', vmax=280, vmin=180)
             newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
             newmap.set_array(None) # without this, the linewidth is set to zero, but the RGB color is ignored
             
@@ -308,18 +322,21 @@ if len(abi_match) > 0:
             #fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity ' + 
                     #'at ' + kdox_local.strftime('%Y-%m-%d at %H:%M ') + et,horizontalalignment='center',fontsize=14)
                     # should be .94 below
-            fig.text(0.5,0.94, 'GOES-16 True Color & KDOX Reflectivity \n' +
+            fig.text(0.5,0.94, 'NOAA GOES-16 & KDOX Radar Reflectivity \n' +
                  local.strftime('%Y-%m-%d %H:%M ') + et,horizontalalignment='center',fontsize=12)
             # add logo
-            im = image.imread("/home/sat_ops/goes_r/nexrad/xsmall_ud_cema.png")
-            plt.figimage(im, origin = 'upper', zorder=1)
+            im1 = image.imread("/home/sat_ops/goes_r/nexrad/cema38.png")
+            im2 = image.imread("/home/sat_ops/goes_r/nexrad/udel38.png")
+            #im[:, :, -1] = 0.5
+            plt.figimage(im1, 705, 790, zorder=1)
+            plt.figimage(im2, 13, 790, zorder=1)
             # save file
             output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
             fig.savefig(output_file, dpi=120, bbox_inches='tight')
             plt.close()
         else:
             plt.figure(figsize=[7, 7])
-            fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=200)
+            fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=120)
             output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
             fig.savefig(output_file, dpi=120, bbox_inches='tight')
             plt.close()
