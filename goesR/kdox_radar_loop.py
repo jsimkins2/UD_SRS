@@ -71,7 +71,7 @@ for key in ls:
         checktime = datetime.strptime(checktime, '%Y-%m-%d %H:%M:%S')
         kdifftime = now - checktime
         
-        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 16:
+        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 16 == True:
             site = 'KDIX'
             print "KDOX is down, using KDIX now"
 
@@ -113,7 +113,7 @@ for key in ls:
         checktime = datetime.strptime(checktime, '%Y-%m-%d %H:%M:%S')
         kdifftime = now - checktime
         
-        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 16:
+        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 16 == True:
             site = 'KLWX'
             print "KDIX is down, using KLWX now"
 
@@ -168,15 +168,6 @@ for i in seq:
             #get the date and time from the radar file for plot enhancement
             ktime = radar.time['units'].split(' ')[-1].split('T')
             print(site + ': ' + ktime[0] + ' at ' + ktime[1] )
-            
-            checktime = str(ktime[0] + ' ' + ktime[1][:-1])
-            checktime = datetime.strptime(checktime, '%Y-%m-%d %H:%M:%S')
-            kdifftime = now - checktime
-            
-            if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 16:
-                site = 'KDIX'
-                kdoxdown = True
-                print "KDOX is down, using KDIX now"
             #set up the plotting grid for the data
             display = pyart.graph.RadarMapDisplay(radar)
             x,y = display._get_x_y(0,True,None)
