@@ -176,8 +176,8 @@ if len(ABI_datetime) > 0:
         colorTuple[colorTuple < 0] = 0
         colorTuple[colorTuple > 1] = 1
         # change the alphas to show the b13 below the tc image
-        colorTuple[:,3][colorTuple[:,2] < 0.3] = 0.3
-        colorTuple[:,3][colorTuple[:,2] < 0.2] = 0.15
+        # colorTuple[:,3][colorTuple[:,2] < 0.3] = 0.3
+        colorTuple[:,3][colorTuple[:,2] < 0.2] = 0.0
         colorTuple[:,3][colorTuple[:,2] < 0.1] = 0.0
 
         # Now we can plot the GOES data on the HRRR map domain and projection
