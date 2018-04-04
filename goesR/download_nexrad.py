@@ -17,11 +17,47 @@ import os
 import tempfile
 import matplotlib as mpl
 import pyart.io
+import sys
 #suppress deprecation warnings
 import warnings
 warnings.simplefilter("ignore", category=DeprecationWarning)
 
-seq = range(1, 10)
+num = int(sys.argv[1])
+
+if num==1:
+    site = 'KDOX'
+    image_dir = 'image_kdox_goes/'
+    data_dir = 'data_kdox/'
+
+if num==2:
+    site = 'KDIX'
+    image_dir = 'image_kdix_goes/'
+    data_dir = 'data_kdix/'
+
+if num==3:
+    site = 'KLWX'
+    image_dir = 'image_klwx_goes/'
+    data_dir = 'data_klwx/'
+
+print site
+
+# find the most recent file in the data folder 
+import glob
+import os
+list_of_files = glob.glob('/home/sat_ops/goesR/nexrad/' + data_dir +'*') # * means all if need specific format then *.csv
+if len(list_of_files) == 0:
+    latest_file = "20180404_1319"
+    
+latest_file = max(list_of_files, key=os.path.getctime)
+latest_time = datetime.strptime(checktime, '%Y%m%d_%H%M')
+now = datetime.utcnow()
+kdifftime = now - latest_time
+
+seq = range(1,6)
+# if we haven't pulled data for a site in over an hour, grab a whole lot of data
+if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 60:
+    seq = range(1, 22)
+
 nxlist = []
 for s in seq:
     nxlist.append(s*-1)
@@ -30,7 +66,6 @@ now_time = datetime.utcnow()
 nex_names = []
 # get the datetimes for each file
 for j in xrange(0, len(nxlist)):
-    site = 'KDOX'
     #get the radar location (this is used to set up the basemap and plotting grid)
     loc = pyart.io.nexrad_common.get_nexrad_location(site)
     lon0 = loc[1] ; lat0 = loc[0]
@@ -50,6 +85,7 @@ for j in xrange(0, len(nxlist)):
             #grab the last file in the file list
             nex_names = bucket.get_all_keys(prefix=path)[nxlist[j]]
             nex = str(nex_names)[-20:-7]
+            print nex
             tem = datetime.strptime(nex, '%Y%m%d_%H%M')
             fname = bucket.get_all_keys(prefix=path)[nxlist[j]]
             #get the file 
@@ -60,6 +96,6 @@ for j in xrange(0, len(nxlist)):
             s3key.get_contents_to_filename(localfile.name)
             #use the read_nexrad_archive function from PyART to read in NEXRAD file
             radar = pyart.io.read_nexrad_archive(localfile.name)
-            outfile = '/home/sat_ops/goes_r/nexrad/data/kdox_' + nex
+            outfile = '/home/sat_ops/goes_r/nexrad/' + data_dir + nex
             if os.path.isfile(outfile + ".nc") == False:
                 pyart.io.write_cfradial(outfile, radar)

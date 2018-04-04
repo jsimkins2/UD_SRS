@@ -20,8 +20,7 @@ from dateutil import tz
 import time
 from time import mktime
 import matplotlib.image as image
-
-
+import sys
 #suppress deprecation warnings
 import warnings
 warnings.simplefilter("ignore", category=DeprecationWarning)
@@ -40,6 +39,25 @@ def block_mean(ar, fact):
 # define function that finds nearest time given a list of datetime strings
 def nearest(items, pivot):
     return min(items, key=lambda x: abs(x - pivot))
+
+num = int(sys.argv[1])
+
+if num==1:
+    site = 'KDOX'
+    image_dir = 'image_kdox_goes/'
+    data_dir = 'data_kdox/'
+
+if num==2:
+    site = 'KDIX'
+    image_dir = 'image_kdix_goes/'
+    data_dir = 'data_kdix/'
+
+if num==3:
+    site = 'KLWX'
+    image_dir = 'image_klwx_goes/'
+    data_dir = 'data_klwx/'
+
+print site
 
 # open the logfiles for each ABI of the most recent 6 hours of data
 with open("/home/sat_ops/goes_r/cloud_prod/noaa_format/C01_logfile.txt") as f:
@@ -99,7 +117,7 @@ match = sorted(match, key=int)
 # if the image already exists, we don't want to duplicate it, so let's not add it to the list
 ABI_datetime = []
 for i in match:    
-    if os.path.isfile("/home/sat_ops/goes_r/nexrad/image_nxrd_goes/" + str(i) + ".png") == False:
+    if os.path.isfile("/home/sat_ops/goes_r/nexrad/" + image_dir + str(i) + ".png") == False:
         ABI_datetime.append(i)
 
 # convert strings to datetime object
@@ -124,7 +142,7 @@ nex_match = []
 
 # convert to datetime objects
 for i in xrange(0,len(nex_names)):
-    nex = str(nex_names[i])[5:]
+    nex = str(nex_names[i])
     tem = datetime.strptime(nex, '%Y%m%d_%H%M')
     nex_dates.append(tem)
 
@@ -153,8 +171,7 @@ for i in xrange(0, len(nex_match)):
     abi_match.append(adex)
     
 if len(abi_match) > 0:
-    # before we go in the loop, we have ot extract some info about KDOX
-    site = 'KDOX'
+    # before we go in the loop, we have ot extract some info about the site
     #get the radar location (this is used to set up the basemap and plotting grid)
     loc = pyart.io.nexrad_common.get_nexrad_location(site)
     lon0 = loc[1] ; lat0 = loc[0]
@@ -183,7 +200,7 @@ if len(abi_match) > 0:
         
         if time_diff[0] < 11:
             
-            radar = pyart.io.read_cfradial('/home/sat_ops/goes_r/nexrad/data/' + nex_names[nex])
+            radar = pyart.io.read_cfradial('/home/sat_ops/goes_r/nexrad/' + data_dir + nex_names[nex])
             display = pyart.graph.RadarMapDisplay(radar)
             x,y = display._get_x_y(0,True,None)
             # C is for Conus File OR_ABI-L2-CMIPC-M3C02_G16_s20180601912.nc
@@ -315,14 +332,14 @@ if len(abi_match) > 0:
             local = utc.astimezone(to_zone)
 
             # get the kdox zulu time, and convert it to local time
-            kdox_t1 = nex_dates[nex]
-            kdox_newtime = kdox_t1.replace(tzinfo=from_zone)
-            kdox_local = kdox_newtime.astimezone(to_zone)
+            site_t1 = nex_dates[nex]
+            site_newtime = site_t1.replace(tzinfo=from_zone)
+            site_local = site_newtime.astimezone(to_zone)
     
             #fig.text(0.5,0.95, site + ' (0.5$^{\circ}$) Reflectivity ' + 
                     #'at ' + kdox_local.strftime('%Y-%m-%d at %H:%M ') + et,horizontalalignment='center',fontsize=14)
                     # should be .94 below
-            fig.text(0.5,0.94, 'NOAA GOES-16 & KDOX Radar Reflectivity \n' +
+            fig.text(0.5,0.94, 'NOAA GOES-16 & ' + site + ' Radar Reflectivity \n' +
                  local.strftime('%Y-%m-%d %H:%M ') + et,horizontalalignment='center',fontsize=12)
             # add logo
             im1 = image.imread("/home/sat_ops/goes_r/nexrad/cema38.png")
@@ -331,13 +348,13 @@ if len(abi_match) > 0:
             plt.figimage(im1, 705, 790, zorder=1)
             plt.figimage(im2, 13, 790, zorder=1)
             # save file
-            output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
+            output_file = '/home/sat_ops/goes_r/nexrad/' + image_dir + str(ABI_datetime[abi]) + ".png"
             fig.savefig(output_file, dpi=120, bbox_inches='tight')
             plt.close()
         else:
             plt.figure(figsize=[7, 7])
             fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=120)
-            output_file = '/home/sat_ops/goes_r/nexrad/image_nxrd_goes/' + str(ABI_datetime[abi]) + ".png"
+            output_file = '/home/sat_ops/goes_r/nexrad/' + image_dir + str(ABI_datetime[abi]) + ".png"
             fig.savefig(output_file, dpi=120, bbox_inches='tight')
             plt.close()
 

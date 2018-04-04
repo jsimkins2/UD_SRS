@@ -42,7 +42,6 @@ bucket = s3conn.get_bucket('noaa-nexrad-level2')
 now = datetime.utcnow()
 date = ("{:4d}".format(now.year) + '/' + "{:02d}".format(now.month) + '/' +
         "{:02d}".format(now.day) + '/')
-print date
 #get the bucket list for the selected date
 #Note: this returns a list of all of the radar sites with data for 
 # the selected date
@@ -54,7 +53,6 @@ for key in ls:
         path = date + site + '/' + site
         #grab the last file in the file list
         fname = bucket.get_all_keys(prefix=path)[-1]
-        print fname
         #get the file 
         s3key = bucket.get_key(fname)
         #save a temporary file to the local host
@@ -65,17 +63,17 @@ for key in ls:
         radar = pyart.io.read_nexrad_archive(localfile.name)
         #get the date and time from the radar file for plot enhancement
         ktime = radar.time['units'].split(' ')[-1].split('T')
-        print(site + ': ' + ktime[0] + ' at ' + ktime[1] )
-        
         checktime = str(ktime[0] + ' ' + ktime[1][:-1])
         checktime = datetime.strptime(checktime, '%Y-%m-%d %H:%M:%S')
         kdifftime = now - checktime
         
-        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 16 == True:
+        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 21:
             site = 'KDIX'
             print "KDOX is down, using KDIX now"
 
-
+print site
+loc = pyart.io.nexrad_common.get_nexrad_location(site)
+lon0 = loc[1] ; lat0 = loc[0]
 # if KDIX is down, well we gotta use something I guess 
 s3conn = boto.connect_s3()
 bucket = s3conn.get_bucket('noaa-nexrad-level2')
@@ -84,7 +82,6 @@ bucket = s3conn.get_bucket('noaa-nexrad-level2')
 now = datetime.utcnow()
 date = ("{:4d}".format(now.year) + '/' + "{:02d}".format(now.month) + '/' +
         "{:02d}".format(now.day) + '/')
-print date
 #get the bucket list for the selected date
 #Note: this returns a list of all of the radar sites with data for 
 # the selected date
@@ -96,7 +93,6 @@ for key in ls:
         path = date + site + '/' + site
         #grab the last file in the file list
         fname = bucket.get_all_keys(prefix=path)[-1]
-        print fname
         #get the file 
         s3key = bucket.get_key(fname)
         #save a temporary file to the local host
@@ -107,13 +103,11 @@ for key in ls:
         radar = pyart.io.read_nexrad_archive(localfile.name)
         #get the date and time from the radar file for plot enhancement
         ktime = radar.time['units'].split(' ')[-1].split('T')
-        print(site + ': ' + ktime[0] + ' at ' + ktime[1] )
-        
         checktime = str(ktime[0] + ' ' + ktime[1][:-1])
         checktime = datetime.strptime(checktime, '%Y-%m-%d %H:%M:%S')
         kdifftime = now - checktime
         
-        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 16 == True:
+        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 21:
             site = 'KLWX'
             print "KDIX is down, using KLWX now"
 
