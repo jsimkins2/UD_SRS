@@ -195,8 +195,8 @@ for n in xrange(0, len(ABI_datetime)):
     
     # Now we can plot the GOES data on the HRRR map domain and projection
     # change the alphas to show the b13 below the tc image
-    colorTuple[:,3][colorTuple[:,2] < 0.3] = 0.3
-    colorTuple[:,3][colorTuple[:,2] < 0.2] = 0.15
+    colorTuple[:,3][colorTuple[:,2] < 0.2] = 0.2
+    colorTuple[:,3][colorTuple[:,2] < 0.15] = 0.1
     colorTuple[:,3][colorTuple[:,2] < 0.1] = 0.0
     
     # Now we can plot the GOES data on the HRRR map domain and projection

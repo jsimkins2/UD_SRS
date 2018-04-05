@@ -4,4 +4,3 @@ source activate goes16
 python /home/sat_ops/goes_r/nexrad/kdox_radar_loop.py
 
 scp /home/sat_ops/goes_r/nexrad/kdox_radar.gif /var/www/html/imagery/
-

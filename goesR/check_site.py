@@ -67,10 +67,11 @@ for key in ls:
         checktime = datetime.strptime(checktime, '%Y-%m-%d %H:%M:%S')
         kdifftime = now - checktime
         
-        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 33:
+        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 57:
             site = 'KDIX'
             image_dir = 'image_kdix_goes/'
             data_dir = 'data_kdix/'
+            print divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0]
             print "KDOX is down, using KDIX now"
 
 print site
@@ -94,7 +95,7 @@ for key in ls:
         #set up the path to the NEXRAD files
         path = date + site + '/' + site
         #grab the last file in the file list
-        fname = bucket.get_all_keys(prefix=path)[-1]
+        fname = bucket.get_all_keys(prefix=path)[-5]
         #get the file 
         s3key = bucket.get_key(fname)
         #save a temporary file to the local host
@@ -109,7 +110,7 @@ for key in ls:
         checktime = datetime.strptime(checktime, '%Y-%m-%d %H:%M:%S')
         kdifftime = now - checktime
         
-        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 21:
+        if divmod(kdifftime.days * 86400 + kdifftime.seconds, 60)[0] > 57:
             site = 'KLWX'
             image_dir = 'image_klwx_goes/'
             data_dir = 'data_kdox/'
