@@ -22,7 +22,8 @@ copyright.draw <- function(label, image, x, y, size, ...) {
 }
 im1 = readPNG("/home/sat_ops/goes_r/nexrad/cema38.png")
 im2 = readPNG("/home/sat_ops/goes_r/nexrad/udel38.png")
-
+#im1 = readPNG("Documents/Delaware/random/cema38.png")
+#im2 = readPNG("Documents/Delaware/random/udel38.png")
 
 args     <- commandArgs(TRUE)
 lastline <- args[1]
@@ -90,9 +91,13 @@ for (j in seq(-15,15,1)){
 
   
   # read in the aqua file
+#aqua.file = "/Users/leathers/Downloads/aqua.2018079.0320-2018086.0327.D.L3.modis.NAT.v09.1000m.nc4"
+
   aqua.nc <- nc_open(aqua.file)
-  #aqua.file = "/Users/leathers/Downloads/aqua.2017304.1031-2017311.1107.D.L3.modis.NAT.v09.1000m.nc4"
   sst <- ncvar_get(aqua.nc, "sst")
+  aquatime <- aqua.nc$dim$time
+  aqualat <- aqua.nc$dim$lat
+  aqualon <- aqua.nc$dim$lon
   lon <- ncvar_get(aqua.nc, "lon")
   lat <- ncvar_get(aqua.nc, "lat")
   nc_close(aqua.nc)
@@ -137,8 +142,26 @@ for (j in seq(-15,15,1)){
   # write out diff raster to netcdf 
   outname = substr(fname, 2, 90)
   print(fname)
-  writeRaster(diff, paste0("/home/james/anomalies/data/SSTanomaly_", outname),  overwrite=TRUE, format="CDF", varname="SST", varunit="Celsius", 
+  writeRaster(diff, paste0("/data/Aqua/anomaly/SSTanomaly_", outname),  overwrite=TRUE, format="CDF", varname="SST", varunit="Celsius", 
               longname="Sea Surface Temperature", xname="lon", yname="lat")
+
+  # add time dimension to the netcdf we created
+  anomnc = nc_open(paste0("/data/Aqua/anomaly/SSTanomaly_", substr(outname, 1, 58)))
+ 
+  sst.anomnc = sst - sst.c #ncvar_get(anomnc, "SST")
+  data_dim <- list(aqualon, aqualat, aquatime)
+  var.list <- list()
+  var.list <- ncdf4::ncvar_def(name="SST", units="Celsius", missval=NA, longname = "Sea Surface Temperature Anomaly", dim=data_dim)
+  #creating the nc4 output file
+  loc.file <- paste0("/data/Aqua/anomaly/SSTanomaly_", outname)
+  
+  #writing all we need to the output file
+  loc <- ncdf4::nc_create(filename=loc.file, vars=var.list)
+  ncdf4::ncvar_put(nc=loc, "SST", vals=sst.anomnc)
+
+  ncdf4::nc_close(loc)
+
+
   ###### PLOTTING ###### 
   
   #Color palette creation
@@ -271,19 +294,19 @@ for (j in seq(-15,15,1)){
   png(filename = "/home/james/anomalies/AquaAtlantic_SST_anomaly.png",width = 8, height = 6, units = "in", res = 200)
     lp = levelplot(diff, margin = FALSE, maxpixels = 18075029, xlab = "Longitude", ylab = "Latitude", 
                    main=paste0("MODIS-Aqua 8-Day SST Anomalies ", emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr), cex=2) +
-    #layer(sp.polygons(usa, fill='gray16')) + layer(sp.polygons(can, fill='gray16')) + layer(sp.polygons(mex, fill='gray16')) + 
-    #layer(sp.polygons(cub, fill='gray16')) + layer(sp.polygons(pr, fill='gray16')) + layer(sp.polygons(jam, fill='gray16')) + 
-    #layer(sp.polygons(bel, fill='gray16')) + layer(sp.polygons(bah, fill='gray16')) + layer(sp.polygons(hai, fill='gray16')) + 
-    #layer(sp.polygons(cay, fill='gray16')) + layer(sp.polygons(dr, fill='gray16')) + layer(sp.polygons(vi, fill='gray16')) +
-    #layer(sp.polygons(tc, fill='gray16'))  + layer(sp.polygons(ang, fill='gray16')) + layer(sp.polygons(gua, fill = 'gray16')) +
+    layer(sp.polygons(usa, fill='gray16')) + layer(sp.polygons(can, fill='gray16')) + layer(sp.polygons(mex, fill='gray16')) + 
+    layer(sp.polygons(cub, fill='gray16')) + layer(sp.polygons(pr, fill='gray16')) + layer(sp.polygons(jam, fill='gray16')) + 
+    layer(sp.polygons(bel, fill='gray16')) + layer(sp.polygons(bah, fill='gray16')) + layer(sp.polygons(hai, fill='gray16')) + 
+    layer(sp.polygons(cay, fill='gray16')) + layer(sp.polygons(dr, fill='gray16')) + layer(sp.polygons(vi, fill='gray16')) +
+    layer(sp.polygons(tc, fill='gray16'))  + layer(sp.polygons(ang, fill='gray16')) + layer(sp.polygons(gua, fill = 'gray16')) +
     layer(sp.polygons(hon, fill='gray16'))
     diverge0(lp)
-    copyright.draw("", im1, .93, .96, 1, fontsize = 8)
-    copyright.draw("", im2, .02, .96, 1, fontsize = 8) 
     trellis.focus("legend", side="right", clipp.off=TRUE, highlight=FALSE)
     grid::grid.text('DegC', y=unit(-.015, "npc"), 
                     x=unit(.26, "npc"), gp=gpar(fontsize=8))
     trellis.unfocus()
+    copyright.draw("", im1, .93, .96, .6, fontsize = 8)
+    copyright.draw("", im2, .02, .96, .6, fontsize = 8) 
   garbage <- dev.off()
 
   
@@ -348,74 +371,76 @@ for (j in seq(-15,15,1)){
   colnames(df) <- c("Longitude", "Latitude", "MAP")
 
   png(filename = "/home/james/anomalies/AquaAtlantic_SST.png",width = 8, height = 6, units = "in", res = 200)
-  gg = ggplot(data=df, aes(y=Latitude, x=Longitude)) +
-    geom_raster(aes(fill=MAP)) +
-    ggtitle(paste0("MODIS-Aqua 8-Day SST ", emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr)) +
-    #geom_polygon(data = land, aes(x=long, y = lat, group = group), 
-    #fill = "gray16") +
+    ggplot(data=df, aes(y=Latitude, x=Longitude)) +
+      geom_raster(aes(fill=MAP)) +
+      ggtitle(paste0("MODIS-Aqua 8-Day SST ", emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr)) +
+      #geom_polygon(data = land, aes(x=long, y = lat, group = group), 
+      #fill = "gray16") +
+      
+      theme_bw() +
+      coord_equal() +
+      scale_fill_gradientn("SST (DegC)", limits=c(0,40), breaks=seq(0,40,5),na.value = "white", colours = clr.ramp(40)) +
+      theme(plot.title = element_text(hjust = 0.5),
+            axis.title.x = element_text(size=16),
+            axis.title.y = element_text(size=16, angle=90),
+            axis.text.x = element_text(size=14),
+            axis.text.y = element_text(size=14),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            legend.position = "right",
+            legend.key = element_blank(),
+            legend.title = element_text(size=10),
+            legend.key.height = unit(.8, "in"),
+            legend.key.width = unit(.5, "in")
+      ) + geom_polygon(data = usa, aes(x=long, y = lat, group = group), 
+                       fill = "gray16", 
+                       color="black") +
+      geom_polygon(data = canada, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") + 
+      geom_polygon(data = mexico, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = cuba, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = nicaragua, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = pr, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = jam, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = cr, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = bah, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = hai, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = cay, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = dr, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = vi, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = tc, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = ang, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = bel, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = els, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = hon, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = pan, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      geom_polygon(data = guat, aes(x=long, y = lat, group = group), 
+                   fill = "gray16", color="gray16") +
+      coord_fixed(xlim = c(-100, -55),  ylim = c(18, 48), ratio = 1.2)
     
-    theme_bw() +
-    coord_equal() +
-    scale_fill_gradientn("SST (DegC)", limits=c(0,40), na.value = "white", colours = clr.ramp(20)) +
-    theme(plot.title = element_text(hjust = 0.5),
-          axis.title.x = element_text(size=16),
-          axis.title.y = element_text(size=16, angle=90),
-          axis.text.x = element_text(size=14),
-          axis.text.y = element_text(size=14),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          legend.position = "right",
-          legend.key = element_blank(),
-          legend.title = element_text(size=10),
-          legend.key.height = unit(1, "in"),
-          legend.key.width = unit(.5, "in")
-    ) + geom_polygon(data = usa, aes(x=long, y = lat, group = group), 
-                     fill = "gray16", 
-                     color="black") +
-    geom_polygon(data = canada, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") + 
-    geom_polygon(data = mexico, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = cuba, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = nicaragua, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = pr, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = jam, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = cr, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = bah, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = hai, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = cay, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = dr, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = vi, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = tc, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = ang, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = bel, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = els, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = hon, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = pan, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    geom_polygon(data = guat, aes(x=long, y = lat, group = group), 
-                 fill = "gray16", color="gray16") +
-    coord_fixed(xlim = c(-100, -55),  ylim = c(18, 48), ratio = 1.2)
-  
-  garbage <- dev.off()
-  
+    garbage <- dev.off()
+    
   cema <- image_read("/home/sat_ops/goes_r/nexrad/cema38.png")
   udel <- image_read("/home/sat_ops/goes_r/nexrad/udel38.png")
+  #cema <- image_read("Documents/Delaware/random/cema38.png")
+  #udel <- image_read("Documents/Delaware/random/udel38.png")
   # add logos to ggplot
   plot <- image_read("/home/james/anomalies/AquaAtlantic_SST.png")
   final_plot  <- image_composite(plot, cema, offset = "+1540+5")
@@ -438,7 +463,7 @@ for (j in seq(-15,15,1)){
     
     theme_bw() +
     coord_equal() +
-    scale_fill_gradientn("SST (DegC)", limits=c(0,40), na.value = "white", colours = clr.ramp(20)) +
+    scale_fill_gradientn("SST (DegC)", limits=c(0,40), breaks=seq(0,40,5),na.value = "white", colours = clr.ramp(40)) +
     theme(plot.title = element_text(hjust = 0.5),
           axis.title.x = element_text(size=16),
           axis.title.y = element_text(size=16, angle=90),
@@ -449,7 +474,7 @@ for (j in seq(-15,15,1)){
           legend.position = "right",
           legend.key = element_blank(),
           legend.title = element_text(size=10),
-          legend.key.height = unit(1, "in"),
+          legend.key.height = unit(.8, "in"),
           legend.key.width = unit(.5, "in")
     ) + geom_polygon(data = usa, aes(x=long, y = lat, group = group), 
                      fill = "gray16", 
@@ -505,9 +530,9 @@ for (j in seq(-15,15,1)){
   diff.hist = hist(diff, plot = FALSE)
   
   png(filename = "/home/james/anomalies/AquaAtlantic_SST_histogram.png",width = 8, height = 6, units = "in", res = 200)
-  plot(diff.hist, main = paste0(emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr, " MODIS-Aqua Anomaly Histogram"), xlab = "Sea Surface Temperature (DegC)")
-  copyright.draw("", im1, .93, .96, 1, fontsize = 8)
-  copyright.draw("", im2, .02, .96, 1, fontsize = 8) 
+  plot(diff.hist, main = paste0("MODIS-Aqua Anomaly Histogram ", emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr), xlab = "Sea Surface Temperature (DegC)")
+  copyright.draw("", im1, .93, .96, .6, fontsize = 8)
+  copyright.draw("", im2, .02, .96, .6, fontsize = 8) 
   garbage <- dev.off()
   
   cat(1)
