@@ -14,6 +14,8 @@ bucket = client.get_bucket('gcp-public-data-goes-16')
 # get the current time and julian date so we can figure out what folder we want to be in
 now = datetime.utcnow()
 tt = now.timetuple()
+
+# julian day has 0s in the filename
 if len(str(tt.tm_yday)) == 1:
     jday = '00' + str(tt.tm_yday)
 
@@ -23,8 +25,16 @@ if len(str(tt.tm_yday)) == 2:
 if len(str(tt.tm_yday)) == 3:
     jday = str(tt.tm_yday)
 
+# hours has 0 in the filename
+if len(str(tt.tm_hour)) == 1:
+    hourstr = '0' + str(tt.tm_hour)
+
+if len(str(tt.tm_hour)) == 2:
+    hourstr = str(tt.tm_hour)
+
+
 # get a list of the files in folder
-blobs = bucket.list_blobs(prefix='ABI-L2-CMIPC/'+ str(now.year) + '/' + jday + '/' + str(now.hour) + '/')
+blobs = bucket.list_blobs(prefix='ABI-L2-CMIPC/'+ str(now.year) + '/' + jday + '/' + hourstr + '/')
 results = []
 for i in blobs:
     results.append(i)
@@ -35,7 +45,7 @@ for i in blobs:
         # adding the 3223350605. so parsing works downstream, should probably change this later
         if os.path.isfile("/home/sat_ops/goes_r/cloud_prod/3223350605." + temname) == False:
             # call the individual file we want
-            goesfile= bucket.get_blob('ABI-L2-CMIPC/'+ str(now.year) + '/' + jday + '/' + str(now.hour) + '/' + temname)
+            goesfile= bucket.get_blob('ABI-L2-CMIPC/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
             # download said file and keep original naming structure
             goesfile.download_to_filename("/home/sat_ops/goes_r/cloud_prod/3223350605." + temname) 
             print "Downloading " + temname
