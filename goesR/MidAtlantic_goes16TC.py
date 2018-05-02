@@ -132,7 +132,16 @@ for n in xrange(0, len(ABI_datetime)):
     if os.path.isfile(C_file) == False:
         C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M4C02_G16_s' + str(ABI_datetime[n]) + '.nc'
         if os.path.isfile(C_file) == False:
-            print "No file exists in data folder"
+                import smtplib
+                dfile=open("/home/sat_ops/goes_r/cloud_prod/noaa_format/udelsatinfo.txt", "r")
+                dw = dfile.readline()
+                server = smtplib.SMTP('smtp.gmail.com', 587)
+                server.starttls()
+                server.login("goessatelliteudel@gmail.com", dw)
+                msg = "MidAtlantic IS BREAKING"
+                server.sendmail("goessatelliteudel@gmail.com", "simkins@udel.edu", msg)
+                server.quit()
+
     
     C = Dataset(C_file, 'r')
     # Load the RGB arrays and apply a gamma correction (square root)
