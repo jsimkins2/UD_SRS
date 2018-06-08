@@ -227,31 +227,39 @@ if len(ABI_datetime) > 0:
                 C = Dataset(C_file, 'r')
                 # Load the RGB arrays and apply a gamma correction (square root)
                 R = C.variables['CMI'][:].data # Band 2 is red (0.64 um)
+                R[R < 0] = np.nan
                 R = np.sqrt(block_mean(R, 2)) # Red band is twice the res of B and G, and 4 times that of IR bands
                 R = block_mean(R, 2)
+                C.close()
                 
+                # GREEN BAND
                 C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C03_G16_s' + str(ABI_datetime[abi]) + '.nc'  # GOES16 East
                 if os.path.isfile(C_file) == False:
                     C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M4C03_G16_s' + str(ABI_datetime[abi]) + '.nc'
                     if os.path.isfile(C_file) == False:
                         print "No file exists in data folder"
-                
                 C = Dataset(C_file, 'r')
                 # Load the RGB arrays and apply a gamma correction (square root)
-                G = np.sqrt(C.variables['CMI'][:].data) # Band 3 is "green" (0.865 um)
-                G = block_mean(G, 2)
+                G = C.variables['CMI'][:].data
+                G[G < 0] = np.nan
+                # Band 3 is "green" (0.865 um)
+                G = np.sqrt(block_mean(G, 2))
+                C.close()
                 
+                # BLUE BAND 
                 C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C01_G16_s' + str(ABI_datetime[abi]) + '.nc'  # GOES16 East
                 if os.path.isfile(C_file) == False:
                     C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M4C01_G16_s' + str(ABI_datetime[abi]) + '.nc'
                     if os.path.isfile(C_file) == False:
                         print "No file exists in data folder"
-                
                 C = Dataset(C_file, 'r')
                 # Load the RGB arrays and apply a gamma correction (square root)
-                B = np.sqrt(C.variables['CMI'][:].data) # Band 1 is blue (0.47 um)
-                B = block_mean(B, 2)
+                B = C.variables['CMI'][:].data # Band 1 is blue (0.47 um)
+                B[B < 0] = np.nan
+                B = np.sqrt(block_mean(B, 2))
+                C.close()
                 
+                # LW BAND
                 C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C13_G16_s' + str(ABI_datetime[abi]) + '.nc'  # GOES16 East
                 if os.path.isfile(C_file) == False:
                     C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M4C13_G16_s' + str(ABI_datetime[abi]) + '.nc'
@@ -385,6 +393,7 @@ if len(ABI_datetime) > 0:
                 output_file = '/home/sat_ops/goes_r/nexrad/' + image_dir + str(ABI_datetime[abi]) + ".png"
                 fig.savefig(output_file, dpi=120, bbox_inches='tight')
                 plt.close()
+                C.close()
             else:
                 plt.figure(figsize=[7, 7])
                 fig, axes = plt.subplots(nrows=1,ncols=1,figsize=(7,7),dpi=120)
