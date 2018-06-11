@@ -50,3 +50,19 @@ for i in blobs:
             goesfile.download_to_filename("/home/sat_ops/goes_r/cloud_prod/3223350605." + temname) 
             print "Downloading " + temname
 
+blobs = bucket.list_blobs(prefix='GLM-L2-LCFA/'+ str(now.year) + '/' + jday + '/' + hourstr + '/')
+results = []
+for i in blobs:
+    results.append(i)
+    for j in results:
+        # parse for the filename we want
+        temname = str(j)[56:-1]
+        print temname
+        # if the file already exists, do NOT download and overwrite it
+        # adding the 3223350605. so parsing works downstream, should probably change this later
+        if os.path.isfile("/home/sat_ops/goes_r/lightning/data/" + temname) == False:
+            # call the individual file we want
+            goesfile= bucket.get_blob('GLM-L2-LCFA/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
+            # download said file and keep original naming structure
+            goesfile.download_to_filename("/home/sat_ops/goes_r/lightning/data/" + temname) 
+            print "Downloading " + temname
