@@ -147,28 +147,28 @@ for (j in seq(-15,15,1)){
   sst.anomnc[sst.anomnc > 5] = 5
   sst.anomnc[sst.anomnc < -5] = -5
   diff[diff > 5] = 5
-  diff[diff < 5] = 5
+  diff[diff < -5] = -5
   var.list <- list()
   var.list <- ncdf4::ncvar_def(name="sst", units="Celsius", missval=-999, longname = "Sea Surface Temperature Anomaly", dim=data_dim)
   #var.list[2] <- ncdf4::ncvar_def(name="chl_oc3", units="mg m^-3", missval=-999, longname = "Chlorophyll Concentration, OC3 Algorithm", dim=data_dim)
   loc.file <- paste0("/data/Aqua/anomaly/SSTanomaly_", outname)
-  
+  #loc.file <- "Downloads/atest.nc"
   #writing all we need to the output file
-  loc <- ncdf4::nc_create(filename=loc.file, vars=var.list)
+  loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, force_v4 = TRUE)
   ncdf4::ncvar_put(nc=loc, "sst", vals=sst.anomnc)
-  ncdf4::ncvar_put(nc=loc, 0, "Conventions", ncatt_get(clim.nc,1,"Conventions")$value)
-  ncdf4::ncvar_put(nc=loc, 0, "creator_name", "James Simkins")
-  ncdf4::ncvar_put(nc=loc, 0, "creator_email", "simkins@udel.edu")
-  ncdf4::ncvar_put(nc=loc, 0, "institution", "University of Delaware Ocean Exploration, Remote Sensing and Biogeography Group (ORB)")
-  ncdf4::ncvar_put(nc=loc, 0, "url", "http://orb.ceoe.udel.edu/")
-  ncdf4::ncvar_put(nc=loc, 0, "source", "satellite observation NASA MODIS-Aqua instrument")
-  ncdf4::ncvar_put(nc=loc, 0, "groundstation", "University of Delaware, Newark, Center for Remote Sensing")
-  ncdf4::ncvar_put(nc=loc, 0, "software", "0.0")
-  ncdf4::ncvar_put(nc=loc, 0, "inputMET1", "0.0")
-  ncdf4::ncvar_put(nc=loc, 0, "inputOZONE1", "0.0")
-  ncdf4::ncvar_put(nc=loc, 0, "inputCalibrationFile", "0.0")
-  ncdf4::ncvar_put(nc=loc, 0, "product_list", "sst")
-  ncdf4::ncvar_put(nc=loc, 0, "summary", "MODIS Aqua 8 day Aggregate Anomaly; Regridded to 
+  ncdf4::ncatt_put(nc=loc, 0, "Conventions", "CF=1.0")
+  ncdf4::ncatt_put(nc=loc, 0,"creator_name", "James Simkins")
+  ncdf4::ncatt_put(nc=loc, 0, "creator_email", "simkins@udel.edu")
+  ncdf4::ncatt_put(nc=loc, 0, "institution", "University of Delaware Ocean Exploration, Remote Sensing and Biogeography Group (ORB)")
+  ncdf4::ncatt_put(nc=loc, 0, "url", "http://orb.ceoe.udel.edu/")
+  ncdf4::ncatt_put(nc=loc, 0, "source", "satellite observation NASA MODIS-Aqua instrument")
+  ncdf4::ncatt_put(nc=loc, 0, "groundstation", "University of Delaware, Newark, Center for Remote Sensing")
+  ncdf4::ncatt_put(nc=loc, 0, "software", "0.0")
+  ncdf4::ncatt_put(nc=loc, 0, "inputMET1", "0.0")
+  ncdf4::ncatt_put(nc=loc, 0, "inputOZONE1", "0.0")
+  ncdf4::ncatt_put(nc=loc, 0, "inputCalibrationFile", "0.0")
+  ncdf4::ncatt_put(nc=loc, 0, "product_list", "sst")
+  ncdf4::ncatt_put(nc=loc, 0, "summary", "MODIS Aqua 8 day Aggregate Anomaly; Regridded to 
                    Mercator lon/lat projection. Processed at the Univeristy of Delaware")
   ncdf4::nc_close(loc)
 
