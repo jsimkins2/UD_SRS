@@ -126,14 +126,14 @@ if len(ABI_datetime) > 0:
         cleanIR = (cleanIR-90)/(313-90)
         
         # Invert colors
-        cleanIR = 1 - cleanIR
+        #cleanIR = 1 - cleanIR
         
-        # Lessen the brightness of the coldest clouds so they don't appear so bright near the day/night line
+        # Lessen the brightness of the ccdoldest clouds so they don't appear so bright near the day/night line
         cleanIR = cleanIR/1.5
-        
+        #cleanIR = np.flipud(cleanIR)
         # numpy d stack it all for the final dataset
         RGB_IR = np.dstack([np.maximum(R, cleanIR), np.maximum(G_true, cleanIR), np.maximum(B, cleanIR)])
-        
+       # RGB_IR = np.flipud(RGB_IR)
         def contrast_correction(color, contrast):
             """
             Modify the contrast of an R, G, or B color channel
@@ -181,11 +181,14 @@ if len(ABI_datetime) > 0:
         # Convert map points to latitude and longitude with the magic provided by Pyproj
         XX, YY = np.meshgrid(X, Y)
         lons, lats = p(XX, YY, inverse=True)
+        lats[np.isnan(R)] = np.nan
+        lons[np.isnan(R)] = np.nan
         xH, yH = mH(lons, lats)
         
         # Create a color tuple for pcolormesh
         rgb = RGB_IR[:,:-1,:] # Using one less column is very imporant, else your image will be scrambled! (This is the stange nature of pcolormesh)
-        rgb = np.minimum(rgb, 1) # Force the maximum possible RGB value to be 1 (the lowest should be 0).
+        rgb = np.minimum(rgb, 1)
+        #rgb = np.flipud(rgb) # Force the maximum possible RGB value to be 1 (the lowest should be 0).
         colorTuple = rgb.reshape((rgb.shape[0] * rgb.shape[1]), 3) # flatten array, becuase that's what pcolormesh wants.
         colorTuple = np.insert(colorTuple, 3, 1.0, axis=1) # adding an alpha channel will plot faster?? according to stackoverflow.
         
@@ -204,7 +207,7 @@ if len(ABI_datetime) > 0:
         # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
         newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
         newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
-        
+        #mH.imshow(np.flipud(RGB_IR))
         mH.drawstates()
         mH.drawcountries()
         mH.drawcoastlines(linewidth=0.7,color='k')

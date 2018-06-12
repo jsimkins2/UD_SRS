@@ -1,5 +1,6 @@
 # script designed for basin.ceoe.udel.edu
 # James Simkins
+# Parts of this script used code develop by Brian Blaylock - https://github.com/blaylockbk/pyBKB_v2  - Thanks Brian!
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
@@ -105,6 +106,7 @@ mH = Basemap(resolution='i', projection='lcc', area_thresh=1500, \
 if len(ABI_datetime) > 0:
     for n in xrange(0, len(ABI_datetime)):
         print n
+        # Below code has been patched together with code created by Brian Blaylock - https://github.com/blaylockbk/pyBKB_v2
         # C is for Conus File OR_ABI-L2-CMIPC-M3C02_G16_s20180601912.nc
         # RED BAND
         C_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR_ABI-L2-CMIPC-M3C02_G16_s' + str(ABI_datetime[n]) + '.nc'  # GOES16 East

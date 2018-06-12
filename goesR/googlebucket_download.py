@@ -60,11 +60,11 @@ for i in blobs:
         print temname
         # if the file already exists, do NOT download and overwrite it
         # adding the 3223350605. so parsing works downstream, should probably change this later
-        if os.path.isfile("/home/sat_ops/goes_r/lightning/data/" + temname) == False:
+        if os.path.isfile("/home/sat_ops/goes_r/lightning/raw_data/" + temname) == False:
             # call the individual file we want
             goesfile= bucket.get_blob('GLM-L2-LCFA/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
             # download said file and keep original naming structure
-            goesfile.download_to_filename("/home/sat_ops/goes_r/lightning/data/" + temname) 
+            goesfile.download_to_filename("/home/sat_ops/goes_r/lightning/raw_data/" + temname) 
             print "Downloading " + temname
             
 blobs = bucket.list_blobs(prefix='ABI-L2-MCMIPC/'+ str(now.year) + '/' + jday + '/' + hourstr + '/')
