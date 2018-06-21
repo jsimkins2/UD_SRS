@@ -237,7 +237,7 @@ for n in xrange(0, len(ABI_datetime)):
     colorTuple[:,3][colorTuple[:,2] < 0.1] = 0.0
     
     # Now we can plot the GOES data on the HRRR map domain and projection
-    plt.figure(figsize=[8, 8])
+    plt.figure(figsize=[8, 8], dpi=100)
     m = mH.pcolormesh(xH, yH, b13, cmap='Greys', vmax=280, vmin=180)
     
     # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
@@ -257,11 +257,11 @@ for n in xrange(0, len(ABI_datetime)):
     im1 = image.imread("/home/sat_ops/goes_r/nexrad/cema38.png")
     im2 = image.imread("/home/sat_ops/goes_r/nexrad/udel38.png")
     #im[:, :, -1] = 0.5
-    plt.figimage(im1, 680, 760, zorder=1)
-    plt.figimage(im2, 13, 760, zorder=1)
+    plt.figimage(im1, 560, 633, zorder=1)
+    plt.figimage(im2, 13, 633, zorder=1)
     # save file
     plt.title('NOAA GOES-16\n%s' % local.strftime('%B %d, %Y %H:%M ') + et)
     output_file = '/home/sat_ops/goes_r/cloud_prod/noaa_format/image_midatlantic/' + str(ABI_datetime[n]) + ".png"
-    plt.savefig(output_file, dpi=120, bbox_inches='tight')
+    plt.savefig(output_file, dpi=100, bbox_inches='tight')
     plt.close()
     C.close()

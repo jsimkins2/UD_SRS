@@ -17,4 +17,4 @@ dur_vals.append(2)
 for i in img_names:
     input_file='/home/sat_ops/goes_r/cloud_prod/noaa_format/image_midatlantic/' + str(i)
     images.append(imageio.imread(input_file))
-imageio.mimsave('/home/sat_ops/goes_r/cloud_prod/noaa_format/MidAtlantic_goes16_TC.gif', images, duration=dur_vals)
+imageio.mimsave('/home/sat_ops/goes_r/cloud_prod/noaa_format/true_color_midatlantic.gif', images, duration=dur_vals)

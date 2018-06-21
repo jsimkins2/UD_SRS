@@ -126,14 +126,14 @@ if len(ABI_datetime) > 0:
         cleanIR = (cleanIR-90)/(313-90)
         
         # Invert colors
-        #cleanIR = 1 - cleanIR
+        cleanIR = 1 - cleanIR
         
-        # Lessen the brightness of the ccdoldest clouds so they don't appear so bright near the day/night line
+        # Lessen the brightness of the coldest clouds so they don't appear so bright near the day/night line
         cleanIR = cleanIR/1.5
         #cleanIR = np.flipud(cleanIR)
         # numpy d stack it all for the final dataset
         RGB_IR = np.dstack([np.maximum(R, cleanIR), np.maximum(G_true, cleanIR), np.maximum(B, cleanIR)])
-       # RGB_IR = np.flipud(RGB_IR)
+        # RGB_IR = np.flipud(RGB_IR)
         def contrast_correction(color, contrast):
             """
             Modify the contrast of an R, G, or B color channel
@@ -148,7 +148,7 @@ if len(ABI_datetime) > 0:
             COLOR = np.maximum(COLOR, 0)
             return COLOR
         
-        # Modify the RGB color contrast:
+        # Modify the RGB color contrast
         contrast = 125
         RGB_contrast = contrast_correction(np.dstack([R, G_true, B]), contrast)
         RGB_contrast_IR = np.dstack([np.maximum(RGB_contrast[:,:,0], cleanIR), np.maximum(RGB_contrast[:,:,1], cleanIR), np.maximum(RGB_contrast[:,:,2], cleanIR)])
@@ -156,7 +156,7 @@ if len(ABI_datetime) > 0:
         
         add_seconds = Cnight.variables['t'][0]
         DATE = datetime(2000, 1, 1, 12) + timedelta(seconds=add_seconds)
-        
+
         
         # Satellite height
         sat_h = Cnight.variables['goes_imager_projection'].perspective_point_height
@@ -186,27 +186,20 @@ if len(ABI_datetime) > 0:
         xH, yH = mH(lons, lats)
         
         # Create a color tuple for pcolormesh
-        rgb = RGB_IR[:,:-1,:] # Using one less column is very imporant, else your image will be scrambled! (This is the stange nature of pcolormesh)
+        rgb = RGB_contrast_IR[:,:-1,:] # Using one less column is very imporant, else your image will be scrambled! (This is the stange nature of pcolormesh)
         rgb = np.minimum(rgb, 1)
         #rgb = np.flipud(rgb) # Force the maximum possible RGB value to be 1 (the lowest should be 0).
-        colorTuple = rgb.reshape((rgb.shape[0] * rgb.shape[1]), 3) # flatten array, becuase that's what pcolormesh wants.
+        colorTuple = rgb.reshape((rgb.shape[0] * rgb.shape[1]),3) # flatten array, becuase that's what pcolormesh wants.
         colorTuple = np.insert(colorTuple, 3, 1.0, axis=1) # adding an alpha channel will plot faster?? according to stackoverflow.
         
-        # adding this additional line here to see if it helps
-        # for some reason this helps
-        colorTuple[colorTuple < 0] = 0
-        colorTuple[colorTuple > 1] = 1
-        # change the alphas to show the b13 below the tc image
-        # colorTuple[:,3][colorTuple[:,2] < 0.3] = 0.3
-        colorTuple[:,3][colorTuple[:,2] < 0.2] = 0.0
-        colorTuple[:,3][colorTuple[:,2] < 0.1] = 0.0
-    
         # Now we can plot the GOES data on the HRRR map domain and projection
-        plt.figure(figsize=[16, 12], dpi=200)
-    
+        plt.figure(figsize=[16, 12], dpi=100)
+        #newmap2 = mH.pcolormesh(xH, yH, cleanIR, cmap='Greys_r')
+        #newmap2.set_array(None)
         # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
         newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
         newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
+        
         #mH.imshow(np.flipud(RGB_IR))
         mH.drawstates()
         mH.drawcountries()

@@ -14,6 +14,7 @@ do
   fi
 done
 
+# remove data that's been sitting for too long
 find /home/sat_ops/goes_r/cloud_prod/noaa_format/data/OR* -type f -mmin +800 -exec rm -f {} \;
 find /home/sat_ops/goes_r/cloud_prod/3* -type f -mmin +800 -exec rm -f {} \;
 find /home/sat_ops/goes_r/lightning/raw_data/OR* -type f -mmin +50 -exec rm -f {} \;
@@ -21,6 +22,7 @@ find /home/sat_ops/goes_r/lightning/polished_data/OR* -type f -mmin +50 -exec rm
 find /home/sat_ops/goes_r/night_scan/raw_data/OR* -type f -mmin +800 -exec rm -f {} \;
 find /home/sat_ops/goes_r/night_scan/polished_data/OR* -type f -mmin +800 -exec rm -f {} \;
 
+# remove images that have been sitting too long
 find /home/sat_ops/goes_r/cloud_prod/noaa_format/image_conus/* -type f -mmin +800 -exec rm -f {} \;
 find /home/sat_ops/goes_r/cloud_prod/noaa_format/image_midatlantic/* -type f -mmin +800 -exec rm -f {} \;
 find /home/sat_ops/goes_r/nexrad/image_kdox_goes/* -type f -mmin +220 -exec rm -f {} \;
@@ -30,7 +32,7 @@ find /home/sat_ops/goes_r/nexrad/data_kdox/* -type f -mmin +220 -exec rm -f {} \
 find /home/sat_ops/goes_r/nexrad/data_kdix/* -type f -mmin +220 -exec rm -f {} \;
 find /home/sat_ops/goes_r/nexrad/data_klwx/* -type f -mmin +220 -exec rm -f {} \;
 
-
+# remove individual band imagery that has been there too long
 find /home/sat_ops/goes_r/ind_bands/conus/band01/* -type f -mmin +220 -exec rm -f {} \;
 find /home/sat_ops/goes_r/ind_bands/conus/band02/* -type f -mmin +220 -exec rm -f {} \;
 find /home/sat_ops/goes_r/ind_bands/conus/band03/* -type f -mmin +220 -exec rm -f {} \;

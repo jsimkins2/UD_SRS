@@ -135,7 +135,7 @@ for Band in abi_no:
         cblabel = "Brightness Temperature [DegC]"
         cpt = loadCPT('/home/sat_ops/goes_r/ind_bands/colortables/' + colorscheme)
         cpt_convert = LinearSegmentedColormap('cpt', cpt) 
-        state_col = 'cyan'
+        state_col = 'black'
     # begin the loop that makes the images
     if len(ABI_datetime) > 0:
         for n in xrange(0, len(ABI_datetime)):
@@ -274,9 +274,11 @@ for Band in abi_no:
             Title = "NOAA GOES-16 ABI-CMI:  " + channel_list[Bandint - 1]
             # Insert the institution name
             Institution = "University of Delaware CEMA"
-            atime = local.strftime('%H:%M ') + et + local.strftime('   %m-%d-%Y') + "       ("+ cblabel + ")"
+            atime = local.strftime('%H:%M ') + et + local.strftime('   %m-%d-%Y')
+            clabeltext =  "("+ cblabel + ")"
             plt.text(1000, 20000,Title,horizontalalignment='left', color = 'white', size=10)
             plt.text(1000,1000,atime, horizontalalignment='left', color = 'yellow', size=10)
+            plt.text(265000,3500,clabeltext, horizontalalignment='left', color = 'gray', size=9)
                         
             # add UDEL, CEMA, and GOES logos
             im1 = image.imread("/home/sat_ops/goes_r/nexrad/combined_logo_small.png")

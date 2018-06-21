@@ -121,7 +121,7 @@ if dst == 0:
 else:
     et = "EST"
 
-seq = [-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1]
+seq = [-10,-9,-8,-7,-6,-5,-4,-3,-2,-1]
 for i in seq:
     # the abi string is not in reverse, so we gotta change this
     #abi = int(i)*-1
@@ -247,12 +247,12 @@ import imageio
 import numpy as np
 images = []
 dur_vals = []
-for i in xrange(1,12):
+for i in xrange(1,len(seq)):
     dur_vals.append(.1)
     
 dur_vals.append(2)
 #print dur_vals
-new_seq = range(1,13)
+new_seq = range(1,len(seq) + 1)
 from collections import OrderedDict
 new_seq = sorted(new_seq, key=int, reverse=True)
 
