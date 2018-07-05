@@ -1,4 +1,5 @@
-# script designed for basin.ceoe.udel.edu
+# This script creates true color imagery for CONUS and Mid Atlantic & Lightning/TC over CONUS and Mid Atlantic
+# 4 different images altogether 
 # James Simkins
 import matplotlib
 matplotlib.use('agg')
@@ -314,7 +315,7 @@ if len(ABI_datetime) > 0:
         im1 = image.imread("/home/sat_ops/goes_r/nexrad/cema38.png")
         im2 = image.imread("/home/sat_ops/goes_r/nexrad/udel38.png")
         #im[:, :, -1] = 0.5
-        plt.figimage(im1, 530, 633, zorder=1)
+        plt.figimage(im1, 535, 633, zorder=1)
         plt.figimage(im2, 13, 633, zorder=1)
         # save file
         output_file = workdir + "img_mid/" + ABI_datetime[n] + ".png"
