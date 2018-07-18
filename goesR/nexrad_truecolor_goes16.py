@@ -67,7 +67,7 @@ cat = TDSCatalog('http://thredds-jumbo.unidata.ucar.edu/thredds/catalog/grib/nex
 
 # run through the last 5 files for now and we'll see whether or not we've already created them or not
 raw_list = []
-raw_list = list(cat.catalog_refs)[-5:-1]
+raw_list = list(cat.catalog_refs)[-5:]
 raw_list.append(str(cat.catalog_refs[-1]))
 
 dataset_list = []
@@ -76,7 +76,7 @@ for r in raw_list:
         dataset_list.append(r)
 
 ######################### Lightning Files #############################
-GLM_files = [f for f in listdir(ltngdir) if isfile(join(ltngdir, f))][-501:-1]
+GLM_files = [f for f in listdir(ltngdir) if isfile(join(ltngdir, f))]
 GLM_names = []
 
 for i in range(0,len(GLM_files)):
@@ -85,7 +85,7 @@ for i in range(0,len(GLM_files)):
     fname = fname[1:]
     GLM_names.append(fname)
 
-lnamelist = sorted(GLM_names, key=int)
+lnamelist = sorted(GLM_names, key=int)[-500:]
 ldatetime = []
 for t in lnamelist:
     jday = t[4:7]
@@ -96,7 +96,7 @@ for t in lnamelist:
     ldatetime.append(datetime.strptime(t, '%Y%m%d%H%M%S'))
 
 ######################### TRUE COLOR GOES16 #############################
-mcmipc_list = [f for f in listdir(datadir) if isfile(join(datadir, f))]
+mcmipc_list = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
 
 gdatetime = []
 for x in mcmipc_list:
@@ -113,7 +113,6 @@ for i in range(0,len(dataset_list)):
     cat = TDSCatalog('http://thredds-jumbo.unidata.ucar.edu/thredds/catalog/grib/nexrad/composite/unidata/NEXRAD_Unidata_Reflectivity-' + \
                   str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/' + dataset_list[i] + '/catalog.xml')
     dataset_name = sorted(cat.datasets.keys())[-1]
-    print dataset_name
     nexrad_name = cat.datasets[dataset_name]
     nexrad = nexrad_name.remote_access()
     if i==0:
@@ -128,11 +127,9 @@ for i in range(0,len(dataset_list)):
     proj_var = nexrad.variables['LambertConformal_Projection']
     time_var = nexrad.variables['time']
     timestamp = num2date(time_var[:].squeeze(), time_var.units)
-    print timestamp[refltime]
 
     ############# Read the goes file ###############
     C_file = mcmipc_list[gdatetime.index(nearest(gdatetime, timestamp[refltime]))]
-    print C_file
     # match the lightning files to the goes files
     tem = C_file.split('s')[1]
     jday = tem[4:7]
@@ -145,7 +142,6 @@ for i in range(0,len(dataset_list)):
     ltng_index = ldatetime.index(nearest(ldatetime, goesdatetime))
     ltng_files = lnamelist[ltng_index - 15: ltng_index]
     
-    print ltng_files
     Cnight = Dataset(datadir + C_file, 'r')
     
     # Load the RGB arrays
@@ -307,12 +303,13 @@ for i in range(0,len(dataset_list)):
         ltng_lat[lt] = L.variables['flash_lat'][:]
         ltng_lon[lt] = L.variables['flash_lon'][:]
     
-    subset = []
+    
     for lt in xrange(0, len(ltng_lat)):
-        llat=36.
-        hlat=43.
-        llon=-80.
-        rlon=-72.
+        subset = []
+        llat=DH.latmin
+        hlat=DH.latmax
+        llon=DH.lonmin
+        rlon=DH.lonmax
         if lt==0:
             midatl_flash_count = 0
         for v in range(0,len(ltng_lat[lt])):
@@ -322,7 +319,6 @@ for i in range(0,len(dataset_list)):
                 subset.append(latval)
         midatl_flash_count = midatl_flash_count + len(subset)
     
-    print midatl_flash_count
     rec_height = 40000
     rec_width = DH.xmax
     
@@ -419,7 +415,7 @@ for i in range(0,len(dataset_list)):
 import imageio
 import numpy as np
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-20:-1]
+img_names = sorted(img_list)[-20:]
 
 imglen = len(img_names)
 images = []
@@ -435,10 +431,10 @@ for i in img_names:
 imageio.mimsave(workdir + 'radar_goes_conus.gif', images, duration=dur_vals)
 
 # now for the midatlantic
-imgdir = "/home/sat_ops/goesR/radar/tcconus/"
+imgdir = "/home/sat_ops/goesR/radar/tcmid/"
 
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-20:-1]
+img_names = sorted(img_list)[-20:]
 
 imglen = len(img_names)
 images = []
@@ -459,7 +455,7 @@ imageio.mimsave(workdir + 'radar_goes_midatlantic.gif', images, duration=dur_val
 imgdir = "/home/sat_ops/goesR/radar/lrgmid/"
 
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-20:-1]
+img_names = sorted(img_list)[-20:]
 
 imglen = len(img_names)
 images = []

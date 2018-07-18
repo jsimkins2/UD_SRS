@@ -74,10 +74,11 @@ DH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
     urcrnrlat=lat0+5,urcrnrlon=lon0+5.5,resolution='h') 
     
 
-mcmipc_list = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))][-30:-1])
+mcmipc_list = [f for f in listdir(datadir) if isfile(join(datadir, f))]
+fnamelist = sorted(mcmipc_list)[-3:]
 
 dataset_list = []
-for r in mcmipc_list:
+for r in fnamelist:
     if os.path.isfile(workdir + 'conus/imgband01/' + r.split('.')[0] + ".png") == False:
         dataset_list.append(r)
         
@@ -120,7 +121,6 @@ if len(dataset_list) > 0:
         for Band in abi_no:
             # Declare initial information for the band we want
             Bandint = int(Band)
-            print Bandint
             if Bandint <= 6:
             # Converts a CPT file to be used in Python
                 cpt_convert = 'Greys_r'
@@ -145,7 +145,6 @@ if len(dataset_list) > 0:
                 # NOAAs color scheme for water vapor
                 wv_cmap = registry.get_colortable('WVCIMSS')
                 state_col = 'black'
-                print "yep it's band water vapor"
             elif Bandint > 10:
                 colorscheme = 'IR4AVHRR6.cpt'
                 v_min = -103
@@ -156,7 +155,6 @@ if len(dataset_list) > 0:
                 state_col = 'black'
             
             # Load the Band Data
-            print 'CMI_C'+ Band
             data = Cnight.variables['CMI_C'+ Band][:].data
             if Bandint <= 6:
                 data[data==-1] = np.nan
@@ -183,8 +181,8 @@ if len(dataset_list) > 0:
     
             if Bandint <= 6:
                 # Insert the colorbar at the bottom
-                cb = mH.colorbar(location='bottom', size = '2%', pad = '-1.95%',  ticks=[20, 40, 60, 80]) 
-                cb.ax.set_xticklabels(['20', '40', '60', '80'], color = 'yellow')
+                cb = mH.colorbar(location='bottom', size = '2%', pad = '-2.15%',  ticks=[20, 40, 60, 80]) 
+                cb.ax.set_xticklabels(['20', '40', '60', '80'], color = 'orangered')
             else:
                 # Insert the colorbar at the bottom
                 cb = mH.colorbar(location='bottom', size = '2%', pad = '-1.95%')
@@ -229,10 +227,9 @@ if len(dataset_list) > 0:
             else:
                 DH.pcolormesh(xD, yD, data, cmap=cpt_convert,vmin = v_min, vmax=v_max)
             
-            print v_min,v_max
             if Bandint <= 6:
                 cb = DH.colorbar(location='bottom', size = '2%', pad = '-1.95%',  ticks=[20, 40, 60, 80]) 
-                cb.ax.set_xticklabels(['20', '40', '60', '80'], color = 'yellow')
+                cb.ax.set_xticklabels(['20', '40', '60', '80'], color = 'orangered')
             else:
                 cb = DH.colorbar(location='bottom', size = '2%', pad = '-1.95%')
             
@@ -268,7 +265,7 @@ if len(dataset_list) > 0:
 for Band in abi_no:
     imgdir = workdir + 'conus/imgband' + Band + '/'
     img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-    img_names = sorted(img_list)[-20:-1]
+    img_names = sorted(img_list)[-20:]
     
     imglen = len(img_names)
     images = []
@@ -282,12 +279,16 @@ for Band in abi_no:
         input_file=imgdir + str(i)
         images.append(imageio.imread(input_file))
     imageio.mimsave(workdir + 'gifs/' + 'Band' + Band + '_conus.gif', images, duration=dur_vals)
-    
-    # now for the midatlantic
-    imgdir = imgdir = workdir + 'midatl/imgband' + Band + '/'
+
+######################## ######################## ######################## 
+# now for the midatlantic
+######################## ######################## ######################## 
+for Band in abi_no:
+
+    imgdir = workdir + 'midatl/imgband' + Band + '/'
     
     img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-    img_names = sorted(img_list)[-20:-1]
+    img_names = sorted(img_list)[-20:]
     
     imglen = len(img_names)
     images = []

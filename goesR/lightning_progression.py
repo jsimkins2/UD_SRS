@@ -21,7 +21,7 @@ import calendar
 from pyproj import Proj     
 from matplotlib.patches import Rectangle
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap # Linear interpolation for color maps
-
+import imageio
 ############# Initial Set Up ##################
 workdir = "/home/sat_ops/goesR/lightning/"
 datadir = "/home/sat_ops/goesR/data/glm/"
@@ -40,7 +40,7 @@ DH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
     llcrnrlat=lat0-4.5,llcrnrlon=lon0-5.5,
     urcrnrlat=lat0+5,urcrnrlon=lon0+5.5,resolution='h') 
 
-GLM_files = [f for f in listdir(datadir) if isfile(join(datadir, f))][-77:-1]
+GLM_files = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])[-76:]
 GLM_names = []
 
 for i in range(0,len(GLM_files)):
@@ -50,13 +50,11 @@ for i in range(0,len(GLM_files)):
     GLM_names.append(fname)
 
 fnamelist = sorted(GLM_names, key=int)
-print len(fnamelist)
 ABI_datetime = []
 for i in fnamelist:    
     if os.path.isfile(workdir + "conus/" + str(i) + ".png") == False:
         ABI_datetime.append(i)
 
-print len(ABI_datetime)
 cmapl = LinearSegmentedColormap.from_list('this', ['darkred','darkred','red', 'red','red', 'orangered', 'orangered' ,'orangered', 'darkorange', 'darkorange', 'darkorange', 'yellow', 'yellow'], N = len(fnamelist)/2)
 
 col_list = []
@@ -69,7 +67,6 @@ for i in range(len(col_u)):
     col_list.append(col_u[i].encode("utf-8"))
 
 col_list = [val for val in col_list for _ in (0, 1)]
-print len(col_list)
 ltng_lat = {}
 ltng_lon = {}
 ltng_date = {}
@@ -94,10 +91,10 @@ if len(ABI_datetime) > 0:
     
     for lt in range(0, 15):
         subset = []
-        llat=36.
-        hlat=43.
-        llon=-80.
-        rlon=-72.
+        llat=DH.latmin
+        hlat=DH.latmax
+        llon=DH.lonmin
+        rlon=DH.lonmax
         if lt==0:
             midatl_flash_count = 0
         custom = lt + len(ltng_lon) - 15
@@ -197,7 +194,7 @@ if len(ABI_datetime) > 0:
 ######################## ######################## ######################## 
 imgdir = '/home/sat_ops/goesR/lightning/conus/'
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-36:-1]
+img_names = sorted(img_list)[-36:]
 
 imglen = len(img_names)
 images = []
@@ -215,7 +212,7 @@ imageio.mimsave(workdir + 'lightning_progression_conus.gif', images, duration=du
 # now for the midatlantic
 imgdir = "/home/sat_ops/goesR/lightning/midatl/"
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-36:-1]
+img_names = sorted(img_list)[-36:]
 
 imglen = len(img_names)
 images = []

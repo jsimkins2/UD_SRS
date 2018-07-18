@@ -63,7 +63,7 @@ lon0 = loc[1] ; lat0 = loc[0]
 
 
 # create a logfile with most recent files created in the shell script
-file_names = [f for f in listdir(datadir) if isfile(join(datadir, f))][-30:-1]
+file_names = [f for f in listdir(datadir) if isfile(join(datadir, f))]
 
 fnamelist = []
 for i in range(0,len(file_names)):
@@ -72,8 +72,8 @@ for i in range(0,len(file_names)):
     fname = fname[1:]
     fnamelist.append(fname)
 
-fnamelist = sorted(fnamelist, key=int)
-GLM_files = [f for f in listdir(ltngdir) if isfile(join(ltngdir, f))][-501:-1]
+fnamelist = sorted(fnamelist, key=int)[-3:]
+GLM_files = [f for f in listdir(ltngdir) if isfile(join(ltngdir, f))]
 GLM_names = []
 
 for i in range(0,len(GLM_files)):
@@ -82,7 +82,7 @@ for i in range(0,len(GLM_files)):
     fname = fname[1:]
     GLM_names.append(fname)
 
-lnamelist = sorted(GLM_names, key=int)
+lnamelist = sorted(GLM_names, key=int)[-501:]
 # sort through the files and make sure that they don't exist before we process them
 
 ABI_datetime = []
@@ -100,7 +100,6 @@ for t in lnamelist:
     t = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
     ldatetime.append(datetime.strptime(t, '%Y%m%d%H%M%S'))
 
-
 # Make a new map object for the HRRR model domain map projection
 mH = Basemap(resolution='i', projection='lcc', area_thresh=1500, \
             width=1800*3000, height=1060*3100, \
@@ -114,7 +113,7 @@ DH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
 
 # begin the loop that makes the images
 if len(ABI_datetime) > 0:
-    for n in xrange(0, len(ABI_datetime)):
+    for n in range(0, len(ABI_datetime)):
         t = ABI_datetime[n]
         jday = t[4:7]
         year = t[0:4]
@@ -122,11 +121,9 @@ if len(ABI_datetime) > 0:
         hms = t[7:13]
         mdy_str = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
         gdatetime=datetime.strptime(mdy_str, '%Y%m%d%H%M%S')
-        
         ltng_index = ldatetime.index(nearest(ldatetime, gdatetime))
         ltng_files = lnamelist[ltng_index - 15: ltng_index]
-        # C is for Conus File OR_ABI-L2-CMIPC-M3C02_G16_s20180601912.nc
-        # RED BAND
+        
         C_file = datadir + 'OR_ABI-L2-MCMIPC-M3_G16_s' + str(ABI_datetime[n]) + '.nc'  # GOES16 East
         if os.path.isfile(C_file) == False:
             C_file = datadir + 'OR_ABI-L2-MCMIPC-M4_G16_s' + str(ABI_datetime[n]) + '.nc'
@@ -195,17 +192,18 @@ if len(ABI_datetime) > 0:
             ltng_lat[lt] = L.variables['flash_lat'][:]
             ltng_lon[lt] = L.variables['flash_lon'][:]
         
-        for lt in xrange(0, len(ltng_lat)):
+        for lt in range(0, len(ltng_lat)):
             if lt==0:
                 conus_flash_count = 0
             ylt = len(ltng_lat[lt])
             conus_flash_count = conus_flash_count + ylt
-        subset = []
-        for lt in xrange(0, len(ltng_lat)):
-            llat=36.
-            hlat=43.
-            llon=-80.
-            rlon=-72.
+
+        for lt in range(0, len(ltng_lat)):
+            subset = []
+            llat=DH.latmin
+            hlat=DH.latmax
+            llon=DH.lonmin
+            rlon=DH.lonmax
             if lt==0:
                 midatl_flash_count = 0
             for v in range(0,len(ltng_lat[lt])):
@@ -394,7 +392,7 @@ import imageio
 import numpy as np
 imgdir = '/home/sat_ops/goesR/truecolor/img_conus/'
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-72:-1]
+img_names = sorted(img_list)[-72:]
 
 imglen = len(img_names)
 images = []
@@ -412,7 +410,7 @@ imageio.mimsave(workdir + 'truecolor_conus.gif', images, duration=dur_vals)
 # now for the midatlantic
 imgdir = '/home/sat_ops/goesR/truecolor/img_mid/'
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-72:-1]
+img_names = sorted(img_list)[-72:]
 
 imglen = len(img_names)
 images = []
@@ -431,7 +429,7 @@ imageio.mimsave(workdir + 'truecolor_midatlantic.gif', images, duration=dur_vals
 ######################## ######################## ######################## 
 imgdir = '/home/sat_ops/goesR/truecolor/ltng_conus/'
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-72:-1]
+img_names = sorted(img_list)[-72:]
 
 imglen = len(img_names)
 images = []
@@ -449,7 +447,7 @@ imageio.mimsave(workdir + 'lightning_truecolor_conus.gif', images, duration=dur_
 # now for the midatlantic
 imgdir = "/home/sat_ops/goesR/truecolor/ltng_mid/"
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-72:-1]
+img_names = sorted(img_list)[-72:]
 
 imglen = len(img_names)
 images = []

@@ -45,7 +45,7 @@ cat = TDSCatalog('http://thredds-jumbo.unidata.ucar.edu/thredds/catalog/grib/nex
                   str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/catalog.xml')
 # run through the last 5 files for now and we'll see whether or not we've already created them or not
 raw_list = []
-raw_list = list(cat.catalog_refs)[-5:-1]
+raw_list = list(cat.catalog_refs)[-5:]
 raw_list.append(str(cat.catalog_refs[-1]))
     
 dataset_list = []
@@ -67,7 +67,6 @@ for i in range(0,len(dataset_list)):
                       str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/' + dataset_list[i] + '/catalog.xml')
     
     dataset_name = sorted(cat.datasets.keys())[-1]
-    print dataset_name
     dataset = cat.datasets[dataset_name]
     nc = dataset.remote_access()
     
@@ -77,15 +76,13 @@ for i in range(0,len(dataset_list)):
     else:
         refltime = refltime + 1
     
-    print refltime
     geoy = np.array(nc.variables['y'][:]) * 1000.
     geox = np.array(nc.variables['x'][:]) * 1000.
     refl = np.array(nc.variables['Base_reflectivity_surface_layer'][refltime,:,:])
     proj_var = nc.variables['LambertConformal_Projection']
     time_var = nc.variables['time']
     timestamp = num2date(time_var[:].squeeze(), time_var.units)
-    print timestamp[refltime]
-    
+
     timestamp = timestamp[refltime]
     from_zone = tz.gettz('UTC')
     to_zone = tz.gettz('America/New_York')
@@ -139,7 +136,6 @@ for i in range(0,len(dataset_list)):
     
     clabeltext='Reflectivity [dBZ]'
     title = 'NEXRAD II Composite Reflectivity'
-    timestr = local.strftime('%B %d, %Y %H:%M ') + et
     timestr = local.strftime('%Y-%m-%d %H:%M ') + et
     currentAxis = plt.gca()
     currentAxis.add_patch(Rectangle((0, 0), 1000000000, rec_height * 1.3, alpha=1, zorder=3, facecolor='darkslateblue'))
@@ -184,7 +180,6 @@ for i in range(0,len(dataset_list)):
     
     clabeltext='Reflectivity [dBZ]'
     title = 'CEMA Radar Reflectivity'
-    timestr = local.strftime('%B %d, %Y %H:%M ') + et
     timestr = local.strftime('%Y-%m-%d %H:%M ') + et
     currentAxis = plt.gca()
     currentAxis.add_patch(Rectangle((0, 0), kdoxH.xmax, rec_height * 1.8, alpha=1, zorder=3, facecolor='darkslateblue'))
@@ -208,7 +203,7 @@ for i in range(0,len(dataset_list)):
 import imageio
 import numpy as np
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-15:-1]
+img_names = sorted(img_list)[-15:]
 
 imglen = len(img_names)
 images = []
@@ -227,14 +222,14 @@ imageio.mimsave(workdir + 'radar_conus.gif', images, duration=dur_vals)
 ###################################################################
 imgdir = workdir + 'imgkdox/'
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-img_names = sorted(img_list)[-15:-1]
+img_names = sorted(img_list)[-15:]
 
 imglen = len(img_names)
 images = []
 dur_vals = []
 for i in xrange(1,imglen):
     if i != imglen:
-        dur_vals.append(.12)
+        dur_vals.append(.08)
 dur_vals.append(2)
 
 for i in img_names:
