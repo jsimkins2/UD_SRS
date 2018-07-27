@@ -99,8 +99,71 @@ mH.fillcontinents()
 
 
 
-# bbk 
+import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.basemap import Basemap
+from siphon.catalog import TDSCatalog
+from netCDF4 import Dataset, num2date
+import numpy as np
+from pyproj import Proj     
+from datetime import datetime, timedelta
 # Go to the Unidata Thredds Server for the Current Day
+nowdate = datetime.utcnow()
+cat = TDSCatalog('http://thredds-jumbo.unidata.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/' + \
+                  str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/catalog.xml')
+# grab sst data
+dataset_name = sorted(cat.datasets.keys())[-1]
+dataset = cat.datasets[dataset_name]
+nc = dataset.remote_access()
+sst = np.array(nc.variables['SST'][:,:])
+sst[np.isnan(sst)] = -1
+sst = np.ma.array(sst)
+sst[sst < 0] = np.ma.masked
+sst= sst*0.00244163 + 180
+
+# grab time/data/projection info
+add_seconds = nc.variables['t'][0]
+DATE = datetime(2000, 1, 1, 12) + timedelta(seconds=int(add_seconds))
+sat_h = nc.variables['goes_imager_projection'].perspective_point_height
+sat_lon = nc.variables['goes_imager_projection'].longitude_of_projection_origin
+sat_sweep = nc.variables['goes_imager_projection'].sweep_angle_axis
+X = nc.variables['x'][:] * sat_h
+Y = nc.variables['y'][:] * sat_h
+XX, YY = np.meshgrid(X, Y)
+
+p = Proj(proj='geos', h=sat_h, lon_0=sat_lon, sweep=sat_sweep)
+lons, lats = p(XX, YY, inverse=True)
+
+lats[np.isnan(sst)] = np.nan
+lons[np.isnan(sst)] = np.nan
+xH, yH = mH(lons, lats)
+# Plot on the HRRR domain to test
+mH = Basemap(resolution='i', projection='lcc', \
+            width=1800*3000, height=1060*3000, \
+            lat_1=38.5, lat_2=38.5, \
+            lat_0=38.5, lon_0=-97.5)
+
+plt.figure(figsize=[16, 12], dpi=100)
+mH.pcolormesh(xH, yH,sst, latlon=True,
+              cmap='jet',
+              vmax=80, vmin=0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 nowdate = datetime.utcnow()
 cat = TDSCatalog('http://thredds-jumbo.unidata.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/' + \
                   str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/catalog.xml')
@@ -116,63 +179,13 @@ sst[np.isnan(sst)] = -1
 sst = np.ma.array(sst)
 sst[sst < 0] = np.ma.masked
 
-    
-    
 add_seconds = nc.variables['t'][0]
 DATE = datetime(2000, 1, 1, 12) + timedelta(seconds=int(add_seconds))
 sat_h = nc.variables['goes_imager_projection'].perspective_point_height
 sat_lon = nc.variables['goes_imager_projection'].longitude_of_projection_origin
 sat_sweep = nc.variables['goes_imager_projection'].sweep_angle_axis
-X = nc.variables['x'][:] * sat_h
-Y = nc.variables['y'][:] * sat_h
-
-mF = Basemap(projection='geos', lon_0='-89.5',
-            llcrnrx=X.min(),llcrnry=Y.min(),
-            urcrnrx=X.max(),urcrnry=Y.max())
-
-XX, YY = np.meshgrid(X, Y)
-
-p = Proj(proj='geos', h=sat_h, lon_0=sat_lon, sweep=sat_sweep)
-lons, lats = p(XX, YY, inverse=True)
-
-lats[np.isnan(sst)] = np.nan
-lons[np.isnan(sst)] = np.nan
-
-mH = Basemap(resolution='i', projection='lcc', \
-            width=1800*3000, height=1060*3000, \
-            lat_1=38.5, lat_2=38.5, \
-            lat_0=38.5, lon_0=-97.5)
-
-plt.figure(figsize=[16, 12], dpi=100)
-
-# Plot the HRRR reflectivity
-mH.pcolormesh(lons, lats,sst, latlon=True,
-              cmap='jet',
-              vmax=80, vmin=0)
-mH.fillcontinents()
-
-plt.figure(figsize=[10, 8])
-mF.imshow(np.flipud(sst)) # Remember, "images" are upside down, so flip up/down
-mF.drawcoastlines()
-mF.drawcountries()
-mF.fillcontinents()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+X = nc.variables['x'][:] #* sat_h
+Y = nc.variables['y'][:] #* sat_h
 sst2 = sst
 
 # have to add offset and scale factor 
@@ -181,26 +194,16 @@ sst2 = sst*0.00244163 + 180
 X = nc.variables['x'][:] * sat_h
 Y = nc.variables['y'][:] * sat_h
 XX, YY = np.meshgrid(X, Y)
-p = Proj(proj='geos', h=sat_h, lon_0=sat_lon, sweep=sat_sweep)
-lons, lats = p(XX, YY, inverse=True)
-lats[np.isnan(sst)] = np.nan
-lons[np.isnan(sst)] = np.nan
-
-m = Basemap(projection='mill', llcrnrlon=-120, urcrnrlon=0, llcrnrlat=0, urcrnrlat=60, resolution='c')
-
-xH, yH = m(lons, lats)
-
-fig = plt.figure()
-cs = m.pcolormesh(xH, yH, sst2, shading='flat', cmap=plt.cm.jet)
-m.drawcoastlines(linewidth=0.1)
-m.fillcontinents(color='None')
-m.drawmapboundary(fill_color='None')
-
-cbar = m.colorbar(cs)
-plt.show()
 
 
-
-
-
-
+H = nc.variables['goes_imager_projection'].perspective_point_height
+x1 = nc.variables['x_image_bounds'][0] * H
+x2 = nc.variables['x_image_bounds'][1] * H
+y1 = nc.variables['y_image_bounds'][1] * H
+y2 = nc.variables['y_image_bounds'][0] * H 
+ 
+# Print the results
+print("x1 = " + str(x1))
+print("y1 = " + str(y1))
+print("x2 = " + str(x2))
+print("y2 = " + str(y2))
