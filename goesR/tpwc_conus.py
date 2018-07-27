@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from pyproj import Proj
 from matplotlib.patches import Rectangle
 
-####
+##
 ############# Initial Set Up ##################
 workdir = "/home/sat_ops/goesR/tpwc/"
 imgdir = "/home/sat_ops/goesR/tpwc/conus/"
