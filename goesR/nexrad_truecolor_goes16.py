@@ -277,7 +277,7 @@ for i in range(0,len(dataset_list)):
     plt.text(9000, 3200000,title,horizontalalignment='left', color = 'black', size=14)
     
     # add logo
-    im1 = image.imread("/home/sat_ops/goesR/zfolder/combined38transparent.png")
+    im1 = image.imread("/home/sat_ops/goesR/zfolder/combined38.png")
     #im2 = image.imread("/home/sat_ops/goes_r/nexrad/udel38.png")
     #plt.figimage(im1, 1210, 745, zorder=1)
     plt.figimage(im1, 15, 50, zorder=1)
@@ -385,7 +385,7 @@ for i in range(0,len(dataset_list)):
     
     for g in range(0, len(ltng_files) -6):
         group_x, group_y = DH(ltng_lon[g], ltng_lat[g])
-        DH.scatter(group_x, group_y, s=10, marker="D", c='white', edgecolor='black', lw=1.2)
+        DH.scatter(group_x, group_y, s=11, marker="D", c='white', edgecolor='black', lw=1.2)
     
     clabeltext='Reflectivity [dBZ]                                                                                                  Flash Count=' + str(midatl_flash_count)
     title = 'NOAA GOES-16 & NEXRAD II Reflectivity'
@@ -462,7 +462,7 @@ images = []
 dur_vals = []
 for i in xrange(1,imglen):
     if i != imglen:
-        dur_vals.append(.11)
+        dur_vals.append(.07)
 dur_vals.append(2)
 
 for i in img_names:

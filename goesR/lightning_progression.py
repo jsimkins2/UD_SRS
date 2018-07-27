@@ -76,8 +76,8 @@ if len(ABI_datetime) > 0:
     for n in range(0, len(fnamelist)):
         C_file = datadir + 'OR_GLM-L2-LCFA_G16_s' + str(fnamelist[n]) + '.nc'  # GOES16 East
         C = Dataset(C_file, 'r')
-        ltng_lat[n] = C.variables['group_lat'][:]
-        ltng_lon[n] = C.variables['group_lon'][:]
+        ltng_lat[n] = C.variables['flash_lat'][:]
+        ltng_lon[n] = C.variables['flash_lon'][:]
         add_seconds = C.time_coverage_start
         add_seconds = add_seconds.encode('ascii', 'ignore')
         ltng_date[n] = datetime.strptime(add_seconds, '%Y-%m-%dT%H:%M:%S.0Z')
@@ -138,7 +138,7 @@ if len(ABI_datetime) > 0:
     #group_x, group_y = mH(group_lon, group_lat)
     for g in range(0, len(ltng_lat)):
         group_x, group_y = mH(ltng_lon[g], ltng_lat[g])
-        mH.scatter(group_x, group_y, s=6, marker=symbol, c=col_list[g], zorder=3, edgecolor=col_list[g], lw=0)
+        mH.scatter(group_x, group_y, s=10, marker=symbol, c=col_list[g], zorder=3, edgecolor=col_list[g], lw=0)
     
     title = 'NOAA GOES-16 Lightning Progression'
     timestr = local.strftime('%Y-%m-%d %H:%M ') + et
@@ -173,7 +173,7 @@ if len(ABI_datetime) > 0:
     symbol = u'$\u26A1$'
     for g in range(0, len(ltng_lat)):
         group_x, group_y = DH(ltng_lon[g], ltng_lat[g])
-        DH.scatter(group_x, group_y, s=6, marker=symbol, c=col_list[g], zorder=3, edgecolor=col_list[g], lw=0)
+        DH.scatter(group_x, group_y, s=10, marker=symbol, c=col_list[g], zorder=3, edgecolor=col_list[g], lw=0)
 
     currentAxis = plt.gca()
     currentAxis.add_patch(Rectangle((0, DH.ymax - rec_height), rec_width, rec_height , alpha=1, zorder=3, edgecolor='black',facecolor='white'))

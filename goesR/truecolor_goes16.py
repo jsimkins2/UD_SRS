@@ -281,9 +281,7 @@ if len(ABI_datetime) > 0:
         plt.text(9000, 3200000,title,horizontalalignment='left', color = 'black', size=14)
         
         # add logo
-        im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemagoes38transparent.png")
-        #im2 = image.imread("/home/sat_ops/goes_r/nexrad/udel38.png")
-        #plt.figimage(im1, 1210, 745, zorder=1)
+        im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemagoes38.png")
         plt.figimage(im1, 15, 15, zorder=1)
         
         # save file
@@ -304,7 +302,7 @@ if len(ABI_datetime) > 0:
         #group_x, group_y = mH(group_lon, group_lat)
         for g in range(0, len(ltng_files)):
             group_x, group_y = mH(ltng_lon[g], ltng_lat[g])
-            mH.scatter(group_x, group_y, s=14, marker=symbol, c='yellow', zorder=3, edgecolor='yellow', lw=0)
+            mH.scatter(group_x, group_y, s=18, marker=symbol, c='red', zorder=3, edgecolor='red', lw=0)
         
         currentAxis = plt.gca()
         currentAxis.add_patch(Rectangle((0, mH.ymax - rec_height), rec_width, rec_height , alpha=1, zorder=3, edgecolor='black',facecolor='white'))
@@ -367,7 +365,7 @@ if len(ABI_datetime) > 0:
         #group_x, group_y = mH(group_lon, group_lat)
         for g in range(0, len(ltng_files)):
             group_x, group_y = DH(ltng_lon[g], ltng_lat[g])
-            DH.scatter(group_x, group_y, s=14, marker=symbol, c='yellow', zorder=3, edgecolor='yellow', lw=0)
+            DH.scatter(group_x, group_y, s=18, marker=symbol, c='red', zorder=3, edgecolor='red', lw=0)
 
         currentAxis = plt.gca()
         currentAxis.add_patch(Rectangle((0, DH.ymax - rec_height), rec_width, rec_height , alpha=1, zorder=3, edgecolor='black',facecolor='white'))
