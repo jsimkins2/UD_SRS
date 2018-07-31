@@ -26,7 +26,7 @@ workdir = "/home/sat_ops/goesR/radar/"
 site = 'KDOX'
 
 ###!!!!!!!!!!! USING KDIX BECAUSE KDOX SUCKS !!!!!!!!!!!!!!!!!#
-site = 'KDIX'
+#site = 'KDIX'
 ############## Import Functions for Steiner Smith Algorithm ############## Thanks to Jure Zbontar for python-ing these 
 ##### https://github.com/jzbontar/steiner_smith/blob/master/steiner_smith.py #####
 import numpy as np
@@ -56,7 +56,6 @@ def steiner_smith(radar, refl_thresh=5, spin_thresh_a=8, spin_thresh_b=40, spin_
     src = np.column_stack((x2.ravel(), y2.ravel()))
     trg = np.column_stack((x0.ravel(), y0.ravel()))
     data2 = ipol_nearest(src, trg, data2.ravel()).reshape(data0.shape)
-
     spin_thresh = (spin_thresh_a - (data0.filled(0) - spin_thresh_b) / spin_thresh_c) * 0.01
     zpixel = data0.filled(0) >= refl_thresh
     echotop = data2.filled(0) >= refl_thresh
@@ -64,7 +63,6 @@ def steiner_smith(radar, refl_thresh=5, spin_thresh_a=8, spin_thresh_b=40, spin_
     spinchange = compute_spinchange(data0.filled(0)) >= spin_thresh
     elevation_diff = np.median(radar.get_elevation(2)) - np.median(radar.get_elevation(0))
     vertgrad = np.abs(data0 - data2).filled(0) > grad_thresh * elevation_diff
-
     r1 = ~zpixel
     r2 =  zpixel & ~echotop
     r3 =  zpixel &  echotop & ~spinchange
