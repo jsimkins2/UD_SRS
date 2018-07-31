@@ -1,5 +1,4 @@
 # This script talks to basin and finds the most recent time we have data for and creates a netCDF3 file with that time and the previous 180 days
-
 outPath = ""
 verbose = FALSE
 
