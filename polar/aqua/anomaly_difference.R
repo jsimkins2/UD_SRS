@@ -120,7 +120,7 @@ for (j in seq(-15,15,1)){
   rec_len   <- clim.nc$dim$time$len
 
   sst.c <- ncvar_get(clim.nc, "sst",start = c(1,1,as.numeric(jday)), count = c(clim.nc$dim$lon$len,clim.nc$dim$lat$len,1))
-  #chl.c <- ncvar_get(clim.nc, "chl_oc3",start = c(1,1,as.numeric(jday)), count = c(clim.nc$dim$lon$len,clim.nc$dim$lat$len,1))
+  chl.c <- ncvar_get(clim.nc, "chl_oc3",start = c(1,1,as.numeric(jday)), count = c(clim.nc$dim$lon$len,clim.nc$dim$lat$len,1))
   lon.c <- ncvar_get(clim.nc, "lon")
   lat.c <- ncvar_get(clim.nc, "lat")
   nc_close(clim.nc)
@@ -135,27 +135,19 @@ for (j in seq(-15,15,1)){
   
   # compute the difference and plot
   diff = aqua.raster - clim.raster
-  
-  
   # write anomalies to a netcdf file
-  outname = substr(fname, 2, 90)
-  sst.anomnc = sst - sst.c #ncvar_get(anomnc, "SST")
-  
-  # normalizing the anomaly, this is subject to change but from here on out if we are going to do any movies or anything we need to standardize
-  # the color system. Let's start at 5 degrees Celsius
-  
-  sst.anomnc[sst.anomnc > 5] = 5
-  sst.anomnc[sst.anomnc < -5] = -5
-  diff[diff > 5] = 5
-  diff[diff < -5] = -5
+  outname = substr(fname, 2, nchar(fname))
   var.list <- list()
-  var.list <- ncdf4::ncvar_def(name="sst", units="Celsius", missval=-999, longname = "Sea Surface Temperature Anomaly", dim=data_dim)
-  #var.list[2] <- ncdf4::ncvar_def(name="chl_oc3", units="mg m^-3", missval=-999, longname = "Chlorophyll Concentration, OC3 Algorithm", dim=data_dim)
+  sst.anomnc = sst - sst.c
+  chl.anomnc = chl - chl.c
+  var.list[[1]] <- ncdf4::ncvar_def(name="sst", units="Celsius", missval=-999, longname = "Sea Surface Temperature Anomaly", dim=data_dim)
+  var.list[[2]] <- ncdf4::ncvar_def(name="chl_oc3", units="mg m^-3", missval=-999, longname = "Chlorophyll Concentration, OC3 Algorithm", dim=data_dim)
   loc.file <- paste0("/data/Aqua/anomaly/SSTanomaly_", outname)
   #loc.file <- "Downloads/atest.nc"
   #writing all we need to the output file
-  loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, force_v4 = TRUE)
+  loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, force_v4 = T)
   ncdf4::ncvar_put(nc=loc, "sst", vals=sst.anomnc)
+  ncdf4::ncvar_put(nc=loc, "chl_oc3", vals = chl.anomnc)
   ncdf4::ncatt_put(nc=loc, 0, "Conventions", "CF=1.0")
   ncdf4::ncatt_put(nc=loc, 0,"creator_name", "James Simkins")
   ncdf4::ncatt_put(nc=loc, 0, "creator_email", "simkins@udel.edu")
@@ -174,7 +166,8 @@ for (j in seq(-15,15,1)){
 
 
   ###### PLOTTING ###### 
-  
+  diff[diff > 5] = 5
+  diff[diff < -5] = -5
   #Color palette creation
   color0=c(0,0,100)
   color1=c(5,5,130)
@@ -302,8 +295,8 @@ for (j in seq(-15,15,1)){
   
   # Begin the PNG
   # max pixels = range lat / .00980196 * range lon / .00980196
-  png(filename = "/home/james/anomalies/AquaAtlantic_SST_anomaly.png",width = 8, height = 6, units = "in", res = 200)
-    lp = levelplot(diff, margin = FALSE, maxpixels = 18075029, xlab = "Longitude", ylab = "Latitude", 
+  png(filename = "/home/james/anomalies/AquaAtlantic_SST_anomaly.png",width = 8, height = 6, units = "in", res = 140)
+    lp = levelplot(diff, margin = FALSE, maxpixels = 15075029, xlab = "Longitude", ylab = "Latitude", 
                    main=paste0("MODIS-Aqua 8-Day SST Anomalies ", emn, "/", edom, "/", eyr, "-", mn, "/", dom, "/", yr), cex=2) +
     layer(sp.polygons(usa, fill='gray16')) + layer(sp.polygons(can, fill='gray16')) + layer(sp.polygons(mex, fill='gray16')) + 
     layer(sp.polygons(cub, fill='gray16')) + layer(sp.polygons(pr, fill='gray16')) + layer(sp.polygons(jam, fill='gray16')) + 
