@@ -2,8 +2,8 @@
 # 4 different images altogether 
 # James Simkins
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 mpl.use('agg')
+import matplotlib.pyplot as plt
 from matplotlib import patheffects, ticker
 from matplotlib.patches import Rectangle
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
@@ -20,6 +20,7 @@ import cartopy.io.img_tiles as cimgt
 import cartopy.crs as ccrs
 import metpy
 from metpy.plots import colortables
+import pyart
 
 from dateutil import tz
 import time
@@ -39,7 +40,7 @@ warnings.simplefilter("ignore", category=DeprecationWarning)
 workdir = "/home/sat_ops/web/images/"
 datadir = "/home/sat_ops/goesR/data/mcmipc/"
 ltngdir = "/home/sat_ops/goesR/data/glm/"
-imgdir = "/home/sat_ops/goesR/truecolor/img_conus/"
+imgdir = "/home/sat_ops/web/images/tcconus/"
 site = 'KDOX'
 
 ############## Define Functions that will be used later #########################
@@ -74,8 +75,8 @@ bottomtextheight = 0.212
 toprecx = 0.125
 toprecy = 0.799
 bottomrecx = 0.125
-bottomrecy = 0.205
-
+bottomrecy = 0.19
+symbol = u'$\u26A1$'
 ################ Grab the Lat/Lon of the site we want ####################
 # Note, this is for the regional map
 loc = pyart.io.nexrad_common.get_nexrad_location(site)
@@ -92,7 +93,7 @@ for i in range(0,len(file_names)):
     fname = fname[1:]
     fnamelist.append(fname)
 
-fnamelist = sorted(fnamelist, key=int)[-3:]
+fnamelist = sorted(fnamelist, key=int)[-15:]
 GLM_files = [f for f in listdir(ltngdir) if isfile(join(ltngdir, f))]
 GLM_names = []
 
@@ -201,6 +202,10 @@ if len(ABI_datetime) > 0:
             L = Dataset(L_file, 'r')
             ltng_lat[lt] = L.variables['flash_lat'][:]
             ltng_lon[lt] = L.variables['flash_lon'][:]
+            if lt==0:
+                ltngxr = xr.open_dataset(L_file)
+                ltngxr = ltngxr.metpy.parse_cf("flash_energy")
+                ltngproj = ltngxr.metpy.cartopy_crs
         
         for lt in range(0, len(ltng_lat)):
             if lt==0:
@@ -238,7 +243,7 @@ if len(ABI_datetime) > 0:
         dat = Cnight2.metpy.parse_cf("CMI_C01")
         proj = dat.metpy.cartopy_crs
         newproj = ccrs.Mercator()
-        
+
         # Figure out the time
         ymd = Cnight2.time_coverage_end.split("T")[0]
         hms = Cnight2.time_coverage_end.split("T")[1][:-3]
@@ -291,7 +296,7 @@ if len(ABI_datetime) > 0:
         ax.background_patch.set_visible(False)
         output_file = workdir + "tcconus/" + ABI_datetime[n] + ".png"
         fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=True)
-        
+        plt.close()
         
         
         
@@ -299,21 +304,21 @@ if len(ABI_datetime) > 0:
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
         for g in range(0, 1):
-            ax.scatter(ltng_lon[g], ltng_lat[g], s=18, marker=symbol, c='red', edgecolor='red', lw=0, transform=proj)
+            ax.scatter(ltng_lon[g], ltng_lat[g], s=18, marker=symbol, c='red', edgecolor='red', lw=0, transform=ltngproj)
         ax.set_extent((-65, -128, 21, 47))
+        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.02,
+                              fill=True, color='black', alpha=1, zorder=1000,
+                              transform=fig.transFigure, figure=fig)])
         title = 'NOAA GOES16 - Powered By CEMA'
         timestr = local.strftime('%Y-%m-%d %H:%M ') + et
         fig.text(toptextright, toptext,timestr,horizontalalignment='left', color = 'white', size=10, zorder=2000)
         fig.text(bottomtextleft, toptext,title,horizontalalignment='left', color = 'white', size=10, zorder=2000)
         
         clabeltext = 'Flash Count=' + str(conus_flash_count)
-        fig.text(bottomtextleft, 0.28,clabeltext,horizontalalignment='left', color = 'white', size=10, zorder=2000)
+        fig.text(.8, 0.225,clabeltext,horizontalalignment='left', color = 'white', size=10, zorder=2000)
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
         output_file = workdir + "ltngconus/" + ABI_datetime[n] + ".png"
         fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=True)
+        plt.close()
 
-
-
-request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/dark_nolabels/{z}/{x}/{y}.png")
-ax.add_image(request, 7, zorder=0, interpolation='none')
