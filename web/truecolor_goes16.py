@@ -63,20 +63,7 @@ def JulianDate_to_MMDDYYY(y,jd):
         month = month + 1
     return month,jd,y
 
-# Define Plotting Locations
-fs_x = 16
-fs_y = 12
-dpi = 100
-toptext = 0.8065
-toptextleft = 0.13
-toptextright = 0.8
-bottomtextleft = 0.13
-bottomtextheight = 0.212
-toprecx = 0.125
-toprecy = 0.799
-bottomrecx = 0.125
-bottomrecy = 0.19
-symbol = u'$\u26A1$'
+
 ################ Grab the Lat/Lon of the site we want ####################
 # Note, this is for the regional map
 loc = pyart.io.nexrad_common.get_nexrad_location(site)
@@ -126,6 +113,7 @@ for t in lnamelist:
 if len(ABI_datetime) > 0:
     for n in range(0, len(ABI_datetime)):
         t = ABI_datetime[n]
+        print(t)
         jday = t[4:7]
         year = t[0:4]
         mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
@@ -264,6 +252,25 @@ if len(ABI_datetime) > 0:
         else:
             et = "EST"
     
+        #######################################################################
+        #######################################################################
+        ####################### CONUS Plotting ################################
+        #######################################################################
+        #######################################################################
+        # Define Plotting Locations
+        fs_x = 16
+        fs_y = 12
+        dpi = 100
+        toptext = 0.794
+        toptextleft = 0.13
+        toptextright = 0.76
+        bottomtextleft = 0.13
+        bottomtextheight = 0.212
+        toprecx = 0.125
+        toprecy = 0.786
+        bottomrecx = 0.125
+        bottomrecy = 0.19
+        symbol = u'$\u26A1$'
         
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
@@ -278,19 +285,15 @@ if len(ABI_datetime) > 0:
                                         edgecolor='black', facecolor='none',linewidth=0.5))
                                         
         # top rectangle
-        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.02,
-                                      fill=True, color='black', alpha=1, zorder=1000,
-                                      transform=fig.transFigure, figure=fig)])
-        # bottom rectangle
-        fig.patches.extend([plt.Rectangle((bottomrecx,bottomrecy),0.7745,0.02,
+        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.025,
                                       fill=True, color='black', alpha=1, zorder=1000,
                                       transform=fig.transFigure, figure=fig)])
         
-        title = 'NOAA GOES16 - Powered By CEMA'
+        title = 'NOAA GOES16 Imagery - Powered By CEMA'
         timestr = local.strftime('%Y-%m-%d %H:%M ') + et
         
-        fig.text(toptextright, toptext,timestr,horizontalalignment='left', color = 'white', size=10, zorder=2000)
-        fig.text(bottomtextleft, toptext,title,horizontalalignment='left', color = 'white', size=10, zorder=2000)
+        fig.text(toptextright, toptext,timestr,horizontalalignment='left', color = 'white', size=14, zorder=2000)
+        fig.text(bottomtextleft, toptext,title,horizontalalignment='left', color = 'white', size=14, zorder=2000)
         
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
@@ -303,22 +306,93 @@ if len(ABI_datetime) > 0:
         # Now plot the conus Lightning
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
-        for g in range(0, 1):
+        for g in range(0, len(ltng_lat)):
             ax.scatter(ltng_lon[g], ltng_lat[g], s=18, marker=symbol, c='red', edgecolor='red', lw=0, transform=ltngproj)
         ax.set_extent((-65, -128, 21, 47))
-        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.02,
+        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.025,
                               fill=True, color='black', alpha=1, zorder=1000,
                               transform=fig.transFigure, figure=fig)])
-        title = 'NOAA GOES16 - Powered By CEMA'
+        title = 'NOAA GOES16 Imagery - Powered By CEMA'
         timestr = local.strftime('%Y-%m-%d %H:%M ') + et
-        fig.text(toptextright, toptext,timestr,horizontalalignment='left', color = 'white', size=10, zorder=2000)
-        fig.text(bottomtextleft, toptext,title,horizontalalignment='left', color = 'white', size=10, zorder=2000)
+        fig.text(toptextright, toptext,timestr,horizontalalignment='left', color = 'white', size=14, zorder=2000)
+        fig.text(bottomtextleft, toptext,title,horizontalalignment='left', color = 'white', size=14, zorder=2000)
         
         clabeltext = 'Flash Count=' + str(conus_flash_count)
-        fig.text(.8, 0.225,clabeltext,horizontalalignment='left', color = 'white', size=10, zorder=2000)
+        fig.text(.25, .25,clabeltext,horizontalalignment='left', color = 'white', size=10, zorder=2000)
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
         output_file = workdir + "ltngconus/" + ABI_datetime[n] + ".png"
+        fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=True)
+        plt.close()
+        
+        #######################################################################
+        #######################################################################
+        ####################### Mid Atlantic ##################################
+        #######################################################################
+        #######################################################################
+        fs_x = 8
+        fs_y = 8
+        dpi = 100
+        toptext = 0.863
+        textleft = 0.137
+        toptextright = 0.69
+        bottomtextleft = 0.13
+        bottomtextheight = 0.212
+        toprecx = 0.1355
+        toprecy = 0.859
+        bottomrecx = 0.125
+        bottomrecy = 0.205
+        
+        fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
+        ax = fig.add_subplot(1,1,1, projection=newproj)
+        im = ax.pcolormesh(dat['x'], dat['y'], R, color=colorTuple, transform=proj)
+        ax.set_extent((-69, -81, 34.5, 44))
+        ax.set_title("")
+        ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
+                                        edgecolor='black', facecolor='none',linewidth=0.5))
+        ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '50m',
+                                        edgecolor='black', facecolor='none',linewidth=0.5))
+        ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '50m',
+                                        edgecolor='black', facecolor='none',linewidth=0.5))
+
+        # top rectangle
+        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7535,0.025,
+                              fill=True, color='black', alpha=1, zorder=1000,
+                              transform=fig.transFigure, figure=fig)])
+        title = 'NOAA GOES16 Imagery - Powered By CEMA'
+        timestr = local.strftime('%Y-%m-%d %H:%M ') + et
+        
+        fig.text(toptextright, toptext,timestr,horizontalalignment='left', color = 'white', size=10, zorder=2000)
+        fig.text(textleft, toptext,title,horizontalalignment='left', color = 'white', size=10, zorder=2000)
+
+        ax.outline_patch.set_visible(False)
+        ax.background_patch.set_visible(False)
+        output_file = workdir + "tcmid/" + ABI_datetime[n] + ".png"
+        fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=True)
+        plt.close()
+        
+        
+        
+        # Now plot the conus Lightning
+        fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
+        ax = fig.add_subplot(1,1,1, projection=newproj)
+        for g in range(0, len(ltng_lat)):
+            ax.scatter(ltng_lon[g], ltng_lat[g], s=18, marker=symbol, c='red', edgecolor='red', lw=0, transform=ltngproj)
+        ax.set_extent((-69, -81, 34.5, 44))
+        # top rectangle
+        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7535,0.02,
+                              fill=True, color='black', alpha=1, zorder=1000,
+                              transform=fig.transFigure, figure=fig)])
+        title = 'NOAA GOES16 Imagery - Powered By CEMA'
+        timestr = local.strftime('%Y-%m-%d %H:%M ') + et
+        fig.text(toptextright, toptext,timestr,horizontalalignment='left', color = 'white', size=10, zorder=2000)
+        fig.text(textleft, toptext,title,horizontalalignment='left', color = 'white', size=10, zorder=2000)
+        
+        clabeltext = 'Flash Count=' + str(midatl_flash_count)
+        fig.text(.1, 0.1,clabeltext,horizontalalignment='left', color = 'white', size=10, zorder=2000)
+        ax.outline_patch.set_visible(False)
+        ax.background_patch.set_visible(False)
+        output_file = workdir + "ltngmid/" + ABI_datetime[n] + ".png"
         fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=True)
         plt.close()
 
