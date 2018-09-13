@@ -124,9 +124,9 @@ def plot_velocity(radar, dataset, imgdir):
     COUNTIES = cfeature.ShapelyFeature(counties, ccrs.PlateCarree())
     
     my_ax.add_feature(COUNTIES, facecolor='none', edgecolor='darkslategray')
-    my_ax.add_feature(political_boundaries, linestyle='-', edgecolor='darkgray', linewidth=0.5)
+    my_ax.add_feature(political_boundaries, linestyle='-', edgecolor='lightgray', linewidth=0.5)
     my_ax.add_feature(states, linestyle='-', edgecolor='lightgray',linewidth=1.5)
-    my_ax.add_feature(coast, linestyle='-', edgecolor='darkgray',linewidth=0.5)
+    my_ax.add_feature(coast, linestyle='-', edgecolor='lightgray',linewidth=0.5)
     #request = cimgt.GoogleTiles(url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png")
     request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png")
 
@@ -232,9 +232,9 @@ def plot_reflectivity(radar, dataset, imgdir):
     COUNTIES = cfeature.ShapelyFeature(counties, ccrs.PlateCarree())
     
     my_ax.add_feature(COUNTIES, facecolor='none', edgecolor='darkslategray')
-    my_ax.add_feature(political_boundaries, linestyle='-', edgecolor='darkslategray', linewidth=1)
+    my_ax.add_feature(political_boundaries, linestyle='-', edgecolor='lightgray', linewidth=1)
     my_ax.add_feature(states, linestyle='-', edgecolor='lightgray',linewidth=1.5)
-    my_ax.add_feature(coast, linestyle='-', edgecolor='darkslategray',linewidth=0.5)
+    my_ax.add_feature(coast, linestyle='-', edgecolor='lightgray',linewidth=0.5)
     
     #request = cimgt.GoogleTiles(url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png")
     request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/dark_nolabels/{z}/{x}/{y}.png")
