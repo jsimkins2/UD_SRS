@@ -69,23 +69,36 @@ for i in blobs:
             
             
 
-'''
-# get a list of the files in folder
-blobs = bucket.list_blobs(prefix='ABI-L2-CMIPC/'+ str(now.year) + '/' + jday + '/' + hourstr + '/')
+
+# get mesoscale stuff
+blobs = bucket.list_blobs(prefix='ABI-L2-MCMIPM/'+ str(now.year) + '/' + jday + '/' + hourstr + '/')
 results = []
 for i in blobs:
     results.append(i)
     for j in results:
         # parse for the filename we want
-        temname = str(j)[57:-1]
-        temname = temname.split("_e")[0] + ".nc"
+        temname = str(j)[58:-1]
         # if the file already exists, do NOT download and overwrite it
         # adding the 3223350605. so parsing works downstream, should probably change this later
-        if os.path.isfile("/home/sat_ops/goesR/data/raw_cmipc/" + temname.split("_e")[0] + ".nc") == False:
+        if os.path.isfile("/home/sat_ops/goesR/data/meso/" + temname.split("_e")[0] + ".nc") == False:
             # call the individual file we want
-            goesfile= bucket.get_blob('ABI-L2-CMIPC/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
+            goesfile= bucket.get_blob('ABI-L2-MCMIPM/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
             # download said file and keep original naming structure
-            goesfile.download_to_filename("/home/sat_ops/goesR/data/cmipc/" + temname.split("_e")[0] + ".nc") 
+            goesfile.download_to_filename("/home/sat_ops/goesR/data/meso/" + temname.split("_e")[0] + ".nc") 
             print "Downloading " + temname
-'''
 
+blobs = bucket.list_blobs(prefix='ABI-L2-MCMIPF/'+ str(now.year) + '/' + jday + '/' + hourstr + '/')
+results = []
+for i in blobs:
+    results.append(i)
+    for j in results:
+        # parse for the filename we want
+        temname = str(j)[58:-1]
+        # if the file already exists, do NOT download and overwrite it
+        # adding the 3223350605. so parsing works downstream, should probably change this later
+        if os.path.isfile("/home/sat_ops/goesR/data/fulldisk/" + temname.split("_e")[0] + ".nc") == False:
+            # call the individual file we want
+            goesfile= bucket.get_blob('ABI-L2-MCMIPF/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
+            # download said file and keep original naming structure
+            goesfile.download_to_filename("/home/sat_ops/goesR/data/fulldisk/" + temname.split("_e")[0] + ".nc") 
+            print "Downloading " + temname
