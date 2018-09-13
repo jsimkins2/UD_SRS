@@ -98,7 +98,7 @@ query = rs.query()
 query.stations('KDOX').time(datetime.utcnow())
 rs.validate_query(query)
 catalog = rs.get_catalog(query)
-data_str = str(catalog.datasets[0]).split('_',)
+data_str = str(catalog.datasets[0]).split('_')
 data_time = datetime.strptime(data_str[2] + data_str[3].split('.')[0], '%Y%m%d%H%M')
 d =  data_time - nowdate
 
