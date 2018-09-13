@@ -154,7 +154,7 @@ def plot_velocity(radar, dataset, imgdir):
     gl.ylabels_left = False
 
     im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemaunidata24.png")
-    plt.figimage(im1, 15, 58.8,zorder=3000)
+    plt.figimage(im1, 15, 58.8,zorder=3000, alpha=0.8)
     #output_file = workdir + 'vel' + site + '/' + str(dataset) + ".png"
     plt.savefig(imgdir + str(dataset) + '.png', dpi=100, bbox_inches='tight')
     plt.close()
@@ -264,7 +264,8 @@ def plot_reflectivity(radar, dataset, imgdir):
     gl.ylabels_left = False
 
     im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemaunidata24.png")
-    plt.figimage(im1, 15, 58.8,zorder=3000)
+    plt.figimage(im1, 15, 58.8,zorder=3000, alpha=0.8)
+
     #output_file = workdir + 'vel' + site + '/' + str(dataset) + ".png"
     plt.savefig(imgdir + str(dataset) + '.png', dpi=100, bbox_inches='tight')
     plt.close()
