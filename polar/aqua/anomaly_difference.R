@@ -53,12 +53,22 @@ for (j in seq(-15,15,1)){
   eyr = year(doi)
   emn = month(as.Date(ejday, origin = paste0(eyr, "-01-01")))
   edom = day(as.Date(ejday, origin = paste0(eyr, "-01-01"))) - 1
-
+  if (ejday == 243){
+    emn = month(as.Date(242, origin = paste0(eyr, "-01-01")))
+  }
+  if (edom == 0){
+    earlymon= ifelse(emn > 9, emn, paste0("0", emn))
+    edom = length(integer(days_in_month(as.Date(paste0(eyr, earlymon, '27'), "%Y%m%d"))))
+  }
+  
   jday = ifelse(ejday + 7 > days.in.year, ejday + 7 - days.in.year, ejday + 7)
   yr = ifelse(jday < 7, year(doi) + 1, year(doi))
   mn = month(as.Date(jday, origin = paste0(yr, "-01-01")))
   dom = day(as.Date(jday, origin = paste0(yr, "-01-01"))) - 1
-
+  if (dom == 0){
+    earlymon= ifelse(emn > 9, emn, paste0("0", emn))
+    dom = length(integer(days_in_month(as.Date(paste0(eyr, earlymon, '27'), "%Y%m%d"))))
+  }
   
   # add 0s where needed to match the filename string
   ejday = ifelse(ejday > 99, ejday, ifelse(ejday > 9, paste0("0", ejday), paste0("00", ejday)))
@@ -73,8 +83,10 @@ for (j in seq(-15,15,1)){
   fname = paste0("/aqua.",eyr, ejday, ".", emn, edom,
                  "-", yr, jday, ".", mn, dom, ".D.L3.modis.NAT.v09.1000m.nc4")
   
+  print(fname)
   # now here is the full file
   aqua.file = paste0("/data/Aqua/8_day/",eyr,fname)
+  print(j)
   if (file.exists(aqua.file) == TRUE){
     # if the file hasn't been processed, place it in logfile so we don't run it again next hour
     if (any(grep(fname, readLines("/home/james/anomalies/logfile.txt"))) == FALSE){
