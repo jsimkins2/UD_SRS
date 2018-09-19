@@ -40,16 +40,7 @@ import cartopy.feature as cfeature
 
 import imageio
 
-# defining sizing for plotting stuff
-toptext = 0.857
-toptextleft = 0.13
-toptextright = 0.7
-bottomtextleft = 0.13
-bottomtextheight = 0.155
-toprecx = 0.125
-toprecy = 0.849
-bottomrecx = 0.125
-bottomrecy = 0.145
+
 
 def plot_velocity(radar, dataset, imgdir):
     print('Plotting dataset: ', dataset)
@@ -126,7 +117,7 @@ def plot_velocity(radar, dataset, imgdir):
     my_ax.add_feature(COUNTIES, facecolor='none', edgecolor='darkslategray')
     my_ax.add_feature(political_boundaries, linestyle='-', edgecolor='lightgray', linewidth=1)
     my_ax.add_feature(states, linestyle='-', edgecolor='lightgray',linewidth=1)
-    my_ax.add_feature(coast, linestyle='-', edgecolor='lightgray',linewidth=0.5)
+    my_ax.add_feature(coast, linestyle='-', edgecolor='lightgray',linewidth=1)
     #request = cimgt.GoogleTiles(url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png")
     request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png")
 
@@ -154,7 +145,7 @@ def plot_velocity(radar, dataset, imgdir):
     gl.ylabels_left = False
 
     im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemaunidata24.png")
-    plt.figimage(im1, 15, 58.8,zorder=3000, alpha=0.8)
+    plt.figimage(im1, 15, logoy,zorder=3000, alpha=0.8)
     #output_file = workdir + 'vel' + site + '/' + str(dataset) + ".png"
     plt.savefig(imgdir + str(dataset) + '.png', dpi=100, bbox_inches='tight')
     plt.close()
@@ -234,7 +225,7 @@ def plot_reflectivity(radar, dataset, imgdir):
     my_ax.add_feature(COUNTIES, facecolor='none', edgecolor='darkslategray')
     my_ax.add_feature(political_boundaries, linestyle='-', edgecolor='lightgray', linewidth=1)
     my_ax.add_feature(states, linestyle='-', edgecolor='lightgray',linewidth=1)
-    my_ax.add_feature(coast, linestyle='-', edgecolor='lightgray',linewidth=0.5)
+    my_ax.add_feature(coast, linestyle='-', edgecolor='lightgray',linewidth=1)
     
     #request = cimgt.GoogleTiles(url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png")
     request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/dark_nolabels/{z}/{x}/{y}.png")
@@ -264,7 +255,7 @@ def plot_reflectivity(radar, dataset, imgdir):
     gl.ylabels_left = False
 
     im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemaunidata24.png")
-    plt.figimage(im1, 15, 58.8,zorder=3000, alpha=0.8)
+    plt.figimage(im1, 15, logoy,zorder=3000, alpha=0.8)
 
     #output_file = workdir + 'vel' + site + '/' + str(dataset) + ".png"
     plt.savefig(imgdir + str(dataset) + '.png', dpi=100, bbox_inches='tight')
@@ -323,6 +314,30 @@ except IndexError:
         dataset = list(catalog.datasets.values())[0]
 
 workdir = '/home/sat_ops/goesR/radar/'
+
+# defining sizing for plotting stuff
+if site == 'KDOX':
+    toptext = 0.857
+    toptextleft = 0.13
+    toptextright = 0.7
+    bottomtextleft = 0.13
+    bottomtextheight = 0.152
+    toprecx = 0.125
+    toprecy = 0.849
+    bottomrecx = 0.125
+    bottomrecy = 0.143
+    logoy =  58
+else:
+    toptext = 0.857
+    toptextleft = 0.13
+    toptextright = 0.7
+    bottomtextleft = 0.13
+    bottomtextheight = 0.155
+    toprecx = 0.125
+    toprecy = 0.849
+    bottomrecx = 0.125
+    bottomrecy = 0.145
+    logoy =  58.8
 
 if os.path.isfile(workdir + 'ref' + site + '/' + str(dataset) + ".png") == False:
     # open the radar data
