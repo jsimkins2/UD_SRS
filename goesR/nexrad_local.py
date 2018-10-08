@@ -66,10 +66,10 @@ def plot_velocity(radar, dataset, imgdir):
     
     lats = radar.gate_latitude
     lons = radar.gate_longitude
-    min_lon = lons['data'].min() + 2.5
-    min_lat = lats['data'].min() + 2
-    max_lat = lats['data'].max() - 2
-    max_lon = lons['data'].max() - 2.5
+    min_lon = -78.24357604980469 #lons['data'].min() + 2.5
+    min_lat = 36.69588851928711 #lats['data'].min() + 2
+    max_lat = 40.95521545410156 #lats['data'].max() - 2
+    max_lon = -72.63585662841797 #lons['data'].max() - 2.5
     display = pyart.graph.RadarMapDisplayCartopy(radar)
     lat0 = display.loc[0]
     lon0 = display.loc[1]
@@ -119,7 +119,7 @@ def plot_velocity(radar, dataset, imgdir):
     my_ax.add_feature(states, linestyle='-', edgecolor='lightgray',linewidth=1)
     my_ax.add_feature(coast, linestyle='-', edgecolor='lightgray',linewidth=1)
     #request = cimgt.GoogleTiles(url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png")
-    request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png")
+    request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/dark_nolabels/{z}/{x}/{y}.png")
 
     clabeltext='Radial Velocity [m/s]'
     title = 'CEMA Base Radial Velocity'
@@ -175,10 +175,10 @@ def plot_reflectivity(radar, dataset, imgdir):
     
     lats = radar.gate_latitude
     lons = radar.gate_longitude
-    min_lon = lons['data'].min() + 2.5
-    min_lat = lats['data'].min() + 2
-    max_lat = lats['data'].max() - 2
-    max_lon = lons['data'].max() - 2.5
+    min_lon = -78.24357604980469 #lons['data'].min() + 2.5
+    min_lat = 36.69588851928711 #lats['data'].min() + 2
+    max_lat = 40.95521545410156 #lats['data'].max() - 2
+    max_lon = -72.63585662841797 #lons['data'].max() - 2.5
     display = pyart.graph.RadarMapDisplayCartopy(radar)
     lat0 = display.loc[0]
     lon0 = display.loc[1]
@@ -293,7 +293,7 @@ try:
     dataset = list(catalog.datasets.values())[0]
 except IndexError:
     try:
-        site = 'KDIX'
+        site = 'KLWX'
         cat = TDSCatalog('http://thredds-aws.unidata.ucar.edu/thredds/radarServer/catalog.xml')
         rs = RadarServer(cat.catalog_refs['S3 NEXRAD Level II'].href)
         rs.stations[site]
@@ -303,7 +303,7 @@ except IndexError:
         catalog = rs.get_catalog(query)
         dataset = list(catalog.datasets.values())[0]
     except IndexError:
-        site = 'KLWX'
+        site = 'KDIX'
         cat = TDSCatalog('http://thredds-aws.unidata.ucar.edu/thredds/radarServer/catalog.xml')
         rs = RadarServer(cat.catalog_refs['S3 NEXRAD Level II'].href)
         rs.stations[site]
@@ -316,28 +316,18 @@ except IndexError:
 workdir = '/home/sat_ops/goesR/radar/'
 
 # defining sizing for plotting stuff
-if site == 'KDOX':
-    toptext = 0.857
-    toptextleft = 0.13
-    toptextright = 0.7
-    bottomtextleft = 0.13
-    bottomtextheight = 0.152
-    toprecx = 0.125
-    toprecy = 0.849
-    bottomrecx = 0.125
-    bottomrecy = 0.143
-    logoy =  58
-else:
-    toptext = 0.857
-    toptextleft = 0.13
-    toptextright = 0.7
-    bottomtextleft = 0.13
-    bottomtextheight = 0.155
-    toprecx = 0.125
-    toprecy = 0.849
-    bottomrecx = 0.125
-    bottomrecy = 0.145
-    logoy =  58.8
+
+toptext = 0.857
+toptextleft = 0.13
+toptextright = 0.7
+bottomtextleft = 0.13
+bottomtextheight = 0.155
+toprecx = 0.124
+toprecy = 0.849
+bottomrecx = 0.124
+bottomrecy = 0.145
+logoy =  58.8
+
 
 if os.path.isfile(workdir + 'ref' + site + '/' + str(dataset) + ".png") == False:
     # open the radar data

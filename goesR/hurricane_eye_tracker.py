@@ -50,11 +50,16 @@ def contrast_correction(color, contrast):
     return COLOR
 
 
-Cnight = Dataset("/Users/james/Documents/Delaware/goesR/OR_ABI-L2-MCMIPM1-M3_G16_s20182561413206.nc", 'r')
-Cnight2 = xr.open_dataset("/Users/james/Documents/Delaware/goesR/OR_ABI-L2-MCMIPM1-M3_G16_s20182561413206.nc")
-dat = Cnight2.metpy.parse_cf("CMI_C01")
+#Cnight = Dataset("/Users/leathers/Documents/Delaware/goesR/data/OR_ABI-L2-MCMIPC-M3_G16_s20181711212251_e20181711215024_c20181711215133.nc", 'r')
+#Cnight2 = xr.open_dataset("/Users/leathers/Documents/Delaware/goesR/data/OR_ABI-L2-MCMIPC-M3_G16_s20181711212251_e20181711215024_c20181711215133.nc")
+filename = "Downloads/GOES16_FullDisk_20180914_001530_10.35_6km_0.0S_75.0W.nc4"
+filename = "Downloads/OR_ABI-L2-DSIF-M3_G16_s20182570000305_e20182570011072_c20182570011400.nc"
+Cnight = Dataset(filename, 'r')
+Cnight2 = xr.open_dataset(filename)
+dat = Cnight2.metpy.parse_cf("CAPE")
 proj = dat.metpy.cartopy_crs
 newproj = ccrs.Mercator()
+plat = ccrs.PlateCarree()
 ##### Need to do this by band because I don't think the mcmipc exists on thredds
 # Load the RGB arrays
 R = Cnight.variables['CMI_C02'][:].data
@@ -97,3 +102,35 @@ cleanIR = cleanIR/1.5
 
 contrast = 125
 RGB_contrast = contrast_correction(np.dstack([R, G_true, B]), contrast)
+
+fig = plt.figure(figsize=[12,8])
+ax = fig.add_subplot(1,1,1, projection=plat)
+ax.pcolormesh(dat['x'], dat['y'],dat, transform=proj)
+ax.set_extent((-10, -105, -10, 50))
+ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
+                                edgecolor='black', facecolor='none',linewidth=0.5))
+ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '50m',
+                                edgecolor='black', facecolor='none',linewidth=0.5))
+ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '50m',
+                                edgecolor='black', facecolor='none',linewidth=0.5))
+gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+              linewidth=0.5, color='darkgray', alpha=0.5, linestyle='--')
+
+
+from scipy import ndimage
+
+test = dat.values
+test = np.ma.masked_invalid(test)
+x, y = ndimage.measurements.center_of_mass(test)
+
+from pyproj import Proj, transform
+import pyproj
+p = Proj(proj='geos', h=Cnight2.attrs['satellite_altitude'], lon_0=Cnight2.attrs['satellite_longitude'], sweep='x')
+wgs84=Proj("+init=EPSG:3395")
+
+transform(p, wgs84, x, y)
+
+newproj.transform_point(x,y,src_crs=proj)
+t,r = plat.transform_point(x,y,src_crs=proj)
+
+_x, _y = newproj.transform_point(t,r,src_crs=plat)
