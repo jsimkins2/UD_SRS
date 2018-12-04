@@ -6,6 +6,7 @@ import os
 # open a client 
 client = storage.Client()
 
+# just adding an additional line here for github testing
 # ping the bucket
 bucket = client.get_bucket('gcp-public-data-goes-16')
 # example of pulling from the blob
