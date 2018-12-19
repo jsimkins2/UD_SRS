@@ -24,7 +24,7 @@ from os import listdir
 from os.path import isfile, join
 
 nowdate = datetime.utcnow()
-cat = TDSCatalog('http://thredds-jumbo.unidata.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/' + \
+cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/' + \
                   str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/catalog.xml')
 dataset_name = sorted(cat.datasets.keys())[-1]
 dataset = cat.datasets[dataset_name]

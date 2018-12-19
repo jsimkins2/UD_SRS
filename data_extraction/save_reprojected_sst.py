@@ -122,6 +122,9 @@ for dataset in filenames:
         fname = "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(dataset)
         temp_str = "ncks " + fname + " " + fname + " -L 5 -O"
         os.system(temp_str)
+        
+        flip_lat = "Rscript /home/sat_ops/goesR/data/sst/scripts/flip_lat_sst.R " + fname
+        os.system(flip_lat)
 
     else:
         print('all caught up!')
