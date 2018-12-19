@@ -20,6 +20,8 @@ from time import mktime
 import os.path
 import os
 import numpy as np 
+from os import listdir
+from os.path import isfile, join
 
 nowdate = datetime.utcnow()
 cat = TDSCatalog('http://thredds-jumbo.unidata.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/' + \
@@ -40,6 +42,14 @@ if os.path.isfile("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" 
     
     dat = dat.where(dat > -1)
     dat.values[np.isnan(dat.values)] = -999
+    
+    # Now grab band 15
+    filenames = [f for f in listdir("/home/sat_ops/goesR/data/fulldisk/") if isfile(join("/home/sat_ops/goesR/data/fulldisk/", f))]
+    ds = Dataset("/home/sat_ops/goesR/data/fulldisk/" + filenames[-1])
+    ds = NetCDF4DataStore(ds)
+    ds = xr.open_dataset(ds)
+    d2 = ds
+    dat15 = d2.metpy.parse_cf('CMI_C15')
     
     f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(dataset),'w', format='NETCDF4') #'w' stands for write
     # dimensions
@@ -87,11 +97,17 @@ if os.path.isfile("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" 
     dqf.flag_meanings = d.variables['DQF'].flag_meanings
     dqf.grid_mapping = d.variables['DQF'].grid_mapping
     
+    band15 = f.createVariable('Band15', 'f4', ('time', 'y', 'x'))
+    band15.long_name = dat15.long_name
+    band15.standard_name = dat15.standard_name
+    band15.units = dat15.units
+
     # data 
     x[:] = dat['x'].values
     y[:] = dat['y'].values
     sst[:]= dat.values
     dqf[:]=dat_dqf
+    band15[:]=dat15.values
     time[:] = dat['t'].values
     f.close()
 else:
