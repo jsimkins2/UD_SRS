@@ -59,13 +59,11 @@ if len(dataset_list) > 0:
         
         dataset_name = sorted(cat.datasets.keys())[-1]
         dataset = cat.datasets[dataset_name]
-        nc = dataset.remote_access()
+        nc = dataset.remote_access('OPENDAP')
         
-        if i==0:
-            refltime = len(nc.variables['reftime'][:]) - len(dataset_list) + i
-            refltimelen = len(nc.variables['reftime'][:])
-        else:
-            refltime = refltime + 1
+        # this is a patch as of 1/3/2019, they changed the structure of the ncdf and got rid of reftime...which is good because 
+        # this is a not a forecast product, it's a composite observation product.
+        refltime=0
         
         geoy = np.array(nc.variables['y'][:]) * 1000.
         geox = np.array(nc.variables['x'][:]) * 1000.
@@ -74,7 +72,7 @@ if len(dataset_list) > 0:
         time_var = nc.variables['time']
         timestamp = num2date(time_var[:].squeeze(), time_var.units)
         
-        timestamp = timestamp[refltime]
+        
         from_zone = tz.gettz('UTC')
         to_zone = tz.gettz('America/New_York')
         utc = timestamp.replace(tzinfo=from_zone)
