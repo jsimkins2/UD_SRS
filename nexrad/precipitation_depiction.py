@@ -156,10 +156,10 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     # interval of the HRRR is 1 hour whereas the resolution of the Nexrad data is 5 minutes under precip mode
     nowdate = datetime.utcnow()
     cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km_ANA/latest.xml')
-    dataset_name = sorted(cat.datasets.keys())[-1]
-    print("HRRR dataset name - " + dataset_name)
-    dataset = cat.datasets[dataset_name]
-    ds = dataset.remote_access(service='OPENDAP')
+    dataset_name2 = sorted(cat.datasets.keys())[-1]
+    print("HRRR dataset name - " + dataset_name2)
+    dataset2 = cat.datasets[dataset_name2]
+    ds = dataset2.remote_access(service='OPENDAP')
     ds = NetCDF4DataStore(ds)
     ds = xr.open_dataset(ds)
     
