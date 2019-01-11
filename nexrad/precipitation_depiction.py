@@ -174,14 +174,9 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     wgs84=Proj("+init=EPSG:4326")
     
     # Grab actual values
-    if tempiso[0][0].isobaric2.values==70000. :
-        t850 = tempiso[0][1].values
-        t925 = tempiso[0][2].values
-        tsurf = tempiso[0][3].values
-    else:
-        t850 = tempiso[0][2].values
-        t925 = tempiso[0][3].values
-        tsurf = tempiso[0][4].values
+    t850 = tempiso[0][2].values
+    t925 = tempiso[0][3].values
+    tsurf = tempiso[0][4].values
 
     
     # grab the 1000 to 500 millibar thickness lines
