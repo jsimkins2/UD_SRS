@@ -224,7 +224,7 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     snow = (grid850 < 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     snow = np.ma.masked_array(gref, ~snow) 
 
-    fig=plt.figure(figsize=[8,9], dpi=90)
+    fig=plt.figure(figsize=[8,10], dpi=90)
     ax = plt.subplot(1,1,1, projection=ccrs.Mercator())
     ax.set_extent((min_lon, max_lon, min_lat, max_lat))
     ax.plot(lon0, lat0,color='k', linewidth=4, marker='o', transform=ccrs.PlateCarree())
@@ -272,7 +272,7 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     # plot up the title 
     title = 'CEMA Precipitation Type & 1000-500mb Thickness Lines '
     timestr = local.strftime('%Y-%m-%d %H:%M ') + et
-    plt.title(title + "\n" + timestr, fontsize=18)
+    plt.title(title + "\n" + timestr, fontsize=12)
     
     plt.savefig(imgdir + str(dataset) + '.png', bbox_inches='tight',dpi=90)
     plt.close()
