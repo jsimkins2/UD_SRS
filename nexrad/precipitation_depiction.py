@@ -1,5 +1,9 @@
 # Precipitation Depiction 
 # By James Simkins with assistance from Dan Moore
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
 import matplotlib as mpl
 mpl.use('agg')
 import matplotlib.pyplot as plt
@@ -153,6 +157,7 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     nowdate = datetime.utcnow()
     cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km_ANA/latest.xml')
     dataset_name = sorted(cat.datasets.keys())[-1]
+    print("HRRR dataset name - " + dataset_name)
     dataset = cat.datasets[dataset_name]
     ds = dataset.remote_access(service='OPENDAP')
     ds = NetCDF4DataStore(ds)
@@ -160,6 +165,8 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     
     # Open isobaric temperatures with xarray and then grab lat/lon/projection
     tempiso = ds.metpy.parse_cf('Temperature_isobaric')
+    tempiso[0]
+    tempiso.reftime
     hlats = tempiso['y'][:]
     hlons = tempiso['x'][:]
     hproj = tempiso.metpy.cartopy_crs
