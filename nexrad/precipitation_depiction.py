@@ -224,7 +224,7 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     snow = (grid850 < 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     snow = np.ma.masked_array(gref, ~snow) 
 
-    fig=plt.figure(figsize=[8,10], dpi=90)
+    fig=plt.figure(figsize=[10,10], dpi=90)
     ax = plt.subplot(1,1,1, projection=ccrs.Mercator())
     ax.set_extent((min_lon, max_lon, min_lat, max_lat))
     ax.plot(lon0, lat0,color='k', linewidth=4, marker='o', transform=ccrs.PlateCarree())
@@ -232,6 +232,12 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     im2 = ax.pcolormesh(glon, glat,ice,cmap=cmap_ice, vmin=0, vmax=50,transform = ccrs.PlateCarree())
     im3 = ax.pcolormesh(glon, glat,sleet,cmap=cmap_sleet, vmin=0, vmax=50,transform = ccrs.PlateCarree())
     im4 = ax.pcolormesh(glon, glat,snow,cmap=cmap_snow, vmin=0, vmax=50,transform = ccrs.PlateCarree())
+    
+    # plot up the title 
+    title = 'CEMA Precipitation Type & 1000-500mb Thickness Lines '
+    timestr = local.strftime('%Y-%m-%d %H:%M ') + et
+    plt.title(title + "\n" + timestr, fontsize=12)
+    
     im5 = ax.contour(glon, glat, gridthick,levels=[5450, 5500,5550,5600,5650, 5700,5750, 5800], colors='k',linestyles='--', transform = ccrs.PlateCarree())
     im6 = ax.contour(glon, glat, gridthick,levels = [5200, 5250, 5300, 5350,5400], colors='blue',linestyles='--',linewidths=2, transform = ccrs.PlateCarree())
     # add contour labels
@@ -269,10 +275,7 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '50m',edgecolor='black', facecolor='none',linewidth=1.5))
     ax.add_feature(USCOUNTIES.with_scale('5m'), linewidth=0.5)
     
-    # plot up the title 
-    title = 'CEMA Precipitation Type & 1000-500mb Thickness Lines '
-    timestr = local.strftime('%Y-%m-%d %H:%M ') + et
-    plt.title(title + "\n" + timestr, fontsize=12)
+
     
     plt.savefig(imgdir + str(dataset) + '.png', bbox_inches='tight',dpi=90)
     plt.close()
