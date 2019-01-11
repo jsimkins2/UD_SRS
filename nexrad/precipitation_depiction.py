@@ -1,4 +1,7 @@
+# Precipitation Depiction 
+# By James Simkins with assistance from Dan Moore
 import matplotlib as mpl
+mpl.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib import patheffects, ticker
 from matplotlib.patches import Rectangle
@@ -97,14 +100,9 @@ def create_gif(workdir, imgdir, gifname):
     imageio.mimsave(workdir + gifname, images, duration=dur_vals)
 
 def plot_precipitation_depiction(radar, dataset, imgdir):
-    
-    
-    radar = pyart.io.read_nexrad_cdm(dataset.access_urls['OPENDAP'])
-    
     my_gf = pyart.filters.GateFilter(radar)
     my_gf.exclude_below('reflectivity', 12)
     my_ds_gf = pyart.correct.despeckle_field(radar, 'reflectivity', gatefilter=my_gf)
-    
     
     timestamp = radar.time['units'].split(' ')[-1].split('T')
     timestamp = timestamp[0] + ' ' + timestamp[1][:-1]
@@ -133,7 +131,6 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     lon0 = display.loc[1]
     boundinglat = [min_lat, max_lat]
     boundinglon = [min_lon, max_lon]
-    conv_thresh = 12.0#dBZ
     lons, lats = regrid_to_cartesian(radar, lon0, lat0)
     my_ref = radar.get_field(0, 'reflectivity')
     unmasked = ma.getdata(my_ref)
@@ -219,22 +216,16 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     snow = (grid850 < 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     snow = np.ma.masked_array(gref, ~snow) 
 
-    
-    # Now let's plot it all up!
-    fig = plt.figure(figsize=[11,11])
+    fig=plt.figure(figsize=[11,11], dpi=100)
     ax = plt.subplot(1,1,1, projection=ccrs.Mercator())
     ax.set_extent((min_lon, max_lon, min_lat, max_lat))
-    ax.plot(lon0, lat0,
-             color='k', linewidth=4, marker='o',
-             transform=ccrs.PlateCarree())
+    ax.plot(lon0, lat0,color='k', linewidth=4, marker='o', transform=ccrs.PlateCarree())
     im1 = ax.pcolormesh(glon, glat,rain,cmap=cmap_rain, vmin=0, vmax=50, transform = ccrs.PlateCarree())
     im2 = ax.pcolormesh(glon, glat,ice,cmap=cmap_ice, vmin=0, vmax=50,transform = ccrs.PlateCarree())
     im3 = ax.pcolormesh(glon, glat,sleet,cmap=cmap_sleet, vmin=0, vmax=50,transform = ccrs.PlateCarree())
     im4 = ax.pcolormesh(glon, glat,snow,cmap=cmap_snow, vmin=0, vmax=50,transform = ccrs.PlateCarree())
-    im5 = ax.contour(glon, glat, gridthick,levels=[5450, 5500,5550,5600,5650, 5700,5750, 5800], colors='k',
-                     linestyles='--', transform = ccrs.PlateCarree())
-    im6 = ax.contour(glon, glat, gridthick,levels = [5200, 5250, 5300, 5350,5400],
-                     colors='blue',linestyles='--',linewidths=2, transform = ccrs.PlateCarree())
+    im5 = ax.contour(glon, glat, gridthick,levels=[5450, 5500,5550,5600,5650, 5700,5750, 5800], colors='k',linestyles='--', transform = ccrs.PlateCarree())
+    im6 = ax.contour(glon, glat, gridthick,levels = [5200, 5250, 5300, 5350,5400], colors='blue',linestyles='--',linewidths=2, transform = ccrs.PlateCarree())
     # add contour labels
     plt.clabel(im5, fmt='%1.0f', transform=tempiso.metpy.cartopy_crs)
     plt.clabel(im6,fmt='%1.0f', transform=tempiso.metpy.cartopy_crs)
@@ -265,12 +256,9 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     cb4.set_ticks([0, 10,20, 30, 40, 50])
     
     # plot coasts/states/counties/lakes
-    ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
-                                    edgecolor='black', facecolor='none',linewidth=1.5))
-    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '50m',
-                                    edgecolor='black', facecolor='none',linewidth=1.5))
-    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '50m',
-                                    edgecolor='black', facecolor='none',linewidth=1.5))
+    ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',edgecolor='black', facecolor='none',linewidth=1.5))
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '50m',edgecolor='black', facecolor='none',linewidth=1.5))
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '50m',edgecolor='black', facecolor='none',linewidth=1.5))
     ax.add_feature(USCOUNTIES.with_scale('5m'), linewidth=0.5)
     
     # plot up the title 
@@ -280,7 +268,7 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     
     plt.savefig(imgdir + str(dataset) + '.png', dpi=100, bbox_inches='tight')
     plt.close()
-    
+
 
 
 # try each radar location
@@ -319,7 +307,8 @@ except IndexError:
 
 
 
-workdir = '/home/sat_ops/goesR/radar/'
+workdir = '/home/sat_ops/goesR/radar/prectype/'
+conv_thresh = 12.0 #dBZ
 # create colormaps for each precip type
 cmap_rain = LinearSegmentedColormap.from_list('mycmap', ['palegreen', 'springgreen','darkseagreen','mediumseagreen','seagreen', 'green', 'darkgreen'], N=20)
 cmap_ice = LinearSegmentedColormap.from_list('mycmap', ['lightpink','Pink', 'HotPink', 'deeppink'], N=20)
@@ -328,12 +317,12 @@ cmap_snow = LinearSegmentedColormap.from_list('mycmap', ['powderblue', 'deepskyb
 
 
 
-if os.path.isfile(workdir + 'ref' + site + '/' + str(dataset) + ".png") == False:
+if os.path.isfile(workdir + 'prec' + site + '/' + str(dataset) + ".png") == False:
     # open the radar data
     radar = pyart.io.read_nexrad_cdm(dataset.access_urls['OPENDAP'])
     
     # plot precip depiction
-    imgdir = workdir + 'prectype/' + site + '/'
+    imgdir = workdir + 'prec' + site + '/'
     plot_precipitation_depiction(radar=radar, dataset=dataset, imgdir=imgdir)
     create_gif(workdir=workdir, imgdir=imgdir, gifname="kdox_prectype.gif")
     
