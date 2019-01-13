@@ -115,12 +115,7 @@ DH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
 if len(ABI_datetime) > 0:
     for n in range(0, len(ABI_datetime)):
         t = ABI_datetime[n]
-        jday = t[4:7]
-        year = t[0:4]
-        mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
-        hms = t[7:13]
-        mdy_str = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
-        gdatetime=datetime.strptime(mdy_str, '%Y%m%d%H%M%S')
+        gdatetime=datetime.strptime(t, '%Y%j%H%M%S')
         ltng_index = ldatetime.index(nearest(ldatetime, gdatetime))
         ltng_files = lnamelist[ltng_index - 15: ltng_index]
         
