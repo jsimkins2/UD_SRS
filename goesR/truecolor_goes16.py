@@ -97,8 +97,8 @@ for t in lnamelist:
     year = t[0:4]
     mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
     hms = t[7:13]
-    t = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
-    ldatetime.append(datetime.strptime(t, '%Y%m%d%H%M%S'))
+    t = str(mdy[2]) + jday + hms
+    ldatetime.append(datetime.strptime(t, '%Y%j%H%M%S'))
 
 # Make a new map object for the HRRR model domain map projection
 mH = Basemap(resolution='i', projection='lcc', area_thresh=1500, \
