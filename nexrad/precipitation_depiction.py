@@ -174,9 +174,9 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     wgs84=Proj("+init=EPSG:4326")
     
     # Grab actual values
-    t850 = tempiso[0][2].values
-    t925 = tempiso[0][3].values
-    tsurf = tempiso[0][4].values
+    t850 = tempiso[1][2].values
+    t925 = tempiso[1][3].values
+    tsurf = tempiso[1][4].values
 
     
     # grab the 1000 to 500 millibar thickness lines
@@ -215,13 +215,13 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     gridthick = griddata((rav_lons,rav_lats),rav_thick,(glon,glat),method='linear')
     
     # create a masked array for each precipitation type
-    rain = (gridsurf > 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    rain = (gridsurf > 274.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     rain = np.ma.masked_array(gref, ~rain)
-    ice = (grid850 > 273.15) & (grid925 > 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    ice = (grid850 > 274.15) & (grid925 > 274.15) & (gridsurf < 274.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     ice = np.ma.masked_array(gref, ~ice)
-    sleet = (grid850 > 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    sleet = (grid850 > 274.15) & (grid925 < 274.15) & (gridsurf < 274.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     sleet = np.ma.masked_array(gref, ~sleet)
-    snow = (grid850 < 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    snow = (grid850 < 274.15) & (grid925 < 274.15) & (gridsurf < 274.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     snow = np.ma.masked_array(gref, ~snow) 
 
     fig=plt.figure(figsize=[10,10], dpi=90)
