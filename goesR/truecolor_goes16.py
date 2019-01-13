@@ -114,7 +114,7 @@ DH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
 # begin the loop that makes the images
 if len(ABI_datetime) > 0:
     for n in range(0, len(ABI_datetime)):
-        t = ABI_datetime[n]
+        t = ABI_datetime[n][:-3]
         gdatetime=datetime.strptime(t, '%Y%j%H%M%S')
         ltng_index = ldatetime.index(nearest(ldatetime, gdatetime))
         ltng_files = lnamelist[ltng_index - 15: ltng_index]
