@@ -215,13 +215,13 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     gridthick = griddata((rav_lons,rav_lats),rav_thick,(glon,glat),method='linear')
     
     # create a masked array for each precipitation type
-    rain = (gridsurf > 275.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    rain = (gridsurf > 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     rain = np.ma.masked_array(gref, ~rain)
-    ice = (grid850 > 275.15) & (grid925 > 275.15) & (gridsurf < 275.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    ice = (grid850 > 276.15) & (grid925 > 276.15) & (gridsurf < 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     ice = np.ma.masked_array(gref, ~ice)
-    sleet = (grid850 > 275.15) & (grid925 < 275.15) & (gridsurf < 275.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    sleet = (grid850 > 276.15) & (grid925 < 276.15) & (gridsurf < 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     sleet = np.ma.masked_array(gref, ~sleet)
-    snow = (grid850 < 275.15) & (grid925 < 275.15) & (gridsurf < 275.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    snow = (grid850 < 276.15) & (grid925 < 276.15) & (gridsurf < 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     snow = np.ma.masked_array(gref, ~snow) 
 
     fig=plt.figure(figsize=[10,10], dpi=90)
