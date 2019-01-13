@@ -152,7 +152,7 @@ gref = griddata((rav_lons,rav_lats),rav_ref,(glon,glat),method='linear')
 ########################################################
 # OK NOW WE LOAD IN THE HRRR Dataset
 nowdate = datetime.utcnow()
-cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km_ANA/latest.xml')
+cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km/latest.xml')
 dataset_name = sorted(cat.datasets.keys())[-1]
 dataset = cat.datasets[dataset_name]
 ds = dataset.remote_access(service='OPENDAP')

@@ -5,7 +5,7 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
 import matplotlib as mpl
-mpl.use('agg')
+#mpl.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib import patheffects, ticker
 from matplotlib.patches import Rectangle
@@ -155,7 +155,7 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     # Grab the HRRR dataset which we aren't going to try and grab the most recent one because the temporal 
     # interval of the HRRR is 1 hour whereas the resolution of the Nexrad data is 5 minutes under precip mode
     nowdate = datetime.utcnow()
-    cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km_ANA/latest.xml')
+    cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km/latest.xml')
     dataset_name2 = sorted(cat.datasets.keys())[-1]
     print("HRRR dataset name - " + dataset_name2)
     dataset2 = cat.datasets[dataset_name2]
