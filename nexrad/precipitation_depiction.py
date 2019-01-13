@@ -5,7 +5,7 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
 import matplotlib as mpl
-#mpl.use('agg')
+mpl.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib import patheffects, ticker
 from matplotlib.patches import Rectangle
