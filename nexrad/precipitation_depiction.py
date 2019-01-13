@@ -165,8 +165,6 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     
     # Open isobaric temperatures with xarray and then grab lat/lon/projection
     tempiso = ds.metpy.parse_cf('Temperature_isobaric')
-    tempiso[0]
-    tempiso.reftime
     hlats = tempiso['y'][:]
     hlons = tempiso['x'][:]
     hproj = tempiso.metpy.cartopy_crs
@@ -176,7 +174,8 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     # Grab actual values
     t850 = tempiso[1][2].values
     t925 = tempiso[1][3].values
-    tsurf = tempiso[1][4].values
+    tempsurf = ds.metpy.parse_cf('Temperature_height_above_ground')
+    tsurf = tempsurf[1][0].values
 
     
     # grab the 1000 to 500 millibar thickness lines

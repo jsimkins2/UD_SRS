@@ -160,7 +160,7 @@ ds = NetCDF4DataStore(ds)
 ds = xr.open_dataset(ds)
 
 # parse the temperature at various heights
-tempiso = ds.metpy.parse_cf('Temperature_isobaric')
+tempiso = ds.metpy.parse_cf('Temperature_height_above_ground')
 hlats = tempiso['y'][:]
 hlons = tempiso['x'][:]
 hproj = tempiso.metpy.cartopy_crs
@@ -168,9 +168,10 @@ hproj = Proj(hproj.proj4_init)
 wgs84=Proj("+init=EPSG:4326")
 
 # Grab actual values
-t850 = tempiso[0][2].values
-t925 = tempiso[0][3].values
-tsurf = tempiso[0][4].values
+t850 = tempiso[1][2].values
+t925 = tempiso[1][3].values
+tempsurf = ds.metpy.parse_cf('Temperature_height_above_ground')
+tsurf = tempsurf[1][0].values
 
 # grab the 1000 to 500 millibar thickness lines
 ht1000 = ds.metpy.parse_cf("Geopotential_height_isobaric")[0][3]
