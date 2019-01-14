@@ -210,6 +210,8 @@ if len(dataset_list) > 0:
             # save file
             output_file = workdir + 'conus/imgband' + Band + '/' + n.split('.')[0]
             plt.savefig(output_file, dpi=100, bbox_inches='tight')
+            web_file = '/var/www/html/imagery/static_goes/conus/' + Band + '/' + n.split('.')[0]
+            plt.savefig(web_file, dpi=100, bbox_inches='tight')
             plt.close()
             
             ########################################################################
