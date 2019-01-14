@@ -31,6 +31,7 @@ site = 'KDOX'
 loc = pyart.io.nexrad_common.get_nexrad_location(site)
 lon0 = loc[1] ; lat0 = loc[0]
 ############# Declare Functions ############
+
 def nearest(items, pivot):
     return min(items, key=lambda x: abs(x - pivot))
 
@@ -115,11 +116,7 @@ for i in range(0,len(dataset_list)):
     dataset_name = sorted(cat.datasets.keys())[-1]
     nexrad_name = cat.datasets[dataset_name]
     nexrad = nexrad_name.remote_access()
-    if i==0:
-        refltime = len(nexrad.variables['reftime'][:]) - len(dataset_list) + i
-        refltimelen = len(nexrad.variables['reftime'][:])
-    else:
-        refltime = refltime + 1
+    refltime=0
     
     geoy = np.array(nexrad.variables['y'][:]) * 1000.
     geox = np.array(nexrad.variables['x'][:]) * 1000.
@@ -129,7 +126,7 @@ for i in range(0,len(dataset_list)):
     timestamp = num2date(time_var[:].squeeze(), time_var.units)
 
     ############# Read the goes file ###############
-    C_file = mcmipc_list[gdatetime.index(nearest(gdatetime, timestamp[refltime]))]
+    C_file = mcmipc_list[gdatetime.index(nearest(gdatetime, timestamp))]
     # match the lightning files to the goes files
     tem = C_file.split('s')[1]
     jday = tem[4:7]
@@ -141,6 +138,9 @@ for i in range(0,len(dataset_list)):
     
     ltng_index = ldatetime.index(nearest(ldatetime, goesdatetime))
     ltng_files = lnamelist[ltng_index - 15: ltng_index]
+    if ltng_index ==0:
+        ltng_files = lnamelist[ltng_index - 15:]
+    
     
     Cnight = Dataset(datadir + C_file, 'r')
     
