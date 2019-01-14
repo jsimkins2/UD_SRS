@@ -155,7 +155,7 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     # Grab the HRRR dataset which we aren't going to try and grab the most recent one because the temporal 
     # interval of the HRRR is 1 hour whereas the resolution of the Nexrad data is 5 minutes under precip mode
     nowdate = datetime.utcnow()
-    cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km_ANA/latest.xml')
+    cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km/latest.xml')
     dataset_name2 = sorted(cat.datasets.keys())[-1]
     print("HRRR dataset name - " + dataset_name2)
     dataset2 = cat.datasets[dataset_name2]
@@ -165,8 +165,6 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     
     # Open isobaric temperatures with xarray and then grab lat/lon/projection
     tempiso = ds.metpy.parse_cf('Temperature_isobaric')
-    tempiso[0]
-    tempiso.reftime
     hlats = tempiso['y'][:]
     hlons = tempiso['x'][:]
     hproj = tempiso.metpy.cartopy_crs
@@ -176,7 +174,8 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     # Grab actual values
     t850 = tempiso[1][2].values
     t925 = tempiso[1][3].values
-    tsurf = tempiso[1][4].values
+    tempsurf = ds.metpy.parse_cf('Temperature_height_above_ground')
+    tsurf = tempsurf[1][0].values
 
     
     # grab the 1000 to 500 millibar thickness lines
@@ -215,13 +214,13 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     gridthick = griddata((rav_lons,rav_lats),rav_thick,(glon,glat),method='linear')
     
     # create a masked array for each precipitation type
-    rain = (gridsurf > 274.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    rain = (gridsurf > 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     rain = np.ma.masked_array(gref, ~rain)
-    ice = (grid850 > 274.15) & (grid925 > 274.15) & (gridsurf < 274.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    ice = (grid850 > 276.15) & (grid925 > 276.15) & (gridsurf < 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     ice = np.ma.masked_array(gref, ~ice)
-    sleet = (grid850 > 274.15) & (grid925 < 274.15) & (gridsurf < 274.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    sleet = (grid850 > 276.15) & (grid925 < 276.15) & (gridsurf < 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     sleet = np.ma.masked_array(gref, ~sleet)
-    snow = (grid850 < 274.15) & (grid925 < 274.15) & (gridsurf < 274.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    snow = (grid850 < 276.15) & (grid925 < 276.15) & (gridsurf < 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     snow = np.ma.masked_array(gref, ~snow) 
 
     fig=plt.figure(figsize=[10,10], dpi=90)

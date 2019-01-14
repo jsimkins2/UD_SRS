@@ -97,8 +97,8 @@ for t in lnamelist:
     year = t[0:4]
     mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
     hms = t[7:13]
-    t = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
-    ldatetime.append(datetime.strptime(t, '%Y%m%d%H%M%S'))
+    t = str(mdy[2]) + jday + hms
+    ldatetime.append(datetime.strptime(t, '%Y%j%H%M%S'))
 
 # Make a new map object for the HRRR model domain map projection
 mH = Basemap(resolution='i', projection='lcc', area_thresh=1500, \
@@ -114,13 +114,8 @@ DH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
 # begin the loop that makes the images
 if len(ABI_datetime) > 0:
     for n in range(0, len(ABI_datetime)):
-        t = ABI_datetime[n]
-        jday = t[4:7]
-        year = t[0:4]
-        mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
-        hms = t[7:13]
-        mdy_str = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
-        gdatetime=datetime.strptime(mdy_str, '%Y%m%d%H%M%S')
+        t = ABI_datetime[n][:-3]
+        gdatetime=datetime.strptime(t, '%Y%j%H%M%S')
         ltng_index = ldatetime.index(nearest(ldatetime, gdatetime))
         ltng_files = lnamelist[ltng_index - 15: ltng_index]
         
