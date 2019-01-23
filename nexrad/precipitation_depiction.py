@@ -193,13 +193,13 @@ def plot_precipitation_depiction(radar, dataset, imgdir, hrrrdata):
     gridthick = griddata((rav_lons,rav_lats),rav_thick,(glon,glat),method='linear')
     
     # create a masked array for each precipitation type
-    rain = (gridsurf > 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    rain = (gridsurf > 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     rain = np.ma.masked_array(gref, ~rain)
-    ice = (grid850 > 276.15) & (grid925 > 276.15) & (gridsurf < 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    ice = (grid850 > 273.15) & (grid925 > 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     ice = np.ma.masked_array(gref, ~ice)
-    sleet = (grid850 > 276.15) & (grid925 < 276.15) & (gridsurf < 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    sleet = (grid850 > 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     sleet = np.ma.masked_array(gref, ~sleet)
-    snow = (grid850 < 276.15) & (grid925 < 276.15) & (gridsurf < 276.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    snow = (grid850 < 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     snow = np.ma.masked_array(gref, ~snow) 
 
     fig=plt.figure(figsize=[10,10], dpi=90)
@@ -250,9 +250,9 @@ def plot_precipitation_depiction(radar, dataset, imgdir, hrrrdata):
     # plot coasts/states/counties/lakes
     request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png")
     ax.add_image(request, 7, zorder=0, interpolation='none')
-    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '10m',edgecolor='lightgray', facecolor='none',linewidth=2))
-    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '10m',edgecolor='lightgray', facecolor='none',linewidth=2))
-    ax.add_feature(USCOUNTIES.with_scale('500k'), linewidth=1, edgecolor="darkgray")
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '10m',edgecolor='black', facecolor='none',linewidth=2))
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '10m',edgecolor='black', facecolor='none',linewidth=2))
+    ax.add_feature(USCOUNTIES.with_scale('500k'), linewidth=1, edgecolor="black")
         
     plt.savefig(imgdir + str(dataset) + '.png', bbox_inches='tight',dpi=90)
     plt.close()
