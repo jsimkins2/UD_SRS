@@ -203,7 +203,7 @@ def plot_precipitation_depiction(radar, dataset, imgdir, hrrrdata):
     snow = np.ma.masked_array(gref, ~snow) 
 
     fig=plt.figure(figsize=[10,10], dpi=90)
-    ax = plt.subplot(1,1,1, projection=ccrs.Mercator())
+    ax = plt.subplot(1,1,1, projection=ccrs.PlateCarree())
     ax.set_extent((min_lon, max_lon, min_lat, max_lat))
     ax.plot(lon0, lat0,color='k', linewidth=4, marker='o', transform=ccrs.PlateCarree())
     im1 = ax.pcolormesh(glon, glat,rain,cmap=cmap_rain, vmin=0, vmax=50, transform = ccrs.PlateCarree())
@@ -219,8 +219,8 @@ def plot_precipitation_depiction(radar, dataset, imgdir, hrrrdata):
     im5 = ax.contour(glon, glat, gridthick,levels=[5450, 5500,5550,5600,5650, 5700,5750, 5800], colors='k',linestyles='--', transform = ccrs.PlateCarree())
     im6 = ax.contour(glon, glat, gridthick,levels = [5200, 5250, 5300, 5350,5400], colors='blue',linestyles='--',linewidths=2, transform = ccrs.PlateCarree())
     # add contour labels
-    plt.clabel(im5, fmt='%1.0f', transform=tempiso.metpy.cartopy_crs)
-    plt.clabel(im6,fmt='%1.0f', transform=tempiso.metpy.cartopy_crs)
+    plt.clabel(im5, fmt='%1.0f', transform=ccrs.PlateCarree())
+    plt.clabel(im6,fmt='%1.0f', transform=ccrs.PlateCarree())
     
     # add colorbars
     cbaxes = fig.add_axes([0.93, 0.15, 0.02, 0.15]) 
@@ -248,13 +248,12 @@ def plot_precipitation_depiction(radar, dataset, imgdir, hrrrdata):
     cb4.set_ticks([0, 10,20, 30, 40, 50])
     
     # plot coasts/states/counties/lakes
-    ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',edgecolor='black', facecolor='none',linewidth=1.5))
-    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '50m',edgecolor='black', facecolor='none',linewidth=1.5))
-    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '50m',edgecolor='black', facecolor='none',linewidth=1.5))
-    ax.add_feature(USCOUNTIES.with_scale('5m'), linewidth=0.5)
-    
-
-    
+    request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png")
+    ax.add_image(request, 7, zorder=0, interpolation='none')
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '10m',edgecolor='lightgray', facecolor='none',linewidth=2))
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '10m',edgecolor='lightgray', facecolor='none',linewidth=2))
+    ax.add_feature(USCOUNTIES.with_scale('500k'), linewidth=1, edgecolor="darkgray")
+        
     plt.savefig(imgdir + str(dataset) + '.png', bbox_inches='tight',dpi=90)
     plt.close()
 
