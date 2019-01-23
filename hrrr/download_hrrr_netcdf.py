@@ -93,7 +93,7 @@ if os.path.isfile(datadir + dataset_name[:-5] + 'nc') == False:
     f.close()
     
     # now run the reprojecting script 
-    os.system("Rscript /home/sat_ops/goesR/github/UD_SRS/nexrad/reproject_hrrr.R " + dataset_name[:-5] + 'nc')
+    os.system("Rscript /home/sat_ops/goesR/github/UD_SRS/hrrr/reproject_hrrr.R " + dataset_name[:-5] + 'nc')
 
 
 

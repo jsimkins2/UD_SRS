@@ -32,7 +32,7 @@ filenames = [f for f in listdir(datadir) if isfile(join(datadir, f))]
 for dataset in filenames:
     dataset = dataset[3:]
     if os.path.isfile("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(dataset)) == False:
-        print('saving reprojected file')
+        print(str(dataset))
         d = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + dataset)
         ds = NetCDF4DataStore(d)
         ds = xr.open_dataset(ds)
