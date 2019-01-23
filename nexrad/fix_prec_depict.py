@@ -1,4 +1,21 @@
-# OK NOW WE LOAD IN THE HRRR Dataset
+from siphon.catalog import TDSCatalog
+import xarray as xr
+from xarray.backends import NetCDF4DataStore
+import numpy as np
+import cartopy.crs as ccrs
+from scipy.interpolate import griddata
+import numpy.ma as ma
+from pyproj import Proj, transform
+
+# Declare bounding box
+min_lon = -78
+min_lat = 36
+max_lat = 40
+max_lon = -72
+boundinglat = [min_lat, max_lat]
+boundinglon = [min_lon, max_lon]
+
+# Load the dataset
 nowdate = datetime.utcnow()
 cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km/latest.xml')
 dataset_name = sorted(cat.datasets.keys())[-1]
@@ -7,13 +24,28 @@ ds = dataset.remote_access(service='OPENDAP')
 ds = NetCDF4DataStore(ds)
 ds = xr.open_dataset(ds)
 
-# parse the temperature at various heights
+# parse the temperature at 850 and @ 0z reftime
 tempiso = ds.metpy.parse_cf('Temperature_isobaric')
-hlats = tempiso['y'][:]
-hlons = tempiso['x'][:]
-hproj = tempiso.metpy.cartopy_crs
-hproj = Proj(hproj.proj4_init)
-wgs84=Proj("+init=EPSG:4326")
+t850 = tempiso[0][2]
+
+# transform platecarree points to data projection to translate lat/lon extents to lambert conformal
+src_proj = tempiso.metpy.cartopy_crs
+extents = src_proj.transform_points(ccrs.PlateCarree(), np.array(boundinglon), np.array(boundinglat))
+
+# slice the data using the indexes of the closest values to the lambert conformal extents
+t850_trimmed = tempiso[(np.abs(tempiso.x.values - extents[0][1])).argmin():(np.abs(tempiso.x.values - extents[0][0])).argmin()][(np.abs(tempiso.y.values - extents[1][0])).argmin():(np.abs(tempiso.y.values - extents[1][1])).argmin()]
+
+# now use nplinspace, npmeshgrid & scipy interpolate to reproject
+
+
+
+
+
+
+
+
+
+
 
 
 # Grab actual values

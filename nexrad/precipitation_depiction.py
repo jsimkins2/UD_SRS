@@ -38,6 +38,10 @@ import os.path
 from datetime import datetime, timedelta
 from os import listdir
 from os.path import isfile, join
+import os.path
+import os
+import sys
+
 import calendar
 import imageio
 
@@ -103,7 +107,7 @@ def create_gif(workdir, imgdir, gifname):
         images.append(imageio.imread(input_file))
     imageio.mimsave(workdir + gifname, images, duration=dur_vals)
 
-def plot_precipitation_depiction(radar, dataset, imgdir):
+def plot_precipitation_depiction(radar, dataset, imgdir, hrrrdata):
     my_gf = pyart.filters.GateFilter(radar)
     my_gf.exclude_below('reflectivity', 12)
     my_ds_gf = pyart.correct.despeckle_field(radar, 'reflectivity', gatefilter=my_gf)
@@ -152,45 +156,20 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     # Interpolate data onto grid using linear interpolation
     gref = griddata((rav_lons,rav_lats),rav_ref,(glon,glat),method='linear')
     
-    # Grab the HRRR dataset which we aren't going to try and grab the most recent one because the temporal 
-    # interval of the HRRR is 1 hour whereas the resolution of the Nexrad data is 5 minutes under precip mode
-    nowdate = datetime.utcnow()
-    cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km/latest.xml')
-    dataset_name2 = sorted(cat.datasets.keys())[-1]
-    print("HRRR dataset name - " + dataset_name2)
-    dataset2 = cat.datasets[dataset_name2]
-    ds = dataset2.remote_access(service='OPENDAP')
-    ds = NetCDF4DataStore(ds)
-    ds = xr.open_dataset(ds)
-    
-    # Open isobaric temperatures with xarray and then grab lat/lon/projection
-    tempiso = ds.metpy.parse_cf('Temperature_isobaric')
-    hlats = tempiso['y'][:]
-    hlons = tempiso['x'][:]
-    hproj = tempiso.metpy.cartopy_crs
-    hproj = Proj(hproj.proj4_init)
-    wgs84=Proj("+init=EPSG:4326")
-    
-    # Grab actual values
-    t850 = tempiso[1][2].values
-    t925 = tempiso[1][3].values
-    tempsurf = ds.metpy.parse_cf('Temperature_height_above_ground')
-    tsurf = tempsurf[1][0].values
-
-    
-    # grab the 1000 to 500 millibar thickness lines
-    ht1000 = ds.metpy.parse_cf("Geopotential_height_isobaric")[0][3]
-    ht500 = ds.metpy.parse_cf("Geopotential_height_isobaric")[0][0]
+    ds = xr.open_dataset(hrrrdata)
+    # parse the temperature at various heights
+    tsurf = ds.metpy.parse_cf('temperature_surface')
+    t850 = ds.metpy.parse_cf('temperature_850')
+    t925 = ds.metpy.parse_cf('temperature_925')
+    ht1000 = ds.metpy.parse_cf("height_1000")
+    ht500 = ds.metpy.parse_cf("height_500")
     thick = ht500 - ht1000
     
-    # create empty lat and lon arrays so that they are same size so we can transform projection using Pyproj
-    ignore_lat = [0] * len(hlons.values)
-    ignore_lon =  [0] * len(hlats.values)
-    ignore_lons, hrrrlats = transform(hproj, wgs84,ignore_lon, hlats.values)
-    hrrrlons, ignore_lats  = transform(hproj, wgs84,hlons.values, ignore_lat)
+    hproj = ccrs.Geodetic()
+    hproj = Proj(hproj.proj4_init)
     
     # trim the data to save space
-    lons, lats = np.meshgrid(hrrrlons, hrrrlats)
+    lons, lats = np.meshgrid(tsurf['longitude'], tsurf['latitude'])
     hrrr_t850 = trim_data(lats, lons, ma.getdata(t850), boundinglat, boundinglon)
     hrrr_t925 = trim_data(lats, lons, ma.getdata(t925), boundinglat, boundinglon)
     hrrr_tsurf = trim_data(lats, lons, ma.getdata(tsurf), boundinglat, boundinglon)
@@ -316,7 +295,6 @@ except IndexError:
 
 
 
-
 workdir = '/home/sat_ops/goesR/radar/prectype/'
 conv_thresh = 12.0 #dBZ
 # create colormaps for each precip type
@@ -325,14 +303,15 @@ cmap_ice = LinearSegmentedColormap.from_list('mycmap', ['lightpink','Pink', 'Hot
 cmap_sleet = LinearSegmentedColormap.from_list('mycmap', ['Lavender', 'Violet', 'DarkViolet', 'purple'], N=20)
 cmap_snow = LinearSegmentedColormap.from_list('mycmap', ['powderblue', 'deepskyblue', 'dodgerblue', 'blue', 'mediumblue','midnightblue'],N=20)
 
-
-
+datadir = "/home/sat_ops/goesR/radar/prectype/hrrr_temp/"
+filenames = [f for f in listdir(datadir) if isfile(join(datadir, f))]
+hrrrdata = datadir + ''.join(([f for f in filenames if f[0:4]=='HRRR']))
 if os.path.isfile(workdir + 'prec' + site + '/' + str(dataset) + ".png") == False:
     # open the radar data
     radar = pyart.io.read_nexrad_cdm(dataset.access_urls['OPENDAP'])
     
     # plot precip depiction
     imgdir = workdir + 'prec' + site + '/'
-    plot_precipitation_depiction(radar=radar, dataset=dataset, imgdir=imgdir)
+    plot_precipitation_depiction(radar=radar, dataset=dataset, imgdir=imgdir, hrrrdata=hrrrdata)
     create_gif(workdir=workdir, imgdir=imgdir, gifname="kdox_prectype.gif")
     
