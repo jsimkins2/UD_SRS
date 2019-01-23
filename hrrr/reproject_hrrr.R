@@ -50,7 +50,6 @@ loc <- nc_create(filename=paste0(datadir, 'reprojected', fname), vars=var.list, 
 for(j in seq_along(var$name)){
   ncdf4::ncvar_put(nc=loc, varid=as.character(var$name[j]), vals=dat.list[[j]])
 }
-ncvar_put(nc=loc,varid='Geodetic')
 ncatt_put(nc=loc,0,attname="proj4", attval=newproj)
 ncatt_put(nc=loc,0,attname="crs", attval="Geodetic")
 ncatt_put(nc=loc, 0, "Conventions", "CF=1.0")
