@@ -305,7 +305,7 @@ cmap_snow = LinearSegmentedColormap.from_list('mycmap', ['powderblue', 'deepskyb
 
 datadir = "/home/sat_ops/goesR/radar/prectype/hrrr_temp/"
 filenames = [f for f in listdir(datadir) if isfile(join(datadir, f))]
-hrrrdata = datadir + ''.join(([f for f in filenames if f[0:4]=='HRRR']))
+hrrrdata = datadir + ''.join(([f for f in filenames if f[0:3]=='rep']))
 if os.path.isfile(workdir + 'prec' + site + '/' + str(dataset) + ".png") == False:
     # open the radar data
     radar = pyart.io.read_nexrad_cdm(dataset.access_urls['OPENDAP'])

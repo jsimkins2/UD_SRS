@@ -46,7 +46,7 @@ for(j in 1:length(var$name)){
 nc_close(hrrrfile)
 
 ## put data in new file
-loc <- nc_create(filename=paste0(datadir, fname), vars=var.list, verbose=verbose)
+loc <- nc_create(filename=paste0(datadir, 'reprojected', fname), vars=var.list, verbose=verbose)
 for(j in seq_along(var$name)){
   ncdf4::ncvar_put(nc=loc, varid=as.character(var$name[j]), vals=dat.list[[j]])
 }
