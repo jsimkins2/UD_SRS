@@ -250,9 +250,9 @@ def plot_precipitation_depiction(radar, dataset, imgdir, hrrrdata):
     # plot coasts/states/counties/lakes
     request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png")
     ax.add_image(request, 7, zorder=0, interpolation='none')
-    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '10m',edgecolor='black', facecolor='none',linewidth=2))
-    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '10m',edgecolor='black', facecolor='none',linewidth=2))
-    ax.add_feature(USCOUNTIES.with_scale('500k'), linewidth=1, edgecolor="black")
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '10m',edgecolor='black', facecolor='none',linewidth=1.5))
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '10m',edgecolor='black', facecolor='none',linewidth=1.5))
+    ax.add_feature(USCOUNTIES.with_scale('500k'), linewidth=0.5, edgecolor="black")
         
     plt.savefig(imgdir + str(dataset) + '.png', bbox_inches='tight',dpi=90)
     plt.close()
