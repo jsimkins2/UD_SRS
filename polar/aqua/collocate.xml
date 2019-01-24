@@ -1,0 +1,18 @@
+<graph id="MOD09-merge">
+  <version>1.0</version>
+  <node id="collocateMOD09">
+    <operator>Collocate</operator>
+    <sources>
+      <master>${master}</master>
+      <slave>${slave}</slave>
+    </sources>
+    <parameters>
+        <targetProductType>COLLOCATED</targetProductType>
+        <renameMasterComponents>true</renameMasterComponents>
+        <renameSlaveComponents>true</renameSlaveComponents>
+        <masterComponentPattern>${ORIGINAL_NAME}</masterComponentPattern>
+        <slaveComponentPattern>${ORIGINAL_NAME}</slaveComponentPattern>
+        <resamplingType>NEAREST_NEIGHBOUR</resamplingType>
+    </parameters>
+  </node>
+</graph>

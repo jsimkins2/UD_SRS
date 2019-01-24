@@ -1,0 +1,42 @@
+<graph id="bl2map_mosaic">
+  <version>1.0</version>
+    <node id="mosaicNode">
+     <operator>Mosaic</operator>
+     <sources>
+       <sourceProducts>${sourceProducts}</sourceProducts>
+     </sources>
+     <parameters>
+     <variables>
+       <variable>
+         <name>Red</name>
+         <expression>Red</expression>
+       </variable>
+       <variable>
+         <name>Blue</name>
+         <expression>Blue</expression>
+       </variable>
+       <variable>
+	 <name>Green</name>
+	 <expression>Green</expression>
+       </variable>
+       </variables>
+<combine>OR</combine>
+    <crs>GEOGCS["WGS84(DD)",
+         DATUM["WGS84",
+         SPHEROID["WGS84", 6378137.0, 298.257223563]],
+         PRIMEM["Greenwich", 0.0],
+         UNIT["degree", 0.017453292519943295],
+         AXIS["Geodetic longitude", EAST],
+         AXIS["Geodetic latitude", NORTH]]</crs>
+     <orthorectify>false</orthorectify>
+     <elevationModelName>GETASSE30</elevationModelName>
+     <resampling>Nearest</resampling>
+     <westBound>-100.0</westBound>
+     <northBound>52.0</northBound>
+     <eastBound>-50.0</eastBound>
+     <southBound>16.0</southBound>
+     <pixelSizeX>.01</pixelSizeX>
+    <pixelSizeY>.008</pixelSizeY>
+  </parameters>
+  </node>
+</graph>
