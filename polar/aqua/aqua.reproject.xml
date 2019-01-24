@@ -1,0 +1,333 @@
+<graph id="bl2map_mosaic">
+  <version>1.0</version>
+    <node id="bandMath">
+      <operator>BandMaths</operator>
+      <sources>
+        <sourceProduct>${sourceProducts}</sourceProduct>
+      </sources>
+      <parameters>
+        <targetBands>
+          <targetBand>
+          <name>sst</name>
+          <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) AND !(qual_sst > 3) ? sst : NaN
+          </expression>
+	  <description>sst</description>
+          <type>float32</type>
+          <validExpression>!nan(qual_sst)</validExpression>
+          <noDataValue>NaN</noDataValue>
+          <spectralBandIndex>0</spectralBandIndex>
+          </targetBand>
+          <targetBand>
+          <name>qual_sst</name>
+          <expression>qual_sst</expression>
+          <description>qual_sst</description>
+          <type>float32</type>
+          <validExpression>qual_sst</validExpression>
+          <noDataValue>NaN</noDataValue>
+          <spectralBandIndex>0</spectralBandIndex>
+          </targetBand>
+          <targetBand>
+          <name>chl_oc3</name>
+          <expression>!(l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.STRAYLIGHT or l2_flags.CLDICE or l2_flags.HISOLZEN or l2_flags.LOWLW or l2_flags.NAVWARN or l2_flags.MAXAERITER or l2_flags.ATMWARN or l2_flags.NAVFAIL or l2_flags.FILTER) AND (chl_oc3 &gt; .001 AND chl_oc3 &lt; 100) ? chl_oc3 : NaN</expression>
+          <description>chl_oc3</description>
+          <type>float32</type>
+          <validExpression>!nan(chl_oc3)</validExpression>
+          <noDataValue>NaN</noDataValue>
+          <spectralBandIndex>0</spectralBandIndex>
+          </targetBand>
+          <targetBand>
+          <name>l2_flags</name>
+          <expression>l2_flags</expression>
+          <description>l2_flags</description>
+          <type>float32</type>
+          <validExpression>l2_flags</validExpression>
+          <noDataValue>NaN</noDataValue>
+          <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>a_412_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? a_412_qaa : NaN</expression>
+	<description>a_412_qaa</description>
+        <type>float32</type>
+        <validExpression>a_412_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>a_443_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? a_443_qaa : NaN</expression>
+        <description>a_443_qaa</description>
+        <type>float32</type>
+        <validExpression>a_443_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+	<targetBand>
+        <name>a_469_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? a_469_qaa : NaN</expression>
+        <description>a_469_qaa</description>
+        <type>float32</type>
+        <validExpression>a_469_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>a_488_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? a_488_qaa : NaN</expression>
+        <description>a_488_qaa</description>
+        <type>float32</type>
+        <validExpression>a_488_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+	<targetBand>
+        <name>a_531_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? a_531_qaa : NaN</expression>
+        <description>a_531_qaa</description>
+        <type>float32</type>
+        <validExpression>a_531_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>	
+        <targetBand>
+        <name>a_547_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? a_547_qaa : NaN</expression>
+        <description>a_547_qaa</description>
+        <type>float32</type>
+        <validExpression>a_547_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+	<name>a_555_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? a_555_qaa : NaN</expression>
+        <description>a_555_qaa</description>
+        <type>float32</type>
+        <validExpression>a_555_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>a_645_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? a_645_qaa : NaN</expression>
+        <description>a_645_qaa</description>
+        <type>float32</type>
+        <validExpression>a_645_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+	<targetBand>
+        <name>a_667_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? a_667_qaa : NaN</expression>
+        <description>a_667_qaa</description>
+        <type>float32</type>
+        <validExpression>a_667_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+	<targetBand>
+        <name>a_678_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? a_678_qaa : NaN</expression>
+        <description>a_678_qaa</description>
+        <type>float32</type>
+        <validExpression>a_678_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+	<targetBand>
+        <name>bb_547_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? bb_547_qaa : NaN</expression>
+        <description>bb_547_qaa</description>
+        <type>float32</type>
+        <validExpression>bb_547_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>aph_443_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? aph_443_qaa : NaN</expression>
+	<description>aph_443_qaa</description>
+        <type>float32</type>
+        <validExpression>aph_443_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>adg_412_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? adg_412_qaa : NaN</expression>
+	<description>adg_412_qaa</description>
+        <type>float32</type>
+        <validExpression>adg_412_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>c_547_qaa</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? c_547_qaa : NaN</expression>
+	<description>c_547_qaa</description>
+        <type>float32</type>
+        <validExpression>c_547_qaa</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>Rrs_412</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_412 : NaN</expression>
+	<description>Rrs_412</description>
+        <type>float32</type>
+        <validExpression>Rrs_412</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>Rrs_443</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_443 : NaN</expression>
+	<description>Rrs_443</description>
+        <type>float32</type>
+        <validExpression>Rrs_443</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>Rrs_469</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_469 : NaN</expression>
+	<description>Rrs_469</description>
+        <type>float32</type>
+        <validExpression>Rrs_469</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>Rrs_488</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_488 : NaN</expression>
+	<description>Rrs_488</description>
+        <type>float32</type>
+        <validExpression>Rrs_488</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>Rrs_531</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_531 : NaN</expression>
+	<description>Rrs_531</description>
+        <type>float32</type>
+        <validExpression>Rrs_531</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>Rrs_547</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_547 : NaN</expression>
+	<description>Rrs_547</description>
+        <type>float32</type>
+        <validExpression>Rrs_547</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>Rrs_555</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_555 : NaN</expression>
+	<description>Rrs_555</description>
+        <type>float32</type>
+        <validExpression>Rrs_555</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+	<targetBand>
+        <name>Rrs_645</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_645 : NaN</expression>
+        <description>Rrs_645</description>
+        <type>float32</type>
+        <validExpression>Rrs_645</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+	<targetBand>
+        <name>Rrs_667</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_667 : NaN</expression>
+        <description>Rrs_667</description>
+        <type>float32</type>
+        <validExpression>Rrs_667</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+	<targetBand>
+        <name>Rrs_678</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_678 : NaN</expression>
+        <description>Rrs_678</description>
+        <type>float32</type>
+        <validExpression>Rrs_678</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+	<targetBand>
+        <name>Rrs_748</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_748 : NaN</expression>
+        <description>Rrs_748</description>
+        <type>float32</type>
+        <validExpression>Rrs_748</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+	<targetBand>
+        <name>Rrs_859</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? Rrs_859 : NaN</expression>
+        <description>Rrs_859</description>
+        <type>float32</type>
+        <validExpression>Rrs_859</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>pic</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? pic : NaN</expression>
+	<description>pic</description>
+        <type>float32</type>
+        <validExpression>pic</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+        <targetBand>
+        <name>poc</name>
+        <expression>!(l2_flags.NAVWARN or l2_flags.LOWLW or l2_flags.FILTER or l2_flags.NAVFAIL or l2_flags.HIGLINT or l2_flags.HILT or l2_flags.HISATZEN or l2_flags.ATMFAIL or l2_flags.LAND or l2_flags.CLDICE or l2_flags.HISOLZEN) ? poc : NaN</expression>
+	<description>poc</description>
+        <type>float32</type>
+        <validExpression>poc</validExpression>
+        <noDataValue>NaN</noDataValue>
+        <spectralBandIndex>0</spectralBandIndex>
+        </targetBand>
+      </targetBands>
+    </parameters>
+  </node>
+  <node id="reproject">
+      <operator>Reproject</operator>
+      <sources>
+        <source>bandMath</source>
+      </sources>
+      <parameters>
+        <crs>PROJCS["Mercator_1SP / World Geodetic System 1984",
+             GEOGCS["World Geodetic System 1984",
+             DATUM["World Geodetic System 1984",
+             SPHEROID["WGS 84", 6378135.0, 298.257223563, AUTHORITY["EPSG","7030"]],
+             AUTHORITY["EPSG","6326"]],
+             PRIMEM["Greenwich", 0.0, AUTHORITY["EPSG","8901"]],
+             UNIT["degree", 0.017453292519943295],
+             AXIS["Geodetic longitude", EAST],
+             AXIS["Geodetic latitude", NORTH]],
+             PROJECTION["Mercator_1SP"],
+             PARAMETER["latitude_of_origin", 0.0],
+             PARAMETER["central_meridian", 0.0],
+             PARAMETER["scale_factor", 1.0],
+             PARAMETER["false_easting", 0.0],
+             PARAMETER["false_northing", 0.0],
+             UNIT["m", 1.0],
+             AXIS["Easting", EAST],
+             AXIS["Northing", NORTH]]</crs>
+           <resampling>Nearest</resampling>
+           <pixelSizeX>1000</pixelSizeX>
+           <pixelSizeY>1000</pixelSizeY>
+           <orthorectify>false</orthorectify>
+           <noDataValue>NaN</noDataValue>
+         </parameters>
+       </node>
+</graph>
