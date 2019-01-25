@@ -156,52 +156,11 @@ def plot_precipitation_depiction(radar, dataset, imgdir, hrrrdata):
     # Interpolate data onto grid using linear interpolation
     gref = griddata((rav_lons,rav_lats),rav_ref,(glon,glat),method='linear')
     
-    ds = xr.open_dataset(hrrrdata)
-    # parse the temperature at various heights
-    tsurf = ds.metpy.parse_cf('temperature_surface')
-    t850 = ds.metpy.parse_cf('temperature_850')
-    t925 = ds.metpy.parse_cf('temperature_925')
-    ht1000 = ds.metpy.parse_cf("height_1000")
-    ht500 = ds.metpy.parse_cf("height_500")
-    thick = ht500 - ht1000
+    rain = np.load(datadir + 'rain.npy')
+    ice = np.load(datadir + 'ice.npy')
+    sleet = np.load(datadir + 'sleet.npy')
+    snow = np.load(datadir + 'snow.npy')
     
-    hproj = ccrs.Geodetic()
-    hproj = Proj(hproj.proj4_init)
-    
-    # trim the data to save space
-    lons, lats = np.meshgrid(tsurf['longitude'], tsurf['latitude'])
-    hrrr_t850 = trim_data(lats, lons, ma.getdata(t850), boundinglat, boundinglon)
-    hrrr_t925 = trim_data(lats, lons, ma.getdata(t925), boundinglat, boundinglon)
-    hrrr_tsurf = trim_data(lats, lons, ma.getdata(tsurf), boundinglat, boundinglon)
-    thick = trim_data(lats, lons, ma.getdata(thick), boundinglat, boundinglon)
-    
-    # we have to ravel these for scipy interpolate
-    rav_lats = lats.ravel()
-    rav_lons = lons.ravel()
-    rav_t850 = hrrr_t850.ravel()
-    rav_t925 = hrrr_t925.ravel()
-    rav_tsurf = hrrr_tsurf.ravel()
-    rav_thick = thick.ravel()
-    
-    #Grid Data using scipy interpolate
-    grid_lons = np.linspace(boundinglon[0],boundinglon[1],nlon)
-    grid_lats = np.linspace(boundinglat[0],boundinglat[1],nlat)
-    glon,glat = np.meshgrid(grid_lons,grid_lats)
-    grid850= griddata((rav_lons,rav_lats),rav_t850,(glon,glat),method='linear')
-    grid925 = griddata((rav_lons,rav_lats),rav_t925,(glon,glat),method='linear')
-    gridsurf = griddata((rav_lons,rav_lats),rav_tsurf,(glon,glat),method='linear')
-    gridthick = griddata((rav_lons,rav_lats),rav_thick,(glon,glat),method='linear')
-    
-    # create a masked array for each precipitation type
-    rain = (gridsurf > 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
-    rain = np.ma.masked_array(gref, ~rain)
-    ice = (grid850 > 273.15) & (grid925 > 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
-    ice = np.ma.masked_array(gref, ~ice)
-    sleet = (grid850 > 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
-    sleet = np.ma.masked_array(gref, ~sleet)
-    snow = (grid850 < 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
-    snow = np.ma.masked_array(gref, ~snow) 
-
     fig=plt.figure(figsize=[10,10], dpi=90)
     ax = plt.subplot(1,1,1, projection=ccrs.PlateCarree())
     ax.set_extent((min_lon, max_lon, min_lat, max_lat))
@@ -295,6 +254,7 @@ except IndexError:
 
 
 workdir = '/home/sat_ops/goesR/radar/prectype/'
+datadir = '/home/sat_ops/goesR/radar/prectype/hrrr_temp/'
 conv_thresh = 12.0 #dBZ
 # create colormaps for each precip type
 cmap_rain = LinearSegmentedColormap.from_list('mycmap', ['palegreen', 'springgreen','darkseagreen','mediumseagreen','seagreen', 'green', 'darkgreen'], N=20)
@@ -302,15 +262,12 @@ cmap_ice = LinearSegmentedColormap.from_list('mycmap', ['lightpink','Pink', 'Hot
 cmap_sleet = LinearSegmentedColormap.from_list('mycmap', ['Lavender', 'Violet', 'DarkViolet', 'purple'], N=20)
 cmap_snow = LinearSegmentedColormap.from_list('mycmap', ['powderblue', 'deepskyblue', 'dodgerblue', 'blue', 'mediumblue','midnightblue'],N=20)
 
-datadir = "/home/sat_ops/goesR/radar/prectype/hrrr_temp/"
-filenames = [f for f in listdir(datadir) if isfile(join(datadir, f))]
-hrrrdata = datadir + ''.join(([f for f in filenames if f[0:3]=='rep']))
 if os.path.isfile(workdir + 'prec' + site + '/' + str(dataset) + ".png") == False:
     # open the radar data
     radar = pyart.io.read_nexrad_cdm(dataset.access_urls['OPENDAP'])
     
     # plot precip depiction
     imgdir = workdir + 'prec' + site + '/'
-    plot_precipitation_depiction(radar=radar, dataset=dataset, imgdir=imgdir, hrrrdata=hrrrdata)
+    plot_precipitation_depiction(radar=radar, dataset=dataset, imgdir=imgdir)
     create_gif(workdir=workdir, imgdir=imgdir, gifname="kdox_prectype.gif")
     

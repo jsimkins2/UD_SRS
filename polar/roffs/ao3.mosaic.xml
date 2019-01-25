@@ -1,0 +1,197 @@
+<!-- gpt.sh -e ao3.mosaic.xml -f GeoTIFF -t ao3.mosaic.reproject.tif ao3.reproject.nc
+
+-->
+<graph id="bl2map_mosaic">
+  <version>1.0</version>
+    <node id="mosaicNode">
+     <operator>Mosaic</operator>
+     <sources>
+       <sourceProducts>${sourceProducts}</sourceProducts>
+     </sources>
+     <parameters>
+     <variables>
+       <variable>
+         <name>sst</name>
+         <expression>sst</expression>
+       </variable>
+       <variable>
+         <name>qual_sst</name>
+         <expression>qual_sst</expression>
+       </variable>
+       <variable>
+         <name>chl_oc3</name>
+         <expression>chl_oc3</expression>
+       </variable>
+       <variable>
+         <name>l2_flags</name>
+         <expression>l2_flags</expression>
+       </variable>
+       <variable>
+       <name>a_410_qaa</name>
+       <expression>a_410_qaa</expression>
+       </variable>
+       <variable>
+       <name>a_443_qaa</name>
+       <expression>a_443_qaa</expression>
+       </variable>
+       <variable>
+       <name>a_486_qaa</name>
+       <expression>a_486_qaa</expression>
+       </variable>
+       <variable>
+       <name>a_551_qaa</name>
+       <expression>a_551_qaa</expression>
+       </variable>
+       <variable>
+       <name>a_671_qaa</name>
+       <expression>a_671_qaa</expression>
+       </variable>
+       <variable>
+       <name>a_745_qaa</name>
+       <expression>a_745_qaa</expression>
+       </variable>
+       <variable>
+       <name>a_862_qaa</name>
+       <expression>a_862_qaa</expression>
+       </variable>
+       <variable>
+       <name>bb_551_qaa</name>
+       <expression>bb_551_qaa</expression>
+       </variable>
+       <variable>
+       <name>aph_443_qaa</name>
+       <expression>aph_443_qaa</expression>
+       </variable>
+       <variable>
+       <name>adg_410_qaa</name>
+       <expression>adg_410_qaa</expression>
+       </variable>
+       <variable>
+       <name>c_551_qaa</name>
+       <expression>c_551_qaa</expression>
+       </variable>
+       <variable>
+       <name>Rrs_410</name>
+       <expression>Rrs_410</expression>
+       </variable>
+       <variable>
+       <name>Rrs_443</name>
+       <expression>Rrs_443</expression>
+       </variable>
+       <variable>
+       <name>Rrs_486</name>
+       <expression>Rrs_486</expression>
+       </variable>
+       <variable>
+       <name>Rrs_551</name>
+       <expression>Rrs_551</expression>
+       </variable>
+       <variable>
+       <name>Rrs_671</name>
+       <expression>Rrs_671</expression>
+       </variable>
+       <variable>
+       <name>Rrs_745</name>
+       <expression>Rrs_745</expression>
+       </variable>
+       <variable>
+       <name>Rrs_862</name>
+       <expression>Rrs_862</expression>
+       </variable>
+       <variable>
+       <name>ndvi</name>
+       <expression>ndvi</expression>
+       </variable>
+       <variable>
+       <name>evi</name>
+       <expression>evi</expression>
+       </variable>
+       <variable>
+       <name>pic</name>
+       <expression>pic</expression>
+       </variable>
+       <variable>
+       <name>poc</name>
+       <expression>poc</expression>
+       </variable>
+       <variable>
+         <name>class_34k_w_owmc</name>
+         <expression>class_34k_w_owmc</expression>
+       </variable>
+     </variables>
+<combine>OR</combine>
+    <crs>GEOGCS["WGS84(DD)",
+         DATUM["WGS84",
+         SPHEROID["WGS84", 6378137.0, 298.257223563]],
+         PRIMEM["Greenwich", 0.0],
+         UNIT["degree", 0.017453292519943295],
+         AXIS["Geodetic longitude", EAST],
+         AXIS["Geodetic latitude", NORTH]]</crs>
+     <orthorectify>false</orthorectify>
+     <elevationModelName>GETASSE30</elevationModelName>
+     <resampling>Nearest</resampling>
+     <westBound>-98.0</westBound>
+     <northBound>31.0</northBound>
+     <eastBound>-80.0</eastBound>
+     <southBound>18.0</southBound>
+     <pixelSizeX>0.01084337</pixelSizeX>
+    <pixelSizeY>0.009893455</pixelSizeY>
+  </parameters>
+  </node>
+  <node id='writeNode'>
+    <operator>Write</operator>
+     <sources>
+       <source>mosaicNode</source>
+     </sources>
+      <parameters>
+        <file>ao3.tif</file>
+        <formatName>GeoTIFF</formatName>
+        <deleteOutputOnFailure>true</deleteOutputOnFailure>
+        <writeEntireTileRows>boolean</writeEntireTileRows>
+     </parameters>
+</graph>
+
+
+
+<node id=">writeimageId">
+<operator>WriteImage</operator>
+<sources>
+<source>${source}</source>
+</sources>
+<parameters>
+<sourceBandName>chlor_a</sourceBandName>
+<filePath>output.png</filePath>
+<!--  output file  -->
+<textAnnotationLayer>false</textAnnotationLayer>
+<formatName>png</formatName>
+<cpdFilePath>
+/home/user/.seadas/beam-ui/auxdata/color-palettes/oceancolor_standard.cpd
+</cpdFilePath>
+<cpdAutoDistribute>false</cpdAutoDistribute>
+<colourScaleMin>0.01</colourScaleMin>
+<colourScaleMax>30</colourScaleMax>
+<level>0</level>
+<!--  0 = no subsampling  -->
+<scaleType>log</scaleType>
+<graticuleLayer>true</graticuleLayer>
+<!--  grid  -->
+<graticuleLayerLabel>true</graticuleLayerLabel>
+<!--  grid labels  -->
+<graticuleLayerTickEnabled>false</graticuleLayerTickEnabled>
+<maskLayer>true</maskLayer>
+<maskFilePath>landwatermask_region.nc</maskFilePath>
+<imageMasks>
+<imageMask>
+<imageMaskSourceBandName>land_water_fraction</imageMaskSourceBandName>
+<imageMaskName>land_water_fraction</imageMaskName>
+<imageMaskDescription>Land</imageMaskDescription>
+<imageMaskExpression>string</imageMaskExpression>
+<imageMaskColor>0,0,0</imageMaskColor>
+<imageMaskTransparency>0.5</imageMaskTransparency>
+</imageMask>
+</imageMasks>
+<contourLayer>false</contourLayer>
+<textAnnotationLayer>false</textAnnotationLayer>
+</parameters>
+</node>
+</graph>

@@ -1,0 +1,31 @@
+<!--#Output band to png file   
+     #Usage: gpt.sh -e writeimage.xml -Ssource=A2009165075500.L2_LAC_OC_mapped.nc
+#Output file: output.png
+#Grid yes/no? Set graticuleLayer and graticuleLayerLabel to true/false
+-->
+<graph id="writeimage">
+<version>1.0</version>
+<node id="writeimageId">
+<operator>WriteImage</operator>
+<sources>
+<source>${source}</source>
+</sources>
+<parameters>
+<sourceBandName>chl_oc3</sourceBandName>
+<filePath>chl.ao2.png</filePath>
+<!--  output file  -->
+<textAnnotationLayer>false</textAnnotationLayer>
+<formatName>png</formatName>
+<cpdFilePath>/home/james/.seadas/beam_ui/auxdata/color-palettes/gray_scale.cpd</cpdFilePath>
+<cpdAutoDistribute>true</cpdAutoDistribute>
+<colourScaleMin>0.01</colourScaleMin>
+<colourScaleMax>30</colourScaleMax>
+<level>0</level>
+<!--  0 = no subsampling  -->
+<scaleType>log</scaleType>
+<graticuleLayer>false</graticuleLayer>
+<contourLayer>false</contourLayer>
+<textAnnotationLayer>false</textAnnotationLayer>
+</parameters>
+</node>
+</graph>
