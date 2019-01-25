@@ -107,7 +107,7 @@ def create_gif(workdir, imgdir, gifname):
         images.append(imageio.imread(input_file))
     imageio.mimsave(workdir + gifname, images, duration=dur_vals)
 
-def plot_precipitation_depiction(radar, dataset, imgdir, hrrrdata):
+def plot_precipitation_depiction(radar, dataset, imgdir):
     my_gf = pyart.filters.GateFilter(radar)
     my_gf.exclude_below('reflectivity', 12)
     my_ds_gf = pyart.correct.despeckle_field(radar, 'reflectivity', gatefilter=my_gf)
