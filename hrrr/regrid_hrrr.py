@@ -30,6 +30,15 @@ def trim_data(lats, lons, ref, boundinglat, boundinglon):
                 ref[i][j] = np.nan
     return ref
 
+min_lon = -78.24357604980469
+min_lat = 36.69588851928711
+max_lat = 40.95521545410156
+max_lon = -72.63585662841797
+boundinglat = [min_lat, max_lat]
+boundinglon = [min_lon, max_lon]
+nlon=500
+nlat=500
+    
 datadir = "/home/sat_ops/goesR/radar/prectype/hrrr_temp/"
 filenames = [f for f in listdir(datadir) if isfile(join(datadir, f))]
 hrrrdata = datadir + ''.join(([f for f in filenames if f[0:3]=='rep']))
