@@ -157,10 +157,10 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     gref = griddata((rav_lons,rav_lats),rav_ref,(glon,glat),method='linear')
     
     # load in the temperatures data
-    np.load(datadir + 'grid850.npy')
-    np.load(datadir + 'grid925.npy')
-    np.load(datadir + 'gridsurf.npy')
-    np.load(datadir + 'gridthick.npy')
+    grid850=np.load(datadir + 'grid850.npy')
+    grid925=np.load(datadir + 'grid925.npy')
+    gridsurf=np.load(datadir + 'gridsurf.npy')
+    gridthick=np.load(datadir + 'gridthick.npy')
     # create a masked array for each precipitation type
     rain = (gridsurf > 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     rain = np.ma.masked_array(gref, ~rain)
