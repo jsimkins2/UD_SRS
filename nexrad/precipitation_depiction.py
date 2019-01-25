@@ -156,10 +156,21 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     # Interpolate data onto grid using linear interpolation
     gref = griddata((rav_lons,rav_lats),rav_ref,(glon,glat),method='linear')
     
-    rain = np.load(datadir + 'rain.npy')
-    ice = np.load(datadir + 'ice.npy')
-    sleet = np.load(datadir + 'sleet.npy')
-    snow = np.load(datadir + 'snow.npy')
+    # load in the temperatures data
+    np.load(datadir + 'grid850.npy')
+    np.load(datadir + 'grid925.npy')
+    np.load(datadir + 'gridsurf.npy')
+    np.load(datadir + 'gridthick.npy')
+    # create a masked array for each precipitation type
+    rain = (gridsurf > 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    rain = np.ma.masked_array(gref, ~rain)
+    ice = (grid850 > 273.15) & (grid925 > 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    ice = np.ma.masked_array(gref, ~ice)
+    sleet = (grid850 > 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    sleet = np.ma.masked_array(gref, ~sleet)
+    snow = (grid850 < 273.15) & (grid925 < 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
+    snow = np.ma.masked_array(gref, ~snow) 
+
     
     fig=plt.figure(figsize=[10,10], dpi=90)
     ax = plt.subplot(1,1,1, projection=ccrs.PlateCarree())
