@@ -266,7 +266,7 @@ except IndexError:
 
 workdir = '/home/sat_ops/goesR/radar/prectype/'
 datadir = '/home/sat_ops/goesR/radar/prectype/hrrr_temp/'
-conv_thresh = 12.0 #dBZ
+conv_thresh = 8 #dBZ
 # create colormaps for each precip type
 cmap_rain = LinearSegmentedColormap.from_list('mycmap', ['palegreen', 'springgreen','darkseagreen','mediumseagreen','seagreen', 'green', 'darkgreen'], N=20)
 cmap_ice = LinearSegmentedColormap.from_list('mycmap', ['lightpink','Pink', 'HotPink', 'deeppink'], N=20)
