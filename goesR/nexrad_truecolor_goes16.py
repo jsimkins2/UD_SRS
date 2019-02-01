@@ -41,14 +41,6 @@ def contrast_correction(color, contrast):
     COLOR = np.minimum(COLOR, 1)
     COLOR = np.maximum(COLOR, 0)
     return COLOR
-
-def JulianDate_to_MMDDYYY(y,jd):
-    month = 1
-    day = 0
-    while jd - calendar.monthrange(y,month)[1] > 0 and month <= 12:
-        jd = jd - calendar.monthrange(y,month)[1]
-        month = month + 1
-    return month,jd,y
     
 # Define projections
 mH = Basemap(resolution='i', projection='lcc', area_thresh=1500, \
@@ -78,36 +70,20 @@ for r in raw_list:
 
 ######################### Lightning Files #############################
 GLM_files = [f for f in listdir(ltngdir) if isfile(join(ltngdir, f))]
-GLM_names = []
 
-for i in range(0,len(GLM_files)):
-    fname = str(GLM_files[i].split("_", 4)[3])
-    fname = str(fname.split(".", 2)[0])
-    fname = fname[1:]
-    GLM_names.append(fname)
-
-lnamelist = sorted(GLM_names, key=int)[-500:]
+lnamelist = sorted(GLM_files)[-500:]
 ldatetime = []
 for t in lnamelist:
-    jday = t[4:7]
-    year = t[0:4]
-    mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
-    hms = t[7:13]
-    t = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
-    ldatetime.append(datetime.strptime(t, '%Y%m%d%H%M%S'))
+    t = t.split('s')[1][:-4]
+    ldatetime.append(datetime.strptime(t, '%Y%j%H%M%S'))
 
 ######################### TRUE COLOR GOES16 #############################
 mcmipc_list = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
 
 gdatetime = []
 for x in mcmipc_list:
-    t = x.split('s')[1]
-    jday = t[4:7]
-    year = t[0:4]
-    mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
-    hms = t[7:13]
-    t = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
-    gdatetime.append(datetime.strptime(t, '%Y%m%d%H%M%S'))
+    t = x.split('s')[1][:-4]
+    gdatetime.append(datetime.strptime(t, '%Y%j%H%M%S'))
 
 ########################### Begin the loop for the matched data and plot image ################################
 for i in range(0,len(dataset_list)):
@@ -128,13 +104,8 @@ for i in range(0,len(dataset_list)):
     ############# Read the goes file ###############
     C_file = mcmipc_list[gdatetime.index(nearest(gdatetime, timestamp))]
     # match the lightning files to the goes files
-    tem = C_file.split('s')[1]
-    jday = tem[4:7]
-    year = tem[0:4]
-    mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
-    hms = tem[7:13]
-    mdy_str = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
-    goesdatetime=datetime.strptime(mdy_str, '%Y%m%d%H%M%S')
+    tem = C_file.split('s')[1][:-4]
+    goesdatetime=datetime.strptime(tem, '%Y%j%H%M%S')
     
     ltng_index = ldatetime.index(nearest(ldatetime, goesdatetime))
     ltng_files = lnamelist[ltng_index - 15: ltng_index]
