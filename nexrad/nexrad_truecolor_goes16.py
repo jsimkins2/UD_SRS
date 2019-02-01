@@ -269,6 +269,7 @@ for i in range(0,len(dataset_list)):
     
     for lt in range(0, len(ltng_files)):
         ltfile = ltng_files[lt]
+        print(ltfile)
         L_file = ltngdir + str(ltfile) + '.nc'  # GOES16 East
         L = Dataset(L_file, 'r')
         ltng_lat[lt] = L.variables['flash_lat'][:]
