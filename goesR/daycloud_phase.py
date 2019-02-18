@@ -154,7 +154,7 @@ if len(ABI_datetime) > 0:
         plt.figimage(im,15, 30, zorder=1, alpha=0.8)
         
         # save file
-        output_file = workdir + "img_conus" + ABI_datetime[n] + ".png"
+        output_file = imgdir + ABI_datetime[n] + ".png"
         plt.savefig(output_file, dpi=100, bbox_inches='tight')
         plt.close()
 
