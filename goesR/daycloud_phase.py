@@ -57,13 +57,8 @@ imgdir = "/home/sat_ops/goesR/daycloud/img_conus/"
 file_names = [f for f in listdir(datadir) if isfile(join(datadir, f))]
 
 fnamelist = []
-for i in range(0,len(file_names)):
-    fname = str(file_names[i].split("_", 4)[3])
-    fname = str(fname.split(".", 2)[0])
-    fname = fname[1:]
-    fnamelist.append(fname)
 
-fnamelist = sorted(fnamelist, key=int)[-3:]
+fnamelist = sorted(file_names)[-3:]
 
 ABI_datetime = []
 for i in fnamelist:    
@@ -73,13 +68,7 @@ for i in fnamelist:
 if len(ABI_datetime) > 0:
     for n in range(0, len(ABI_datetime)):
         
-        C_file = datadir + 'OR_ABI-L2-MCMIPC-M3_G16_s' + str(ABI_datetime[n]) + '.nc'  # GOES16 East
-        if os.path.isfile(C_file) == False:
-            C_file = datadir + 'OR_ABI-L2-MCMIPC-M4_G16_s' + str(ABI_datetime[n]) + '.nc'
-
-        
-        # below is code from Brian Blaylock of Univ Utah, thanks Brian!
-        mcmipc_file = Dataset(C_file, 'r')
+        mcmipc_file = xr.open_dataset(datadir + str(ABI_datetime[n]))
         R = mcmipc_file.metpy.parse_cf('CMI_C13')
         proj = R.metpy.cartopy_crs
         G = mcmipc_file.metpy.parse_cf('CMI_C02')
