@@ -123,15 +123,17 @@ if len(ABI_datetime) > 0:
         if os.path.isfile(C_file) == False:
             C_file = datadir + 'OR_ABI-L2-MCMIPC-M4_G16_s' + str(ABI_datetime[n]) + '.nc'
             if os.path.isfile(C_file) == False:
-                import smtplib
-                dfile=open("/home/sat_ops/goes_r/noaa_format/udelsatinfo.txt", "r")
-                dw = dfile.readline()
-                server = smtplib.SMTP('smtp.gmail.com', 587)
-                server.starttls()
-                server.login("goessatelliteudel@gmail.com", dw)
-                msg = "TC CONUS IS BREAKING"
-                server.sendmail("goessatelliteudel@gmail.com", "simkins@udel.edu", msg)
-                server.quit()
+                C_file = datadir + 'OR_ABI-L2-MCMIPC-M6_G16_s' + str(ABI_datetime[n]) + '.nc'
+                if os.path.isfile(C_file) == False:
+                    import smtplib
+                    dfile=open("/home/sat_ops/goesR/zfolder/udelsatinfo.txt", "r")
+                    dw = dfile.readline()[:-2]
+                    server = smtplib.SMTP('smtp.gmail.com', 587)
+                    server.starttls()
+                    server.login("goessatelliteudel@gmail.com", dw[:-1])
+                    msg = "TC CONUS IS BREAKING"
+                    server.sendmail("goessatelliteudel@gmail.com", "simkins@udel.edu", msg)
+                    server.quit()
         
         # below is code from Brian Blaylock of Univ Utah, thanks Brian!
         Cnight = Dataset(C_file, 'r')
