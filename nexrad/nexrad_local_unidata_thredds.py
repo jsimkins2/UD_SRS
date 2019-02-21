@@ -37,7 +37,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy.io.img_tiles as cimgt
 import cartopy.io.shapereader as shpreader
 import cartopy.feature as cfeature
-
+from urllib.error import HTTPError
 import imageio
 
 
@@ -290,7 +290,8 @@ try:
     data_hm = str(str(dataset).split('_')[3]).split('.')[0]
     data_datetime = datetime.strptime(data_ymd + data_hm,'%Y%m%d%H%M')
     time_diff = nowtime - data_datetime
-    'Yes' if time_diff.total_seconds < 2400 else raise HTTPError('Datetimes too far apart, moving to next site')
+    if time_diff.total_seconds() > 2400:
+        raise HTTPError('Datetimes too far apart, moving to next site')
 except HTTPError:
     try:
         site = 'KLWX'
@@ -301,7 +302,8 @@ except HTTPError:
         data_hm = str(str(dataset).split('_')[3]).split('.')[0]
         data_datetime = datetime.strptime(data_ymd + data_hm,'%Y%m%d%H%M')
         time_diff = nowtime - data_datetime
-        'Yes' if time_diff.total_seconds < 2400 else raise HTTPError('Datetimes too far apart, moving to next site')
+        if time_diff.total_seconds() > 2400:
+            raise HTTPError('Datetimes too far apart, moving to next site')
     except IndexError:
         site = 'KDIX'
         nowtime = datetime.utcnow().replace(second=0, microsecond=0)
@@ -311,7 +313,8 @@ except HTTPError:
         data_hm = str(str(dataset).split('_')[3]).split('.')[0]
         data_datetime = datetime.strptime(data_ymd + data_hm,'%Y%m%d%H%M')
         time_diff = nowtime - data_datetime
-        'Yes' if time_diff.total_seconds < 2400 else raise HTTPError('Datetimes too far apart, moving to next site')
+        if time_diff.total_seconds() > 2400:
+            raise HTTPError('Datetimes too far apart, moving to next site')
 
 workdir = '/home/sat_ops/goesR/radar/'
 
