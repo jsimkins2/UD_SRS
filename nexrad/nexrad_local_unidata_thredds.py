@@ -290,9 +290,9 @@ try:
     data_hm = str(str(dataset).split('_')[3]).split('.')[0]
     data_datetime = datetime.strptime(data_ymd + data_hm,'%Y%m%d%H%M')
     time_diff = nowtime - data_datetime
-    if time_diff.total_seconds() > 2400:
-        raise HTTPError('Datetimes too far apart, moving to next site')
-except HTTPError:
+    if time_diff.total_seconds() > 0:
+        raise ValueError('Datetimes too far apart, moving to next site')
+except (HTTPError,ValueError):
     try:
         site = 'KLWX'
         nowtime = datetime.utcnow().replace(second=0, microsecond=0)
@@ -302,9 +302,9 @@ except HTTPError:
         data_hm = str(str(dataset).split('_')[3]).split('.')[0]
         data_datetime = datetime.strptime(data_ymd + data_hm,'%Y%m%d%H%M')
         time_diff = nowtime - data_datetime
-        if time_diff.total_seconds() > 2400:
-            raise HTTPError('Datetimes too far apart, moving to next site')
-    except IndexError:
+        if time_diff.total_seconds() > 1600:
+            raise ValueError('Datetimes too far apart, moving to next site')
+    except (HTTPError,ValueError):
         site = 'KDIX'
         nowtime = datetime.utcnow().replace(second=0, microsecond=0)
         cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/nexrad/level2/' + site + '/' + str(nowtime.year) + str(nowtime.month).zfill(2) + str(nowtime.day).zfill(2) + '/catalog.xml')
@@ -313,8 +313,8 @@ except HTTPError:
         data_hm = str(str(dataset).split('_')[3]).split('.')[0]
         data_datetime = datetime.strptime(data_ymd + data_hm,'%Y%m%d%H%M')
         time_diff = nowtime - data_datetime
-        if time_diff.total_seconds() > 2400:
-            raise HTTPError('Datetimes too far apart, moving to next site')
+        if time_diff.total_seconds() > 1600:
+            raise ValueError('Datetimes too far apart, moving to next site')
 
 workdir = '/home/sat_ops/goesR/radar/'
 
