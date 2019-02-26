@@ -290,7 +290,7 @@ try:
     data_hm = str(str(dataset).split('_')[3]).split('.')[0]
     data_datetime = datetime.strptime(data_ymd + data_hm,'%Y%m%d%H%M')
     time_diff = nowtime - data_datetime
-    if time_diff.total_seconds() > 0:
+    if time_diff.total_seconds() > 1600:
         raise ValueError('Datetimes too far apart, moving to next site')
 except (HTTPError,ValueError):
     try:
