@@ -31,7 +31,12 @@ filenames = [f for f in listdir(datadir) if isfile(join(datadir, f))]
 
 for dataset in filenames:
     dataset = dataset[3:]
-    if os.path.isfile("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(dataset)) == False:
+    # rename in case they added an M6 instead of M3
+    if str(dataset).split('_')[1] != 'ABI-L2-SSTF-M3':
+        dataset_name = str(dataset).split('_')[0] + '_ABI-L2-SSTF-M3_G16' + str(dataset).split('G16')[1]
+    else:
+        dataset_name = str(dataset)
+    if os.path.isfile("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(dataset_name)) == False:
         print(str(dataset))
         d = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + dataset)
         ds = NetCDF4DataStore(d)
@@ -46,11 +51,7 @@ for dataset in filenames:
         new = new.where((new['latitude']>16) & (new['latitude']<52) & (new['longitude']>-100) & (new['longitude']<-50), drop=True)
         dat_dqf = dat_dqf.where((dat_dqf['latitude']>16) & (dat_dqf['latitude']<52) & (dat_dqf['longitude']>-100) & (dat_dqf['longitude']<-50), drop=True)
         dat15 = dat15.where((dat15['latitude']>16) & (dat15['latitude']<52) & (dat15['longitude']>-100) & (dat15['longitude']<-50), drop=True)
-        # rename in case they added an M6 instead of M3
-        if str(dataset).split('_')[1] != 'ABI-L2-SSTF-M3':
-            dataset_name = str(dataset).split('_')[0] + '_ABI-L2-SSTF-M3_G16' + str(dataset).split('G16')[1]
-        else:
-            dataset_name = str(dataset)
+
         # now write it all to netcdf!
         f = Dataset("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name,'w', format='NETCDF4') #'w' stands for write
         # dimensions
