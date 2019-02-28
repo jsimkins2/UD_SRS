@@ -122,7 +122,7 @@ for dataset in filenames:
         
         f.close()
         # add netcdf file compression.  -L 5 means level 5 compression, -O means overwrite
-        fname = "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(dataset)
+        fname = "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(dataset_name)
         temp_str = "ncks " + fname + " " + fname + " -L 5 -O"
         os.system(temp_str)
         
