@@ -47,7 +47,7 @@ for dataset in filenames:
         dat_dqf = dat_dqf.where((dat_dqf['latitude']>16) & (dat_dqf['latitude']<52) & (dat_dqf['longitude']>-100) & (dat_dqf['longitude']<-50), drop=True)
         dat15 = dat15.where((dat15['latitude']>16) & (dat15['latitude']<52) & (dat15['longitude']>-100) & (dat15['longitude']<-50), drop=True)
         # rename in case they added an M6 instead of M3
-        if str(dataset).split('_')[1] =! 'ABI-L2-SSTF-M3':
+        if str(dataset).split('_')[1] != 'ABI-L2-SSTF-M3':
             dataset_name = str(dataset).split('_')[0] + '_ABI-L2-SSTF-M3_G16' + str(dataset).split('G16')[1]
         else:
             dataset_name = str(dataset)
