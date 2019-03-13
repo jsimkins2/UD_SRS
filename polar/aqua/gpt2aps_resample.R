@@ -19,6 +19,7 @@ var_names = names(aps_nc$var)
 
 # save each raster output as it's own netcdf file.
 # we'll read these values in and write a new netcdf file with the correct data later
+t1 = Sys.time()
 for (v in var_names){
   aps_rast = t(raster(ncvar_get(aps_nc,'sst')))
   gpt_rast = t(raster(ncvar_get(gpt_nc,'sst')))
@@ -38,9 +39,9 @@ for (v in var_names){
 nc_close(aps_nc)
 nc_close(gpt_nc)
 # runtime is 16 minutes on macbook
-
+Sys.time() - t1
 # now, we need to read all of the raster.nc files back in and replace the values within the APS file
-aps_file = "Downloads/2aqua.2019001.0101.235959.D.L3.modis.NAT.v09.1000m.nc4"
+aps_file = "Downloads/aqua.2019001.0101.235959.D.L3.modis.NAT.v09.1000m.nc4"
 aps_nc = nc_open(aps_file)
 
 
@@ -63,7 +64,7 @@ nc_close(aps_nc)
 
 #creating the nc4 output file
 #loc.file <- paste0(finalFolder,gpt_file)
-gpt_file = "Downloads/aqua.2019044.0213.235959.D.L3.modis.NAT.v09.1000m1234.nc4"
+gpt_file = "Downloads/aqua.2019044.0213.235959.D.L3.modis.NAT.v09.1000m4.nc4"
 loc.file <- paste0(gpt_file)
 
 #writing all we need to the output file
@@ -72,6 +73,7 @@ for(j in seq_along(var_names)){
   flipped = t(ncvar_get(nc_open(paste0(tem_folder, var_names[[j]], ".nc"))))
   flipped = apply(flipped, 2, rev)
   flippedvar= t(flipped)
+  flippedvar[flippedvar == 0] = NA # not sure if this should be like this but the gpt nc files report NAs as 0s (I think)
   ncdf4::ncvar_put(nc=loc, varid=as.character(var_names[[j]]), vals=flippedvar)
   #ncdf4::ncvar_put(nc=loc, varid=as.character(var_names[[j]]), vals=ncvar_get(nc_open(paste0(tem_folder, var_names[[j]], ".nc")), var_names[[j]]))
 }
@@ -85,5 +87,6 @@ extent(r)=c(min(ncvar_get(x,'lon')), max(ncvar_get(x, 'lon')),min(ncvar_get(x,'l
 
 
 
-
+gpt_sst= ncvar_get(x, 'sst')
+aps_sst = ncvar_get(aps_nc, 'sst')
 
