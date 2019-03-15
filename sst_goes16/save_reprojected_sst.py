@@ -144,7 +144,7 @@ sst = sst.where(sst.values > 270, np.nan)
 sst = sst.fillna(-999)
 if np.percentile(sst.values, 60) == -999:
     print(sst.time.values)
-    move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/sst/suspect/"
+    move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
     os.system(move_files)
 if np.percentile(sst.values, 60) != -999:
     dqf = ds.metpy.parse_cf("DQF")
@@ -152,5 +152,5 @@ if np.percentile(sst.values, 60) != -999:
     dqf = dqf.where(dqf.values > 1, np.nan)
     dqf = dqf.fillna(-999)
     if np.percentile(dqf.values, 60) == -999:
-        move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/sst/suspect/"
+        move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
         os.system(move_files)
