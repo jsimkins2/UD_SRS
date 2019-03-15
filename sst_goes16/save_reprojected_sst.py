@@ -146,6 +146,7 @@ if np.percentile(sst.values, 60) == -999:
     print(sst.time.values)
     move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
     os.system(move_files)
+    print("moving bad files")
 if np.percentile(sst.values, 60) != -999:
     dqf = ds.metpy.parse_cf("DQF")
     dqf = dqf.sel(longitude=slice(-65, -50), latitude=slice(37,45))
