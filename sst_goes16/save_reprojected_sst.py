@@ -38,7 +38,7 @@ for dataset in filenames:
     else:
         dataset_name = str(dataset)
     if os.path.isfile("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(dataset_name)) == False:
-        if os.path.isfile("/data/GOES/GOES-R/sst/suspect/"+ str(dataset_name)) == False:
+        if os.path.isfile("/data/GOES/GOES-R/suspect/"+ str(dataset_name)) == False:
             print(str(dataset))
             d = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + dataset)
             ds = NetCDF4DataStore(d)

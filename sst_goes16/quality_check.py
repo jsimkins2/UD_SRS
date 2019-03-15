@@ -15,7 +15,7 @@ import numpy as np
 
 
 nowdate = datetime.utcnow()
-datadir = "/data/GOES/GOES-R/sst/" + str(2018) + "/"
+datadir = "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/"
 filenames = [f for f in listdir(datadir) if isfile(join(datadir, f))]
 
 for f in range(0,len(filenames)):
@@ -24,17 +24,17 @@ for f in range(0,len(filenames)):
     sst = sst.sel(longitude=slice(-88, -50), latitude=slice(16,18))
     sst = sst.where(sst.values > 270, np.nan)
     sst = sst.fillna(-999)
-    if np.percentile(sst.values, 60) == -999:
+    if np.percentile(sst.values, 70) == -999:
         print(sst.time.values)
-        move_files = "mv " + datadir + filenames[f] + " /data/GOES/GOES-R/suspect/"
+        move_files = "mv " + datadir + filenames[f] + " /data/GOES/GOES-R/sst/suspect/"
         os.system(move_files)
-    if np.percentile(sst.values, 60) != -999:
+    if np.percentile(sst.values, 70) != -999:
         dqf = ds.metpy.parse_cf("DQF")
         dqf = dqf.sel(longitude=slice(-65, -50), latitude=slice(37,45))
         dqf = dqf.where(dqf.values > 1, np.nan)
         dqf = dqf.fillna(-999)
         if np.percentile(dqf.values, 60) == -999:
-            move_files = "mv " + datadir + filenames[f] + " /data/GOES/GOES-R/suspect/"
+            move_files = "mv " + datadir + filenames[f] + " /data/GOES/GOES-R/sst/suspect/"
             os.system(move_files)
 
 
