@@ -32,6 +32,7 @@ goes_nc= xr.concat([forecast_nc, goes_nc], dim='time')
 #landmask.to_netcdf()
 goes_nc.to_netcdf(path='Downloads/goes16_sst_biscayne_bay_02272019_02282019.nc', format='NETCDF3_CLASSIC')
 
+
 '''
 sst3 = xr.concat([sst2, sst1], dim='time')
 

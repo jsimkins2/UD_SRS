@@ -15,7 +15,7 @@ import numpy as np
 
 
 nowdate = datetime.utcnow()
-datadir = "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/"
+datadir = "/data/GOES/GOES-R/sst/" + str(2018) + "/"
 filenames = [f for f in listdir(datadir) if isfile(join(datadir, f))]
 
 for f in range(0,len(filenames)):
@@ -26,7 +26,7 @@ for f in range(0,len(filenames)):
     sst = sst.fillna(-999)
     if np.percentile(sst.values, 60) == -999:
         print(sst.time.values)
-        move_files = "mv " + datadir + filenames[f] + " /data/GOES/GOES-R/sst/suspect/"
+        move_files = "mv " + datadir + filenames[f] + " /data/GOES/GOES-R/suspect/"
         os.system(move_files)
     if np.percentile(sst.values, 60) != -999:
         dqf = ds.metpy.parse_cf("DQF")
@@ -34,7 +34,7 @@ for f in range(0,len(filenames)):
         dqf = dqf.where(dqf.values > 1, np.nan)
         dqf = dqf.fillna(-999)
         if np.percentile(dqf.values, 60) == -999:
-            move_files = "mv " + datadir + filenames[f] + " /data/GOES/GOES-R/sst/suspect/"
+            move_files = "mv " + datadir + filenames[f] + " /data/GOES/GOES-R/suspect/"
             os.system(move_files)
 
 
