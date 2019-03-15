@@ -28,7 +28,7 @@ import sys
 nowdate = datetime.utcnow()
 
 datadir = "/home/sat_ops/goesR/data/sst/rast_sst/" + str(nowdate.year) + "/"
-filenames = [f for f in listdir(datadir) if isfile(join(datadir, f))]
+filenames = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))]) #
 
 for dataset in filenames:
     dataset = dataset[3:]
@@ -38,7 +38,7 @@ for dataset in filenames:
     else:
         dataset_name = str(dataset)
     if os.path.isfile("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(dataset_name)) == False:
-        if os.path.isfile("/data/GOES/GOES-R/suspect/"+ str(dataset_name)) == False:
+        if os.path.isfile("/data/GOES/GOES-R/sst/suspect/"+ str(dataset_name)) == False:
             print(str(dataset))
             d = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + dataset)
             ds = NetCDF4DataStore(d)
@@ -144,7 +144,7 @@ sst = sst.where(sst.values > 270, np.nan)
 sst = sst.fillna(-999)
 if np.percentile(sst.values, 60) == -999:
     print(sst.time.values)
-    move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
+    move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/sst/suspect/"
     os.system(move_files)
 if np.percentile(sst.values, 60) != -999:
     dqf = ds.metpy.parse_cf("DQF")
@@ -152,5 +152,5 @@ if np.percentile(sst.values, 60) != -999:
     dqf = dqf.where(dqf.values > 1, np.nan)
     dqf = dqf.fillna(-999)
     if np.percentile(dqf.values, 60) == -999:
-        move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
+        move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/sst/suspect/"
         os.system(move_files)
