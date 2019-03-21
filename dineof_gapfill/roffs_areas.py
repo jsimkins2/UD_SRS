@@ -22,6 +22,9 @@ for a in range(1,6):
     goes_nc = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), 
           time=slice('2019-03-07', '2019-03-14'))
     
+    # if you want to resample to a daily composite, uncomment below
+    #goes_nc.resample(time='1D').mean('time')
+    
     for t in range(len(goes_nc.time.values)):
         x = goes_nc['SST'][t]
         goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
@@ -54,11 +57,13 @@ for a in range(1,6):
     
     print(len(goes_nc.time.values))
     
-    
+    # if you want to add a forecast day, uncomment this line
     #forecast_nc = goes_nc.isel(time=[-1])
     #forecast_nc.time.values = forecast_nc.time.values.astype('datetime64[s]') + (3600)
     #forecast_nc['sst'] = forecast_nc['sst'].where(forecast_nc['sst'] < 2)
     #goes_nc= xr.concat([goes_nc, forecast_nc], dim='time')
+    
+    
     
     landmask.to_netcdf(path='Downloads/landmask_roffs_' +  'area' + str(a) + '_' + str(goes_nc.time.values[0])[0:10] + '_' + str(goes_nc.time.values[-1])[0:10] + '.nc', format='NETCDF3_CLASSIC')
     goes_nc.to_netcdf(path='Downloads/roffs_' +  'area' + str(a) + '_' + str(goes_nc.time.values[0])[0:10] + '_' + str(goes_nc.time.values[-1])[0:10] + '.nc', format='NETCDF3_CLASSIC')
