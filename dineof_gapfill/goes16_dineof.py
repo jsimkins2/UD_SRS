@@ -11,6 +11,12 @@ goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.n
 goes_nc = goes_nc.sel(latitude=slice(lat_bounds[0],lat_bounds[1]), longitude=slice(lon_bounds[0], lon_bounds[1]), 
           time=slice('2019-02-27', '2019-02-28'))
 
+goes_nc1 = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), 
+          time=slice('2019-03-07', '2019-03-07'))
+goes_nc2 = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), 
+          time=slice('2019-03-08', '2019-03-08'))
+goes_nc= xr.concat([goes_nc1, goes_nc2], dim='time')
+
 for t in range(len(goes_nc.time.values)):
     x = goes_nc['SST'][t]
     goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
