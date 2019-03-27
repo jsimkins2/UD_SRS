@@ -64,7 +64,12 @@ for i in blobs:
         if os.path.isfile("/home/sat_ops/goesR/data/mcmipc/" + temname.split("_e")[0] + ".nc") == False:
             # call the individual file we want
             goesfile= bucket.get_blob('ABI-L2-MCMIPC/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
-            # download said file and keep original naming structure
+            # download said file but change naming structure to allow for chronological sorting regardless of scan mode
+            if temname.split('-')[3][0:2] != 'M3':
+                temname = temname.split('-')[0] + '-' + temname.split('-')[1] + '-' + temname.split('-')[2] + '-' + 'M3' + temname.split('-')[3][2:len(temname)]
+            else:
+                temname = str(temname)
+                    
             goesfile.download_to_filename("/home/sat_ops/goesR/data/mcmipc/" + temname.split("_e")[0] + ".nc") 
             print "Downloading " + temname
             
@@ -84,8 +89,13 @@ for i in blobs:
         if os.path.isfile("/home/sat_ops/goesR/data/meso/" + temname.split("_e")[0] + ".nc") == False:
             # call the individual file we want
             goesfile= bucket.get_blob('ABI-L2-MCMIPM/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
-            # download said file and keep original naming structure
-            goesfile.download_to_filename("/home/sat_ops/goesR/data/meso/" + temname.split("_e")[0] + ".nc") 
+            # download said file but change naming structure to allow for chronological sorting regardless of scan mode
+            if temname.split('-')[3][0:2] != 'M3':
+                temname = temname.split('-')[0] + '-' + temname.split('-')[1] + '-' + temname.split('-')[2] + '-' + 'M3' + temname.split('-')[3][2:len(temname)]
+            else:
+                temname = str(temname)
+                    
+            goesfile.download_to_filename("/home/sat_ops/goesR/data/meso/" + temname.split("_e")[0] + ".nc")
             print "Downloading " + temname
 
 blobs = bucket.list_blobs(prefix='ABI-L2-MCMIPF/'+ str(now.year) + '/' + jday + '/' + hourstr + '/')
@@ -100,6 +110,11 @@ for i in blobs:
         if os.path.isfile("/home/sat_ops/goesR/data/fulldisk/" + temname.split("_e")[0] + ".nc") == False:
             # call the individual file we want
             goesfile= bucket.get_blob('ABI-L2-MCMIPF/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
-            # download said file and keep original naming structure
+            # download said file but change naming structure to allow for chronological sorting regardless of scan mode
+            if temname.split('-')[3][0:2] != 'M3':
+                temname = temname.split('-')[0] + '-' + temname.split('-')[1] + '-' + temname.split('-')[2] + '-' + 'M3' + temname.split('-')[3][2:len(temname)]
+            else:
+                temname = str(temname)
+
             goesfile.download_to_filename("/home/sat_ops/goesR/data/fulldisk/" + temname.split("_e")[0] + ".nc") 
             print "Downloading " + temname
