@@ -81,12 +81,3 @@ ncdf4::nc_close(loc)
 
 
 
-x = nc_open(gpt_file)
-r = raster(ncvar_get(x, 'sst'))
-extent(r)=c(min(ncvar_get(x,'lon')), max(ncvar_get(x, 'lon')),min(ncvar_get(x,'lat')), max(ncvar_get(x, 'lat')))
-
-
-
-gpt_sst= ncvar_get(x, 'sst')
-aps_sst = ncvar_get(aps_nc, 'sst')
-
