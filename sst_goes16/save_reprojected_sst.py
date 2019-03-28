@@ -24,6 +24,7 @@ from os import listdir
 from os.path import isfile, join
 import os
 import sys
+import pandas as pd
 
 nowdate = datetime.utcnow()
 

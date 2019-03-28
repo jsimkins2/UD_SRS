@@ -7,7 +7,7 @@ import pandas as pd
 # paths
 outpath = "/data/GOES/GOES-R/daily_composite/"
 
-datelist = pd.date_range('2018-10-30',pd.datetime.today()).tolist()
+datelist = pd.date_range('2019-01-01',pd.datetime.today()).tolist()
 for d in range(0,len(datelist)):
     goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
     goes_nc = goes_nc.sel(time=datetime.strftime(datelist[d].date(), '%Y-%m-%d'))
