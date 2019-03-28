@@ -175,7 +175,7 @@ goes_nc['sst'] = goes_nc['SST']
 goes_nc = goes_nc.drop(['SST'])
 # resample to a daily composite
 goes_nc = goes_nc.resample(time='1D').mean('time')
-goes_nc.to_netcdf(path=outpath + '/' + str(datelist[d].year) + '/GOES16_SST_dailycomposite_' + str(datelist[d].year) + str("{0:0=3d}".format(datelist[d].dayofyear)) + '.nc', format='NETCDF3_CLASSIC')
+goes_nc.to_netcdf(path=outpath + '/' + str(today.year) + '/GOES16_SST_dailycomposite_' + str(today.year) + str("{0:0=3d}".format(today.dayofyear)) + '.nc', format='NETCDF3_CLASSIC')
 
 
 
