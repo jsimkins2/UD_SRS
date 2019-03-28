@@ -155,3 +155,26 @@ if np.percentile(sst.values, 60) != -999:
     if np.percentile(dqf.values, 60) == -999:
         move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
         os.system(move_files)
+
+
+# make a current daily compsite of the most recent file
+outpath = "/data/GOES/GOES-R/daily_composite/"
+today = pd.datetime.today()
+goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
+goes_nc = goes_nc.sel(time=datetime.strftime(today.date(), '%Y-%m-%d'))
+goes_nc = goes_nc.drop('Band15')
+for t in range(len(goes_nc.time.values)):
+    x = goes_nc['SST'][t]
+    goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
+    x = goes_nc['DQF'][t]
+    goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
+
+goes_nc = goes_nc.drop(['DQF'])
+goes_nc['sst'] = goes_nc['SST']
+goes_nc = goes_nc.drop(['SST'])
+# resample to a daily composite
+goes_nc = goes_nc.resample(time='1D').mean('time')
+goes_nc.to_netcdf(path=outpath + '/' + str(datelist[d].year) + '/GOES16_SST_dailycomposite_' + str(datelist[d].year) + str("{0:0=3d}".format(datelist[d].dayofyear)) + '.nc', format='NETCDF3_CLASSIC')
+
+
+
