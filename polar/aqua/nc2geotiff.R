@@ -1,3 +1,5 @@
+# converting AQUA data from netcdf to geotiff after a resampling
+# the goal is to convert this to the ROFFS output
 library(rgdal)
 library(raster)
 library(ncdf4)
