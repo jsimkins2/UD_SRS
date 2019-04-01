@@ -159,7 +159,7 @@ if np.percentile(sst.values, 60) != -999:
 
 
 # make a current daily compsite of the most recent file
-outpath = "/data/GOES/GOES-R/daily_composite/"
+outpath = "/data/GOES/GOES-R/1day/"
 today = pd.date_range(pd.datetime.today(),pd.datetime.today()).tolist()
 goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
 goes_nc = goes_nc.sel(time=datetime.strftime(today[0].date(), '%Y-%m-%d'))
@@ -173,9 +173,13 @@ for t in range(len(goes_nc.time.values)):
 goes_nc = goes_nc.drop(['DQF'])
 goes_nc['sst'] = goes_nc['SST']
 goes_nc = goes_nc.drop(['SST'])
+
+goes_nc.to_netcdf(path=outpath + '/' + str(datelist[d].year) + '/GOES16_SST_1day_' + str(datelist[d].year) + str("{0:0=3d}".format(datelist[d].dayofyear)) + '_' + str("{0:0=2d}".format(datelist[d].month)) + str("{0:0=2d}".format(datelist[d].day)) + '.nc', format='NETCDF3_CLASSIC')
+
 # resample to a daily composite
 goes_nc = goes_nc.resample(time='1D').mean('time')
-goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(today[0].dayofyear)) + '.nc', format='NETCDF3_CLASSIC')
+outpath = "/data/GOES/GOES-R/daily_composite/"
+goes_nc.to_netcdf(path=outpath + '/' + str(datelist[d].year) + '/GOES16_SST_dailycomposite_' + str(datelist[d].year) + str("{0:0=3d}".format(datelist[d].dayofyear)) + '_' + str("{0:0=2d}".format(datelist[d].month)) + str("{0:0=2d}".format(datelist[d].day)) + '.nc', format='NETCDF3_CLASSIC')
 
 
 
