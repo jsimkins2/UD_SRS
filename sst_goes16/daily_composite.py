@@ -5,28 +5,29 @@ import metpy
 from datetime import datetime, timedelta
 import pandas as pd
 # paths
-outpath = "/data/GOES/GOES-R/daily_composite/"
+outpath = "/data/GOES/GOES-R/1day/"
 
-datelist = pd.date_range('2019-01-01',pd.datetime.today()).tolist()
+datelist = pd.date_range('2019-10-30',pd.datetime.today()).tolist()
 for d in range(0,len(datelist)):
     goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
     goes_nc = goes_nc.sel(time=datetime.strftime(datelist[d].date(), '%Y-%m-%d'))
     goes_nc = goes_nc.drop('Band15')
+    
     for t in range(len(goes_nc.time.values)):
         x = goes_nc['SST'][t]
         goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
         x = goes_nc['DQF'][t]
         goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
     
-    landmask = goes_nc['DQF'][0]
-    landmask = landmask.where(landmask.values == 3, 1)
-    landmask = landmask.where(landmask.values == 1, 0)
     goes_nc = goes_nc.drop(['DQF'])
     goes_nc['sst'] = goes_nc['SST']
     goes_nc = goes_nc.drop(['SST'])
+    goes_nc.to_netcdf(path=outpath + '/' + str(datelist[d].year) + '/GOES16_SST_1day_' + str(datelist[d].year) + str("{0:0=3d}".format(datelist[d].dayofyear)) + '_' + str("{0:0=2d}".format(datelist[d].month)) + str("{0:0=2d}".format(datelist[d].day)) + '.nc', format='NETCDF3_CLASSIC')
+
     # resample to a daily composite
     goes_nc = goes_nc.resample(time='1D').mean('time')
+    outpath = "/data/GOES/GOES-R/daily_composite/"
     #landmask.to_netcdf(path=outpath + 'landmask_roffs_' +  'area' + str(a) + '_' + str(goes_nc.time.values[0])[0:10] + '_' + str(goes_nc.time.values[-1])[0:10] + '.nc', format='NETCDF3_CLASSIC')
-    goes_nc.to_netcdf(path=outpath + '/' + str(datelist[d].year) + '/GOES16_SST_dailycomposite_' + str(datelist[d].year) + str("{0:0=3d}".format(datelist[d].dayofyear)) + '.nc', format='NETCDF3_CLASSIC')
+    goes_nc.to_netcdf(path=outpath + '/' + str(datelist[d].year) + '/GOES16_SST_dailycomposite_' + str(datelist[d].year) + str("{0:0=3d}".format(datelist[d].dayofyear)) + '_' + str("{0:0=2d}".format(datelist[d].month)) + str("{0:0=2d}".format(datelist[d].day)) + '.nc', format='NETCDF3_CLASSIC')
 
 

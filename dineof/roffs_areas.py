@@ -22,7 +22,7 @@ areas = {'area1': area1,
          'area5': area5}
 
 nowday = datetime.utcnow()
-daysback = [7]
+daysback = [7] #must keep in brackets to python recognizes it as a list
 
 for a in range(1,2):
     for d in range(0,len(daysback)):
@@ -40,10 +40,8 @@ for a in range(1,2):
         # save multiple 1 week intervals
         #dayOffset = daysback[d] + 1
         #addOffset = 1
-        
-        # resample to a daily composite
-        #goes_nc.resample(time='1D').mean('time')
-        
+
+        '''
         goes_nc = goes_nc.drop('Band15')
         for t in range(len(goes_nc.time.values)):
             x = goes_nc['SST'][t]
@@ -57,7 +55,7 @@ for a in range(1,2):
         goes_nc = goes_nc.drop(['DQF'])
         goes_nc['sst'] = goes_nc['SST']
         goes_nc = goes_nc.drop(['SST'])
-        
+        '''
         # Clean out files that are missing too much data
         '''
         print(len(goes_nc.time.values))
@@ -95,3 +93,4 @@ for a in range(1,2):
     
     
     
+
