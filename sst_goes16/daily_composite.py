@@ -9,6 +9,7 @@ outpath = "/data/GOES/GOES-R/1day/"
 
 datelist = pd.date_range('2019-10-30',pd.datetime.today()).tolist()
 for d in range(0,len(datelist)):
+    print(datelist[d])
     goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
     goes_nc = goes_nc.sel(time=datetime.strftime(datelist[d].date(), '%Y-%m-%d'))
     goes_nc = goes_nc.drop('Band15')
