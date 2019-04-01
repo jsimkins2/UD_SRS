@@ -22,20 +22,19 @@ areas = {'area1': area1,
          'area5': area5}
 
 nowday = datetime.utcnow()
-daysback = [7] #must keep in brackets to python recognizes it as a list
+daysback = [7,14,21,28,35,42] #must keep in brackets to python recognizes it as a list
 
 for a in range(1,2):
     for d in range(0,len(daysback)):
         #print(a)
         area = areas['area' + str(a)]
-
         if d == 0:
             dayOffset = 0
             addOffset = 0
+        
         # grab sst data from the last 3 days and use DQF == 0 data
-        goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
-        goes_nc = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), 
-              time=slice(datetime.strftime(nowday - timedelta(days=daysback[d] + addOffset), '%Y-%m-%d'), datetime.strftime(nowday - timedelta(days=dayOffset), '%Y-%m-%d')))
+        goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst_daily.nc")
+        goes_nc = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), time=slice(datetime.strftime(nowday - timedelta(days=daysback[d] + addOffset), '%Y-%m-%d'), datetime.strftime(nowday - timedelta(days=dayOffset), '%Y-%m-%d')))
 
         # save multiple 1 week intervals
         #dayOffset = daysback[d] + 1
