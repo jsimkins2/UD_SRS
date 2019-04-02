@@ -170,13 +170,14 @@ for t in range(len(goes_nc.time.values)):
     x = goes_nc['DQF'][t]
     goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
 
-goes_nc = goes_nc.drop(['DQF'])
+
 goes_nc['sst'] = goes_nc['SST']
 goes_nc = goes_nc.drop(['SST'])
 
 goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_1day_' + str(today[0].year) + str("{0:0=3d}".format(today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', format='NETCDF3_CLASSIC')
 
 # resample to a daily composite
+goes_nc = goes_nc.drop(['DQF'])
 goes_nc = goes_nc.resample(time='1D').mean('time')
 outpath = "/data/GOES/GOES-R/daily_composite/"
 goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', format='NETCDF3_CLASSIC')
