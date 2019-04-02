@@ -20,12 +20,13 @@ for d in range(0,len(datelist)):
         x = goes_nc['DQF'][t]
         goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
     
-    goes_nc = goes_nc.drop(['DQF'])
+    
     goes_nc['sst'] = goes_nc['SST']
     goes_nc = goes_nc.drop(['SST'])
     goes_nc.to_netcdf(path=outpath1 + '/' + str(datelist[d].year) + '/GOES16_SST_1day_' + str(datelist[d].year) + str("{0:0=3d}".format(datelist[d].dayofyear)) + '_' + str("{0:0=2d}".format(datelist[d].month)) + str("{0:0=2d}".format(datelist[d].day)) + '.nc', format='NETCDF3_CLASSIC')
 
     # resample to a daily composite
+    goes_nc = goes_nc.drop(['DQF'])
     goes_nc = goes_nc.resample(time='1D').mean('time')
     outpath2 = "/data/GOES/GOES-R/daily_composite/"
     #landmask.to_netcdf(path=outpath2 + 'landmask_roffs_' +  'area' + str(a) + '_' + str(goes_nc.time.values[0])[0:10] + '_' + str(goes_nc.time.values[-1])[0:10] + '.nc', format='NETCDF3_CLASSIC')

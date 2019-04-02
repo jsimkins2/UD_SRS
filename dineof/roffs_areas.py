@@ -41,7 +41,7 @@ for a in range(1,2):
         #addOffset = 1
 
         
-        goes_nc = goes_nc.drop('Band15')
+        #goes_nc = goes_nc.drop('Band15')
         for t in range(len(goes_nc.time.values)):
             x = goes_nc['SST'][t]
             goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
@@ -52,8 +52,6 @@ for a in range(1,2):
         landmask = landmask.where(landmask.values == 3, 1)
         landmask = landmask.where(landmask.values == 1, 0)
         goes_nc = goes_nc.drop(['DQF'])
-        goes_nc['sst'] = goes_nc['SST']
-        goes_nc = goes_nc.drop(['SST'])
         
         # Clean out files that are missing too much data
         '''
