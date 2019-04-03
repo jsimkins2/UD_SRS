@@ -265,7 +265,7 @@ if len(ABI_datetime) > 0:
         toprecx = 0.125
         toprecy = 0.786
         bottomrecx = 0.125
-        bottomrecy = 0.19
+        bottomrecy = 0.15
         symbol = u'$\u26A1$'
         
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
@@ -290,7 +290,7 @@ if len(ABI_datetime) > 0:
         fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.025,
                                       fill=True, alpha=1, facecolor='darkslateblue', zorder=3,
                                       transform=fig.transFigure, figure=fig)])
-        fig.patches.extend([plt.Rectangle((bottomrecx,bottomrecy),0.7535,0.025,
+        fig.patches.extend([plt.Rectangle((bottomrecx,bottomrecy),0.7745,0.025,
                               fill=True, facecolor='darkslateblue', zorder=3, alpha=1,
                               transform=fig.transFigure, figure=fig)])
         title = 'NOAA GOES16 True Color & Lightning Flashes - Powered By CEMA'
@@ -305,9 +305,9 @@ if len(ABI_datetime) > 0:
             conus_flash_count = 'Unavailable'
         
         clabeltext = 'Flash Count=' + str(conus_flash_count)
-        fig.text(.13, .19,clabeltext,horizontalalignment='left', color = 'red', size=12, zorder=2000)
+        fig.text(.13, .19,clabeltext,horizontalalignment='left', color = 'white', size=14, zorder=2000)
         im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemagoes38.png")
-        plt.figimage(im1, 25, 25, zorder=1)
+        plt.figimage(im1, 25, 40, zorder=1)
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
         output_file = workdir + "ltng_conus/" + ABI_datetime[n] + ".png"
@@ -329,9 +329,9 @@ if len(ABI_datetime) > 0:
         bottomtextleft = 0.13
         bottomtextheight = 0.212
         toprecx = 0.1355
-        toprecy = 0.859
-        bottomrecx = 0.125
-        bottomrecy = 0.15
+        toprecy = 0.854
+        bottomrecx = 0.1355
+        bottomrecy = 0.11
         
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
@@ -348,7 +348,7 @@ if len(ABI_datetime) > 0:
                                         edgecolor='black', facecolor='none',linewidth=0.5))
 
         # top rectangle
-        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.025,
+        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7535,0.025,
                                       fill=True, alpha=1, facecolor='darkslateblue', zorder=3,
                                       transform=fig.transFigure, figure=fig)])
         fig.patches.extend([plt.Rectangle((bottomrecx,bottomrecy),0.7535,0.025,
@@ -364,9 +364,9 @@ if len(ABI_datetime) > 0:
         except NameError:
             midatl_flash_count = 'Unavailable'
         clabeltext = 'Flash Count=' + str(midatl_flash_count)
-        fig.text(.16, .13,clabeltext,horizontalalignment='left', color = 'red', size=10, zorder=2000)
+        fig.text(.16, .13,clabeltext,horizontalalignment='left', color = 'white', size=10, zorder=2000)
         im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemagoes24.png")
-        plt.figimage(im1, 25, 25,zorder=1)
+        plt.figimage(im1, 22, 35,zorder=1)
 
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
@@ -374,6 +374,12 @@ if len(ABI_datetime) > 0:
         fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=True)
         fig.savefig(workdir + "img_mid/" + ABI_datetime[n] + ".png", dpi=dpi, bbox_inches='tight', transparent=False)
         plt.close()
+
+
+
+
+
+
 
 ######################## TRUE COLOR WITH LIGHTNING GIFS ########################
 ######################## ######################## ######################## 
