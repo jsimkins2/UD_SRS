@@ -37,10 +37,10 @@ warnings.simplefilter("ignore", category=DeprecationWarning)
 
 
 ############# Initial Set Up ##################
-workdir = "/home/sat_ops/goesR/"
+workdir = "/home/sat_ops/goesR/truecolor"
 datadir = "/home/sat_ops/goesR/data/mcmipc/"
 ltngdir = "/home/sat_ops/goesR/data/glm/"
-imgdir = "/home/sat_ops/goesR/ltng_conus/"
+imgdir = "/home/sat_ops/goesR/truecolor/ltng_conus/"
 site = 'KDOX'
 
 ############## Define Functions that will be used later #########################
