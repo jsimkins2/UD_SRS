@@ -43,8 +43,8 @@ for a in range(1,2):
         
         #goes_nc = goes_nc.drop('Band15')
         for t in range(len(goes_nc.time.values)):
-            x = goes_nc['SST'][t]
-            goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
+            x = goes_nc['sst'][t]
+            goes_nc['sst'][t] = x.where(goes_nc['DQF'][t] == 0)
             x = goes_nc['DQF'][t]
             goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
         
