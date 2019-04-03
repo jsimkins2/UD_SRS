@@ -80,7 +80,7 @@ for i in range(0,len(file_names)):
     fname = fname[1:]
     fnamelist.append(fname)
 
-fnamelist = sorted(fnamelist, key=int)
+fnamelist = sorted(fnamelist, key=int)[-3:]
 GLM_files = [f for f in listdir(ltngdir) if isfile(join(ltngdir, f))]
 GLM_names = []
 
@@ -90,7 +90,7 @@ for i in range(0,len(GLM_files)):
     fname = fname[1:]
     GLM_names.append(fname)
 
-lnamelist = sorted(GLM_names, key=int)
+lnamelist = sorted(GLM_names, key=int)[-201:]
 # sort through the files and make sure that they don't exist before we process them
 ldatetime = []
 for t in lnamelist:
