@@ -261,11 +261,11 @@ if len(ABI_datetime) > 0:
         toptextleft = 0.13
         toptextright = 0.76
         bottomtextleft = 0.13
-        bottomtextheight = 0.155
+        bottomtextheight = 0.185
         toprecx = 0.125
         toprecy = 0.786
         bottomrecx = 0.125
-        bottomrecy = 0.15
+        bottomrecy = 0.18
         symbol = u'$\u26A1$'
         
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
@@ -307,7 +307,7 @@ if len(ABI_datetime) > 0:
         clabeltext = 'Flash Count=' + str(conus_flash_count)
         fig.text(bottomtextleft,bottomtextheight,clabeltext,horizontalalignment='left', color = 'white', size=14, zorder=2000)
         im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemagoes38.png")
-        plt.figimage(im1, 25, 60, zorder=1)
+        plt.figimage(im1, 25, 67, zorder=1)
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
         output_file = workdir + "ltng_conus/" + ABI_datetime[n] + ".png"
@@ -326,7 +326,7 @@ if len(ABI_datetime) > 0:
         toptext = 0.861
         textleft = 0.137
         toptextright = 0.69
-        bottomtextleft = 0.135
+        bottomtextleft = 0.139
         bottomtextheight = 0.115
         toprecx = 0.1352
         toprecy = 0.854
@@ -366,7 +366,7 @@ if len(ABI_datetime) > 0:
         clabeltext = 'Flash Count=' + str(midatl_flash_count)
         fig.text(bottomtextleft, bottomtextheight,clabeltext,horizontalalignment='left', color = 'white', size=10, zorder=2000)
         im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemagoes24.png")
-        plt.figimage(im1, 20, 40,zorder=1)
+        plt.figimage(im1, 17, 35,zorder=1)
 
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
