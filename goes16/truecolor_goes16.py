@@ -261,11 +261,11 @@ if len(ABI_datetime) > 0:
         toptextleft = 0.13
         toptextright = 0.76
         bottomtextleft = 0.13
-        bottomtextheight = 0.21
+        bottomtextheight = 0.155
         toprecx = 0.125
         toprecy = 0.786
         bottomrecx = 0.125
-        bottomrecy = 0.2
+        bottomrecy = 0.15
         symbol = u'$\u26A1$'
         
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
@@ -323,11 +323,11 @@ if len(ABI_datetime) > 0:
         fs_x = 8
         fs_y = 8
         dpi = 100
-        toptext = 0.863
+        toptext = 0.861
         textleft = 0.137
-        toptextright = 0.68
-        bottomtextleft = 0.13
-        bottomtextheight = 0.13
+        toptextright = 0.69
+        bottomtextleft = 0.135
+        bottomtextheight = 0.115
         toprecx = 0.1352
         toprecy = 0.854
         bottomrecx = 0.1352
@@ -358,7 +358,7 @@ if len(ABI_datetime) > 0:
         timestr = local.strftime('%Y-%m-%d %H:%M ') + et
         
         fig.text(toptextright, toptext,timestr,horizontalalignment='left', color = 'white', size=10, zorder=2000)
-        fig.text(textleft, toptext,title,horizontalalignment='left', color = 'white', size=8, zorder=2000)
+        fig.text(textleft, toptext,title,horizontalalignment='left', color = 'white', size=9, zorder=2000)
         try:
             midatl_flash_count
         except NameError:
@@ -366,7 +366,7 @@ if len(ABI_datetime) > 0:
         clabeltext = 'Flash Count=' + str(midatl_flash_count)
         fig.text(bottomtextleft, bottomtextheight,clabeltext,horizontalalignment='left', color = 'white', size=10, zorder=2000)
         im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemagoes24.png")
-        plt.figimage(im1, 22, 45,zorder=1)
+        plt.figimage(im1, 20, 40,zorder=1)
 
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
