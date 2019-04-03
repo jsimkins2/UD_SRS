@@ -30,7 +30,7 @@ from datetime import datetime, timedelta
 from os import listdir
 from os.path import isfile, join
 import calendar
- 
+import imageio
 #suppress deprecation warnings
 import warnings
 warnings.simplefilter("ignore", category=DeprecationWarning)
@@ -38,8 +38,10 @@ warnings.simplefilter("ignore", category=DeprecationWarning)
 
 ############# Initial Set Up ##################
 workdir = "/home/sat_ops/web/images/"
-datadir = "/home/sat_ops/goesR/data/mcmipc/"
-ltngdir = "/home/sat_ops/goesR/data/glm/"
+#datadir = "/home/sat_ops/goesR/data/mcmipc/"
+datadir = "/home/sat_ops/web/data/"
+#ltngdir = "/home/sat_ops/goesR/data/glm/"
+ltngdir = "/home/sat_ops/web/ltngdata/"
 imgdir = "/home/sat_ops/web/images/tcconus/"
 site = 'KDOX'
 
@@ -80,7 +82,7 @@ for i in range(0,len(file_names)):
     fname = fname[1:]
     fnamelist.append(fname)
 
-fnamelist = sorted(fnamelist, key=int)[-15:]
+fnamelist = sorted(fnamelist, key=int)
 GLM_files = [f for f in listdir(ltngdir) if isfile(join(ltngdir, f))]
 GLM_names = []
 
@@ -90,52 +92,50 @@ for i in range(0,len(GLM_files)):
     fname = fname[1:]
     GLM_names.append(fname)
 
-lnamelist = sorted(GLM_names, key=int)[-501:]
+lnamelist = sorted(GLM_names, key=int)
 # sort through the files and make sure that they don't exist before we process them
-
-ABI_datetime = []
-for i in fnamelist:    
-    if os.path.isfile(imgdir + str(i) + ".png") == False:
-        ABI_datetime.append(i)
-
-
 ldatetime = []
 for t in lnamelist:
     jday = t[4:7]
     year = t[0:4]
     mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
     hms = t[7:13]
-    t = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
-    ldatetime.append(datetime.strptime(t, '%Y%m%d%H%M%S'))
-    
+    t = str(mdy[2]) + jday + hms
+    ldatetime.append(datetime.strptime(t, '%Y%j%H%M%S'))
 
+ABI_datetime = []
+for i in fnamelist:    
+    if os.path.isfile(imgdir + str(i) + ".png") == False:
+        ABI_datetime.append(i)
+
+    
+ABI_datetime = ABI_datetime[0:3]
 # begin the loop that makes the images
 if len(ABI_datetime) > 0:
     for n in range(0, len(ABI_datetime)):
-        t = ABI_datetime[n]
-        print(t)
-        jday = t[4:7]
-        year = t[0:4]
-        mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
-        hms = t[7:13]
-        mdy_str = str(mdy[2]) + str(mdy[0]) + str(mdy[1]) + hms
-        gdatetime=datetime.strptime(mdy_str, '%Y%m%d%H%M%S')
+        t = ABI_datetime[n][:-3]
+        gdatetime=datetime.strptime(t, '%Y%j%H%M')
         ltng_index = ldatetime.index(nearest(ldatetime, gdatetime))
-        ltng_files = lnamelist[ltng_index - 15: ltng_index]
+        if ltng_index < 1:
+            ltng_files = lnamelist[ltng_index - ltng_index + 1: ltng_index]
+        else:
+            ltng_files = lnamelist[ltng_index - 15: ltng_index]
         
         C_file = datadir + 'OR_ABI-L2-MCMIPC-M3_G16_s' + str(ABI_datetime[n]) + '.nc'  # GOES16 East
         if os.path.isfile(C_file) == False:
             C_file = datadir + 'OR_ABI-L2-MCMIPC-M4_G16_s' + str(ABI_datetime[n]) + '.nc'
             if os.path.isfile(C_file) == False:
-                import smtplib
-                dfile=open("/home/sat_ops/goes_r/noaa_format/udelsatinfo.txt", "r")
-                dw = dfile.readline()
-                server = smtplib.SMTP('smtp.gmail.com', 587)
-                server.starttls()
-                server.login("goessatelliteudel@gmail.com", dw)
-                msg = "TC CONUS IS BREAKING"
-                server.sendmail("goessatelliteudel@gmail.com", "simkins@udel.edu", msg)
-                server.quit()
+                C_file = datadir + 'OR_ABI-L2-MCMIPC-M6_G16_s' + str(ABI_datetime[n]) + '.nc'
+                if os.path.isfile(C_file) == False:
+                    import smtplib
+                    dfile=open("/home/sat_ops/goes_r/noaa_format/udelsatinfo.txt", "r")
+                    dw = dfile.readline()
+                    server = smtplib.SMTP('smtp.gmail.com', 587)
+                    server.starttls()
+                    server.login("goessatelliteudel@gmail.com", dw)
+                    msg = "TC CONUS IS BREAKING"
+                    server.sendmail("goessatelliteudel@gmail.com", "simkins@udel.edu", msg)
+                    server.quit()
         
         # below is code from Brian Blaylock of Univ Utah, thanks Brian!
         Cnight = Dataset(C_file, 'r')
@@ -200,7 +200,7 @@ if len(ABI_datetime) > 0:
                 conus_flash_count = 0
             ylt = len(ltng_lat[lt])
             conus_flash_count = conus_flash_count + ylt
-
+        
         for lt in range(0, len(ltng_lat)):
             subset = []
             llat=34.32556
@@ -248,9 +248,9 @@ if len(ABI_datetime) > 0:
         dst = lt.tm_isdst
         
         if dst == 0:
-            et = "EDT"
-        else:
             et = "EST"
+        else:
+            et = "EDT"
     
         #######################################################################
         #######################################################################
@@ -275,6 +275,11 @@ if len(ABI_datetime) > 0:
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
         im = ax.pcolormesh(dat['x'], dat['y'], R, color=colorTuple, transform=proj)
+        for g in range(0, len(ltng_lat)):
+            ax.scatter(ltng_lon[g], ltng_lat[g], s=18, marker=symbol, c='red', edgecolor='red', lw=0, transform=ltngproj)
+        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.025,
+                              fill=True, color='black', alpha=1, zorder=1000,
+                              transform=fig.transFigure, figure=fig)])
         ax.set_extent((-65, -128, 21, 47))
         ax.set_title("")
         ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
@@ -284,25 +289,34 @@ if len(ABI_datetime) > 0:
         ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '50m',
                                         edgecolor='black', facecolor='none',linewidth=0.5))
                                         
+        
         # top rectangle
         fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.025,
                                       fill=True, color='black', alpha=1, zorder=1000,
                                       transform=fig.transFigure, figure=fig)])
         
-        title = 'NOAA GOES16 Imagery - Powered By CEMA'
+        title = 'NOAA GOES16 True Color & Lightning Flashes - Powered By CEMA'
         timestr = local.strftime('%Y-%m-%d %H:%M ') + et
         
         fig.text(toptextright, toptext,timestr,horizontalalignment='left', color = 'white', size=14, zorder=2000)
         fig.text(bottomtextleft, toptext,title,horizontalalignment='left', color = 'white', size=14, zorder=2000)
         
+        try:
+            conus_flash_count
+        except NameError:
+            conus_flash_count = 'Unavailable'
+        
+        clabeltext = 'Flash Count=' + str(conus_flash_count)
+        fig.text(.13, .19,clabeltext,horizontalalignment='left', color = 'red', size=12, zorder=2000)
+        
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
         output_file = workdir + "tcconus/" + ABI_datetime[n] + ".png"
-        fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=True)
+        fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=False)
         plt.close()
         
         
-        
+        '''
         # Now plot the conus Lightning
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
@@ -324,7 +338,7 @@ if len(ABI_datetime) > 0:
         output_file = workdir + "ltngconus/" + ABI_datetime[n] + ".png"
         fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=True)
         plt.close()
-        
+        '''
         #######################################################################
         #######################################################################
         ####################### Mid Atlantic ##################################
@@ -335,7 +349,7 @@ if len(ABI_datetime) > 0:
         dpi = 100
         toptext = 0.863
         textleft = 0.137
-        toptextright = 0.69
+        toptextright = 0.68
         bottomtextleft = 0.13
         bottomtextheight = 0.212
         toprecx = 0.1355
@@ -346,6 +360,8 @@ if len(ABI_datetime) > 0:
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
         im = ax.pcolormesh(dat['x'], dat['y'], R, color=colorTuple, transform=proj)
+        for g in range(0, len(ltng_lat)):
+            ax.scatter(ltng_lon[g], ltng_lat[g], s=18, marker=symbol, c='red', edgecolor='red', lw=0, transform=ltngproj)
         ax.set_extent((-69, -81, 34.5, 44))
         ax.set_title("")
         ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
@@ -359,11 +375,17 @@ if len(ABI_datetime) > 0:
         fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7535,0.025,
                               fill=True, color='black', alpha=1, zorder=1000,
                               transform=fig.transFigure, figure=fig)])
-        title = 'NOAA GOES16 Imagery - Powered By CEMA'
+        title = 'NOAA GOES16 True Color & Lightning Flashes - Powered By CEMA'
         timestr = local.strftime('%Y-%m-%d %H:%M ') + et
         
         fig.text(toptextright, toptext,timestr,horizontalalignment='left', color = 'white', size=10, zorder=2000)
-        fig.text(textleft, toptext,title,horizontalalignment='left', color = 'white', size=10, zorder=2000)
+        fig.text(textleft, toptext,title,horizontalalignment='left', color = 'white', size=8, zorder=2000)
+        try:
+            midatl_flash_count
+        except NameError:
+            midatl_flash_count = 'Unavailable'
+        clabeltext = 'Flash Count=' + str(midatl_flash_count)
+        fig.text(.16, .13,clabeltext,horizontalalignment='left', color = 'red', size=10, zorder=2000)
 
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
@@ -372,7 +394,7 @@ if len(ABI_datetime) > 0:
         plt.close()
         
         
-        
+        '''
         # Now plot the conus Lightning
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
@@ -395,4 +417,46 @@ if len(ABI_datetime) > 0:
         output_file = workdir + "ltngmid/" + ABI_datetime[n] + ".png"
         fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=True)
         plt.close()
+        '''
+######################## TRUE COLOR WITH LIGHTNING GIFS ########################
+######################## ######################## ######################## 
+workdir = "/home/sat_ops/web/"
+imgdir = "/home/sat_ops/web/images/tcconus/"
+img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
+img_names = sorted(img_list)
 
+imglen = len(img_names)
+images = []
+dur_vals = []
+for i in range(1,imglen):
+    if i != imglen:
+        dur_vals.append(.07)
+        
+dur_vals.append(2)
+
+for i in img_names:
+    input_file=imgdir + str(i)
+    images.append(imageio.imread(input_file))
+
+imageio.mimsave(workdir + 'lightning_truecolor_conus.gif', images, duration=dur_vals)
+imageio.mimsave(workdir + 'truecolor_conus.gif', images, duration=dur_vals)
+
+# now for the midatlantic
+imgdir = "/home/sat_ops/web/images/tcmid/"
+img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
+img_names = sorted(img_list)
+
+imglen = len(img_names)
+images = []
+dur_vals = []
+for i in range(1,imglen):
+    if i != imglen:
+        dur_vals.append(.07)
+
+dur_vals.append(2)
+
+for i in img_names:
+    input_file=imgdir + str(i)
+    images.append(imageio.imread(input_file))
+imageio.mimsave(workdir + 'lightning_truecolor_midatlantic.gif', images, duration=dur_vals)
+imageio.mimsave(workdir + 'truecolor_midatlantic.gif', images, duration=dur_vals)
