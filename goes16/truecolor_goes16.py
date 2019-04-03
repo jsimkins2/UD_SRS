@@ -226,7 +226,7 @@ if len(ABI_datetime) > 0:
         Cnight2 = xr.open_dataset(C_file)
         dat = Cnight2.metpy.parse_cf("CMI_C01")
         proj = dat.metpy.cartopy_crs
-        newproj = ccrs.Mercator()
+        newproj = ccrs.LambertConformal()
 
         # Figure out the time
         ymd = Cnight2.time_coverage_end.split("T")[0]
@@ -290,7 +290,9 @@ if len(ABI_datetime) > 0:
         fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.025,
                                       fill=True, color='black', alpha=1, zorder=1000,
                                       transform=fig.transFigure, figure=fig)])
-        
+        fig.patches.extend([plt.Rectangle((bottomrecx,bottomrecy),0.7535,0.025,
+                              fill=True, color='black', alpha=1, zorder=1000,
+                              transform=fig.transFigure, figure=fig)])
         title = 'NOAA GOES16 True Color & Lightning Flashes - Powered By CEMA'
         timestr = local.strftime('%Y-%m-%d %H:%M ') + et
         
@@ -304,7 +306,8 @@ if len(ABI_datetime) > 0:
         
         clabeltext = 'Flash Count=' + str(conus_flash_count)
         fig.text(.13, .19,clabeltext,horizontalalignment='left', color = 'red', size=12, zorder=2000)
-        
+        im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemagoes38.png")
+        plt.figimage(im1, 15, 15, zorder=1)
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
         output_file = workdir + "ltng_conus/" + ABI_datetime[n] + ".png"
@@ -328,7 +331,7 @@ if len(ABI_datetime) > 0:
         toprecx = 0.1355
         toprecy = 0.859
         bottomrecx = 0.125
-        bottomrecy = 0.205
+        bottomrecy = 0.15
         
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
@@ -348,6 +351,9 @@ if len(ABI_datetime) > 0:
         fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7535,0.025,
                               fill=True, color='black', alpha=1, zorder=1000,
                               transform=fig.transFigure, figure=fig)])
+        fig.patches.extend([plt.Rectangle((bottomrecx,bottomrecy),0.7535,0.025,
+                              fill=True, color='black', alpha=1, zorder=1000,
+                              transform=fig.transFigure, figure=fig)])
         title = 'NOAA GOES16 True Color & Lightning Flashes - Powered By CEMA'
         timestr = local.strftime('%Y-%m-%d %H:%M ') + et
         
@@ -359,6 +365,8 @@ if len(ABI_datetime) > 0:
             midatl_flash_count = 'Unavailable'
         clabeltext = 'Flash Count=' + str(midatl_flash_count)
         fig.text(.16, .13,clabeltext,horizontalalignment='left', color = 'red', size=10, zorder=2000)
+        im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemagoes24.png")
+        plt.figimage(im1, 15, 12,zorder=1)
 
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
