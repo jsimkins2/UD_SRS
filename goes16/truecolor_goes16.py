@@ -370,8 +370,8 @@ if len(ABI_datetime) > 0:
 ######################## TRUE COLOR WITH LIGHTNING GIFS ########################
 ######################## ######################## ######################## 
 print('making the gifs now!')
-workdir = "/home/sat_ops/goesR/"
-imgdir = "/home/sat_ops/goesR/ltng_conus/"
+workdir = "/home/sat_ops/goesR/truecolor/"
+imgdir = "/home/sat_ops/goesR/truecolor/ltng_conus/"
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
 img_names = sorted(img_list)[-72:]
 
@@ -392,7 +392,7 @@ imageio.mimsave(workdir + 'lightning_truecolor_conus.gif', images, duration=dur_
 imageio.mimsave(workdir + 'truecolor_conus.gif', images, duration=dur_vals)
 
 # now for the midatlantic
-imgdir = "/home/sat_ops/goesR/ltng_mid/"
+imgdir = "/home/sat_ops/goesR/truecolor/ltng_mid/"
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
 img_names = sorted(img_list)[-72:]
 
