@@ -37,7 +37,7 @@ warnings.simplefilter("ignore", category=DeprecationWarning)
 
 
 ############# Initial Set Up ##################
-workdir = "/home/sat_ops/goesR/truecolor"
+workdir = "/home/sat_ops/goesR/truecolor/"
 datadir = "/home/sat_ops/goesR/data/mcmipc/"
 ltngdir = "/home/sat_ops/goesR/data/glm/"
 imgdir = "/home/sat_ops/goesR/truecolor/ltng_conus/"
