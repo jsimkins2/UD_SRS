@@ -309,6 +309,7 @@ if len(ABI_datetime) > 0:
         ax.background_patch.set_visible(False)
         output_file = workdir + "ltng_conus/" + ABI_datetime[n] + ".png"
         fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=False)
+        fig.savefig(workdir + "img_conus/" + ABI_datetime[n] + ".png", dpi=dpi, bbox_inches='tight', transparent=False)
         plt.close()
 
         #######################################################################
@@ -363,10 +364,12 @@ if len(ABI_datetime) > 0:
         ax.background_patch.set_visible(False)
         output_file = workdir + "ltng_mid/" + ABI_datetime[n] + ".png"
         fig.savefig(output_file, dpi=dpi, bbox_inches='tight', transparent=True)
+        fig.savefig(workdir + "img_mid/" + ABI_datetime[n] + ".png", dpi=dpi, bbox_inches='tight', transparent=False)
         plt.close()
 
 ######################## TRUE COLOR WITH LIGHTNING GIFS ########################
 ######################## ######################## ######################## 
+print('making the gifs now!')
 workdir = "/home/sat_ops/goesR/"
 imgdir = "/home/sat_ops/goesR/ltng_conus/"
 img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
