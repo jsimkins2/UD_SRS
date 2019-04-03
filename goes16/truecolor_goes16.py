@@ -308,7 +308,7 @@ if len(ABI_datetime) > 0:
         clabeltext = 'Flash Count=' + str(conus_flash_count)
         fig.text(bottomtextleft,bottomtextheight,clabeltext,horizontalalignment='left', color = 'white', size=14, zorder=2000)
         im1 = image.imread("/home/sat_ops/goesR/zfolder/udelcemagoes38.png")
-        plt.figimage(im1, 23, 63, zorder=1)
+        plt.figimage(im1, 23, 58, zorder=1)
         ax.outline_patch.set_visible(False)
         ax.background_patch.set_visible(False)
         output_file = workdir + "ltng_conus/" + ABI_datetime[n] + ".png"
