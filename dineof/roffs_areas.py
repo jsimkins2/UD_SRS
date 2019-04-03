@@ -35,13 +35,11 @@ for a in range(1,2):
         # grab sst data from the last 3 days and use DQF == 0 data
         goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst_daily.nc")
         goes_nc = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), time=slice(datetime.strftime(nowday - timedelta(days=daysback[d] + addOffset), '%Y-%m-%d'), datetime.strftime(nowday - timedelta(days=dayOffset), '%Y-%m-%d')))
-
         # save multiple 1 week intervals
         #dayOffset = daysback[d] + 1
         #addOffset = 1
 
-        
-        #goes_nc = goes_nc.drop('Band15')
+
         for t in range(len(goes_nc.time.values)):
             x = goes_nc['sst'][t]
             goes_nc['sst'][t] = x.where(goes_nc['DQF'][t] == 0)
@@ -49,6 +47,7 @@ for a in range(1,2):
             goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
         
         landmask = goes_nc['DQF'][0]
+        landmask = landmask.rename('landmask')
         landmask = landmask.where(landmask.values == 3, 1)
         landmask = landmask.where(landmask.values == 1, 0)
         goes_nc = goes_nc.drop(['DQF'])
