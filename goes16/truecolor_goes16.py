@@ -274,9 +274,7 @@ if len(ABI_datetime) > 0:
         im = ax.pcolormesh(dat['x'], dat['y'], R, color=colorTuple, transform=proj)
         for g in range(0, len(ltng_lat)):
             ax.scatter(ltng_lon[g], ltng_lat[g], s=18, marker=symbol, c='red', edgecolor='red', lw=0, transform=ltngproj)
-        fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.7745,0.025,
-                              fill=True, color='black', alpha=1, zorder=1000,
-                              transform=fig.transFigure, figure=fig)])
+
         ax.set_extent((-65, -128, 21, 47))
         ax.set_title("")
         ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
