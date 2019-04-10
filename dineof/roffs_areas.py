@@ -22,7 +22,7 @@ areas = {'area1': area1,
          'area5': area5}
 
 nowday = datetime.utcnow()
-daysback = [7,14,21,28,35,42] #must keep in brackets to python recognizes it as a list
+daysback = [7,14,21] #must keep in brackets to python recognizes it as a list
 
 for a in range(1,2):
     for d in range(0,len(daysback)):
@@ -39,12 +39,12 @@ for a in range(1,2):
         #dayOffset = daysback[d] + 1
         #addOffset = 1
 
-
-        for t in range(len(goes_nc.time.values)):
-            x = goes_nc['sst'][t]
-            goes_nc['sst'][t] = x.where(goes_nc['DQF'][t] == 0)
-            x = goes_nc['DQF'][t]
-            goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
+        # COMMENTING OUT BELOW BECAUSE THIS STEP IS ALREADY BEING DONE IN 1DAY
+        #for t in range(len(goes_nc.time.values)):
+            #x = goes_nc['sst'][t]
+            #goes_nc['sst'][t] = x.where(goes_nc['DQF'][t] == 0)
+            #x = goes_nc['DQF'][t]
+            #goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
         
         landmask = goes_nc['DQF'][0]
         landmask = landmask.rename('landmask')
