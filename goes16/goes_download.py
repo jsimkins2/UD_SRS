@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os.path
 import os
 
-# open a client 
+# open a client
 client = storage.Client()
 
 # just adding an additional line here for github
@@ -21,7 +21,7 @@ if len(str(tt.tm_yday)) == 1:
     jday = '00' + str(tt.tm_yday)
 
 if len(str(tt.tm_yday)) == 2:
-    jday = '0' + str(tt.tm_yday) 
+    jday = '0' + str(tt.tm_yday)
 
 if len(str(tt.tm_yday)) == 3:
     jday = str(tt.tm_yday)
@@ -48,9 +48,9 @@ for i in blobs:
             # call the individual file we want
             goesfile= bucket.get_blob('GLM-L2-LCFA/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
             # download said file and keep original naming structure
-            goesfile.download_to_filename("/home/sat_ops/goesR/data/glm/" + temname.split("_e")[0] + ".nc") 
+            goesfile.download_to_filename("/home/sat_ops/goesR/data/glm/" + temname.split("_e")[0] + ".nc")
             print "Downloading " + temname
-            
+
 blobs = bucket.list_blobs(prefix='ABI-L2-MCMIPC/'+ str(now.year) + '/' + jday + '/' + hourstr + '/')
 print blobs
 results = []
@@ -59,21 +59,19 @@ for i in blobs:
     for j in results:
         # parse for the filename we want
         temname = str(j)[58:-1]
+        # download said file but change naming structure to allow for chronological sorting regardless of scan mode
+        if temname.split('-')[3][0:2] != 'M3':
+            temname = temname.split('-')[0] + '-' + temname.split('-')[1] + '-' + temname.split('-')[2] + '-' + 'M3' + temname.split('-')[3][2:len(temname)]
+        else:
+            temname = str(temname)
         # if the file already exists, do NOT download and overwrite it
-        # adding the 3223350605. so parsing works downstream, should probably change this later
         if os.path.isfile("/home/sat_ops/goesR/data/mcmipc/" + temname.split("_e")[0] + ".nc") == False:
             # call the individual file we want
             goesfile= bucket.get_blob('ABI-L2-MCMIPC/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
-            # download said file but change naming structure to allow for chronological sorting regardless of scan mode
-            if temname.split('-')[3][0:2] != 'M3':
-                temname = temname.split('-')[0] + '-' + temname.split('-')[1] + '-' + temname.split('-')[2] + '-' + 'M3' + temname.split('-')[3][2:len(temname)]
-            else:
-                temname = str(temname)
-                    
-            goesfile.download_to_filename("/home/sat_ops/goesR/data/mcmipc/" + temname.split("_e")[0] + ".nc") 
+            goesfile.download_to_filename("/home/sat_ops/goesR/data/mcmipc/" + temname.split("_e")[0] + ".nc")
             print "Downloading " + temname
-            
-            
+
+
 
 
 # get mesoscale stuff
@@ -84,17 +82,15 @@ for i in blobs:
     for j in results:
         # parse for the filename we want
         temname = str(j)[58:-1]
+        # download said file but change naming structure to allow for chronological sorting regardless of scan mode
+        if temname.split('-')[3][0:2] != 'M3':
+            temname = temname.split('-')[0] + '-' + temname.split('-')[1] + '-' + temname.split('-')[2] + '-' + 'M3' + temname.split('-')[3][2:len(temname)]
+        else:
+            temname = str(temname)
         # if the file already exists, do NOT download and overwrite it
-        # adding the 3223350605. so parsing works downstream, should probably change this later
         if os.path.isfile("/home/sat_ops/goesR/data/meso/" + temname.split("_e")[0] + ".nc") == False:
             # call the individual file we want
             goesfile= bucket.get_blob('ABI-L2-MCMIPM/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
-            # download said file but change naming structure to allow for chronological sorting regardless of scan mode
-            if temname.split('-')[3][0:2] != 'M3':
-                temname = temname.split('-')[0] + '-' + temname.split('-')[1] + '-' + temname.split('-')[2] + '-' + 'M3' + temname.split('-')[3][2:len(temname)]
-            else:
-                temname = str(temname)
-                    
             goesfile.download_to_filename("/home/sat_ops/goesR/data/meso/" + temname.split("_e")[0] + ".nc")
             print "Downloading " + temname
 
@@ -105,16 +101,13 @@ for i in blobs:
     for j in results:
         # parse for the filename we want
         temname = str(j)[58:-1]
+        # download said file but change naming structure to allow for chronological sorting regardless of scan mode
+        if temname.split('-')[3][0:2] != 'M3':
+            temname = temname.split('-')[0] + '-' + temname.split('-')[1] + '-' + temname.split('-')[2] + '-' + 'M3' + temname.split('-')[3][2:len(temname)]
+        else:
+            temname = str(temname)
         # if the file already exists, do NOT download and overwrite it
-        # adding the 3223350605. so parsing works downstream, should probably change this later
         if os.path.isfile("/home/sat_ops/goesR/data/fulldisk/" + temname.split("_e")[0] + ".nc") == False:
-            # call the individual file we want
             goesfile= bucket.get_blob('ABI-L2-MCMIPF/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + temname)
-            # download said file but change naming structure to allow for chronological sorting regardless of scan mode
-            if temname.split('-')[3][0:2] != 'M3':
-                temname = temname.split('-')[0] + '-' + temname.split('-')[1] + '-' + temname.split('-')[2] + '-' + 'M3' + temname.split('-')[3][2:len(temname)]
-            else:
-                temname = str(temname)
-
-            goesfile.download_to_filename("/home/sat_ops/goesR/data/fulldisk/" + temname.split("_e")[0] + ".nc") 
+            goesfile.download_to_filename("/home/sat_ops/goesR/data/fulldisk/" + temname.split("_e")[0] + ".nc")
             print "Downloading " + temname
