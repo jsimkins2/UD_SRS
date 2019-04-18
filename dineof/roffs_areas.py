@@ -5,7 +5,7 @@ import metpy
 from datetime import datetime, timedelta
 
 # paths
-outpath = "/home/sat_ops/goesR/data/sst/roffs/"
+outpath = "/home/sat_ops/dineof/temp/"
 
 # define area of interest
 area1 = [32.5, 36, -78.25, -73.75]
@@ -24,7 +24,7 @@ areas = {'area1': area1,
 nowday = datetime.utcnow()
 daysback = [7,14,21] #must keep in brackets to python recognizes it as a list
 
-for a in range(1,2):
+for a in range(4,5):
     for d in range(0,len(daysback)):
         #print(a)
         area = areas['area' + str(a)]
@@ -33,6 +33,7 @@ for a in range(1,2):
             addOffset = 0
 
         # grab sst data from the last 3 days and use DQF == 0 data
+        print(d)
         goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst_daily.nc")
         goes_nc = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), time=slice(datetime.strftime(nowday - timedelta(days=daysback[d] + addOffset), '%Y-%m-%d'), datetime.strftime(nowday - timedelta(days=dayOffset), '%Y-%m-%d')))
         # save multiple 1 week intervals
@@ -80,4 +81,4 @@ for a in range(1,2):
         #goes_nc= xr.concat([goes_nc, forecast_nc], dim='time')
 
         landmask.to_netcdf(path=outpath + 'landmask_roffs_area' + str(a) + '.nc', format='NETCDF3_CLASSIC')
-        goes_nc.to_netcdf(path=outpath + 'roffs_' +  'area' + str(a) + '_' + str(goes_nc.time.values[0])[0:10] + '_' + str(goes_nc.time.values[-1])[0:10] + '.nc', format='NETCDF3_CLASSIC')
+        goes_nc.to_netcdf(path=outpath + 'roffs_' +  'area' + str(a) + '_' + str(daysback[d]) + "day"  + '.nc', format='NETCDF3_CLASSIC')
