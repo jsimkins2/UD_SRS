@@ -54,7 +54,15 @@ if os.path.isfile("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" 
     d2 = ds
     dat15 = d2.metpy.parse_cf('CMI_C15')
 
+<<<<<<< HEAD
     f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(dataset),'w', format='NETCDF4') #'w' stands for write
+=======
+    if str(dataset).split('_')[1] != 'ABI-L2-SSTF-M3':
+        dataset_name = str(dataset).split('_')[0] + '_ABI-L2-SSTF-M3_G16' + str(dataset).split('G16')[1]
+    else:
+        dataset_name = str(dataset)
+    f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(dataset_name),'w', format='NETCDF4') #'w' stands for write
+>>>>>>> 649928ad3e49377b7af71e983a2f4d11d02d7b7c
     # dimensions
     f.createDimension('x', dat['x'].size)
     f.createDimension('y', dat['y'].size)
