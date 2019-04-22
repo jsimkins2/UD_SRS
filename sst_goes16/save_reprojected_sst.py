@@ -156,6 +156,7 @@ if np.percentile(sst.values, 60) != -999:
     if np.percentile(dqf.values, 60) == -999:
         move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
         os.system(move_files)
+        print("moving bad files")
 
 
 # make a current daily compsite of the most recent file
