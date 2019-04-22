@@ -55,14 +55,23 @@ if os.path.isfile("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" 
     dat15 = d2.metpy.parse_cf('CMI_C15')
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(dataset),'w', format='NETCDF4') #'w' stands for write
 =======
+=======
+>>>>>>> 82b5141e4422e2e0b883736bc98859e885521ca2
     if str(dataset).split('_')[1] != 'ABI-L2-SSTF-M3':
         dataset_name = str(dataset).split('_')[0] + '_ABI-L2-SSTF-M3_G16' + str(dataset).split('G16')[1]
     else:
         dataset_name = str(dataset)
     f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(dataset_name),'w', format='NETCDF4') #'w' stands for write
+<<<<<<< HEAD
 >>>>>>> 649928ad3e49377b7af71e983a2f4d11d02d7b7c
+=======
+=======
+    f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(dataset),'w', format='NETCDF4') #'w' stands for write
+>>>>>>> b82ef43105ee0d7c2b7ca5093bd1c757a7790ebd
+>>>>>>> 82b5141e4422e2e0b883736bc98859e885521ca2
     # dimensions
     f.createDimension('x', dat['x'].size)
     f.createDimension('y', dat['y'].size)
