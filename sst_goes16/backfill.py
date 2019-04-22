@@ -67,7 +67,7 @@ for fname in sst_data:
     gdatetime=datetime.strptime(ftime, '%Y%j%H%M')
     b15index= ldatetime.index(nearest(ldatetime, gdatetime))
 
-    ds = Dataset("/home/sat_ops/goesR/data/sst/temp/" + b15data[b15index]
+    ds = Dataset("/home/sat_ops/goesR/data/sst/temp/" + b15data[b15index])
     print(str(b15data[b15index]) + " matched with " + str(fname))
     ds = NetCDF4DataStore(ds)
     ds = xr.open_dataset(ds)
