@@ -54,6 +54,7 @@ for t in b15data:
 ldatetime = sorted(ldatetime)
 for fname in sst_data:
     ds = xr.open_dataset("/home/sat_ops/goesR/data/sst/temp2/" + fname)
+    d = ds
     dat = ds.metpy.parse_cf('SST')
     proj = dat.metpy.cartopy_crs
     dat_dqf = ds.metpy.parse_cf('DQF')
