@@ -24,7 +24,10 @@ from os import listdir
 from os.path import isfile, join
 
 nowdate = datetime.utcnow()
-cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/' + \
+
+# Main Server
+#https://thredds.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/
+cat = TDSCatalog('https://thredds-test.unidata.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/' + \
                   str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/catalog.xml')
 dataset_name = sorted(cat.datasets.keys())[-1]
 dataset = cat.datasets[dataset_name]
@@ -51,11 +54,15 @@ if os.path.isfile("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" 
     d2 = ds
     dat15 = d2.metpy.parse_cf('CMI_C15')
 
+<<<<<<< HEAD
     if str(dataset).split('_')[1] != 'ABI-L2-SSTF-M3':
         dataset_name = str(dataset).split('_')[0] + '_ABI-L2-SSTF-M3_G16' + str(dataset).split('G16')[1]
     else:
         dataset_name = str(dataset)
     f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(dataset_name),'w', format='NETCDF4') #'w' stands for write
+=======
+    f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(dataset),'w', format='NETCDF4') #'w' stands for write
+>>>>>>> b82ef43105ee0d7c2b7ca5093bd1c757a7790ebd
     # dimensions
     f.createDimension('x', dat['x'].size)
     f.createDimension('y', dat['y'].size)
