@@ -111,7 +111,7 @@ for fname in sst_data:
     sst.units = d.variables['SST'].units
     sst.resolution = d.variables['SST'].resolution
     sst.missing_value = d.variables['SST']._FillValue
-    sst.grid_mapping = d.variables['SST'].grid_mapping
+    sst.grid_mapping = 'goes_imager_projection'
 
     dqf = f.createVariable('DQF', 'f4', ('time', 'y', 'x'))
     dqf.long_name = d.variables['DQF'].long_name
@@ -119,7 +119,7 @@ for fname in sst_data:
     dqf.units = d.variables['DQF'].units
     dqf.flag_values = d.variables['DQF'].flag_values
     dqf.flag_meanings = d.variables['DQF'].flag_meanings
-    dqf.grid_mapping = d.variables['DQF'].grid_mapping
+    dqf.grid_mapping = 'goes_imager_projection'
 
     band15 = f.createVariable('Band15', 'f4', ('time', 'y', 'x'))
     band15.long_name = dat15.long_name
