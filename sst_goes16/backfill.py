@@ -25,6 +25,13 @@ from os.path import isfile, join
 import calendar
 
 nowdate = datetime.utcnow()
+cat = TDSCatalog('https://thredds-test.unidata.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/' + \
+                  str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/catalog.xml')
+dataset_name = sorted(cat.datasets.keys())[-1]
+dataset = cat.datasets[dataset_name]
+
+ds = dataset.remote_access(service='OPENDAP')
+d = ds
 
 def nearest(items, pivot):
     return min(items, key=lambda x: abs(x - pivot))
@@ -54,7 +61,6 @@ for t in b15data:
 ldatetime = sorted(ldatetime)
 for fname in sst_data:
     ds = xr.open_dataset("/home/sat_ops/goesR/data/sst/temp2/" + fname)
-    d = ds
     dat = ds.metpy.parse_cf('SST')
     proj = dat.metpy.cartopy_crs
     dat_dqf = ds.metpy.parse_cf('DQF')
@@ -75,7 +81,7 @@ for fname in sst_data:
     dat15 = d2.metpy.parse_cf('CMI_C15')
 
 
-    f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(fname),'w', format='NETCDF4') #'w' stands for write
+    f = Dataset("/home/sat_ops/goesR/data/sst/backfill/raw/" + str(nowdate.year) + "/" + str(fname),'w', format='NETCDF4') #'w' stands for write
     # dimensions
     f.createDimension('x', dat['x'].size)
     f.createDimension('y', dat['y'].size)
