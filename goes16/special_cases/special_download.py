@@ -18,7 +18,7 @@ tt = now.timetuple()
 jday = range(108, 112)
 hour = range(0,24)
 
-for j in jday:
+for jd in jday:
     for h in hour:
         # hours has 0 in the filename
         if len(str(h)) == 1:
@@ -28,7 +28,7 @@ for j in jday:
             hourstr = str(h)
 
 
-        blobs = bucket.list_blobs(prefix='ABI-L2-MCMIPF/'+ str(now.year) + '/' + jday + '/' + hourstr + '/')
+        blobs = bucket.list_blobs(prefix='ABI-L2-MCMIPF/'+ str(now.year) + '/' + str(jd) + '/' + hourstr + '/')
         results = []
         for i in blobs:
             results.append(i)
@@ -43,5 +43,5 @@ for j in jday:
                     temname = str(temname)
                 # if the file already exists, do NOT download and overwrite it
                 if os.path.isfile("/home/sat_ops/goesR/data/sst/temp/" + temname.split("_e")[0] + ".nc") == False:
-                    goesfile= bucket.get_blob('ABI-L2-MCMIPF/'+ str(now.year) + '/' + jday + '/' + hourstr + '/' + orig_temname)
+                    goesfile= bucket.get_blob('ABI-L2-MCMIPF/'+ str(now.year) + '/' + str(jd) + '/' + hourstr + '/' + orig_temname)
                     goesfile.download_to_filename("/home/sat_ops/goesR/data/sst/temp/" + temname.split("_e")[0] + ".nc")
