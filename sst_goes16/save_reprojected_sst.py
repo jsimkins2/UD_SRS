@@ -160,13 +160,17 @@ for dataset in filenames:
 
 
 
-
+import pandas as pd
+import xarray as xr
+from datetime import datetime
+import numpy as np
 # make a current daily compsite of the most recent file
 outpath = "/data/GOES/GOES-R/1day/"
 today = pd.date_range(pd.datetime.today(),pd.datetime.today()).tolist()
 goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
 goes_nc = goes_nc.sel(time=datetime.strftime(today[0].date(), '%Y-%m-%d'))
 goes_nc = goes_nc.drop('Band15')
+newtimestamp = goes_nc.time.values[-1]
 for t in range(len(goes_nc.time.values)):
     x = goes_nc['SST'][t]
     goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
@@ -182,5 +186,36 @@ goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_1day_' 
 # resample to a daily composite
 goes_nc = goes_nc.drop(['DQF'])
 goes_nc = goes_nc.resample(time='1D').mean('time')
+goes_nc.time.values = np.array([newtimestamp], dtype='datetime64[ns]')
+
+goes_nc.time.values.timestamp()
 outpath = "/data/GOES/GOES-R/daily_composite/"
 goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', format='NETCDF3_CLASSIC')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
