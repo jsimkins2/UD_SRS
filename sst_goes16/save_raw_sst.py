@@ -43,9 +43,9 @@ for t in b15data:
 
 # Begin loop
 for url in urlstr:
-    for d in range(0,4):
+    for d in range(0,2): #dicatates how many days back we go. If we are missing large chunks of data this can be manipulated
         temday = nowdate - timedelta(days=d)
-        # UCAR Thredds Server call
+        # UCAR Thredds Server call, use try here in case there isn't any data for the whole day
         try:
             cat = TDSCatalog(url + str(temday.year) + str("%02d"%temday.month) + str("%02d"%temday.day) + '/catalog.xml')
 
