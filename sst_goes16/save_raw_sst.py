@@ -61,7 +61,7 @@ for url in urlstr:
             if os.path.isfile("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(fname)) == False:
                 if os.path.isfile("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(fname)) == False:
                     if os.path.isfile("/data/GOES/GOES-R/suspect/" + str(fname)) == False:
-                        print('downloading ' + fname ' to raw folder')
+                        print('downloading ' + fname + ' to raw folder')
 
                         dataset = cat.datasets[sstFile]
                         ds = dataset.remote_access(service='OPENDAP')
