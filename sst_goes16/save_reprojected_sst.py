@@ -133,30 +133,32 @@ for dataset in filenames:
             flip_lat = "Rscript /home/sat_ops/goesR/data/sst/scripts/flip_lat_sst.R " + fname
             os.system(flip_lat)
 
+            # quality control
+            ds = xr.open_dataset("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name)
+            sst = ds.metpy.parse_cf("SST")
+            sst = sst.sel(longitude=slice(-88, -50), latitude=slice(16,18))
+            sst = sst.where(sst.values > 270, np.nan)
+            sst = sst.fillna(-999)
+            if np.percentile(sst.values, 60) == -999:
+                print(sst.time.values)
+                move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
+                os.system(move_files)
+                print("moving bad files")
+            if np.percentile(sst.values, 60) != -999:
+                dqf = ds.metpy.parse_cf("DQF")
+                dqf = dqf.sel(longitude=slice(-65, -50), latitude=slice(37,45))
+                dqf = dqf.where(dqf.values > 1, np.nan)
+                dqf = dqf.fillna(-999)
+                if np.percentile(dqf.values, 60) == -999:
+                    move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
+                    os.system(move_files)
+                    print("moving bad files")
+
         else:
             print('all caught up!')
 
 
-# quality control
-ds = xr.open_dataset("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name)
-sst = ds.metpy.parse_cf("SST")
-sst = sst.sel(longitude=slice(-88, -50), latitude=slice(16,18))
-sst = sst.where(sst.values > 270, np.nan)
-sst = sst.fillna(-999)
-if np.percentile(sst.values, 60) == -999:
-    print(sst.time.values)
-    move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
-    os.system(move_files)
-    print("moving bad files")
-if np.percentile(sst.values, 60) != -999:
-    dqf = ds.metpy.parse_cf("DQF")
-    dqf = dqf.sel(longitude=slice(-65, -50), latitude=slice(37,45))
-    dqf = dqf.where(dqf.values > 1, np.nan)
-    dqf = dqf.fillna(-999)
-    if np.percentile(dqf.values, 60) == -999:
-        move_files = "mv " + "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + dataset_name + " /data/GOES/GOES-R/suspect/"
-        os.system(move_files)
-        print("moving bad files")
+
 
 
 # make a current daily compsite of the most recent file
