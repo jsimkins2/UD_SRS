@@ -148,6 +148,6 @@ for url in urlstr:
                     else:
                         print('File Already Exists in Suspect Folder')
                 else:
-                    print('File Already Exists in Aggregation)
+                    print('File Already Exists in Aggregation')
             else:
-                print('File Already Exists in Raw Folder)
+                print('File Already Exists in Raw Folder')
