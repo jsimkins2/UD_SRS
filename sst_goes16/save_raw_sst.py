@@ -44,9 +44,9 @@ for t in b15data:
 
 # Begin loop
 for url in urlstr:
-    for d in range(0,4):
+    for d in range(0,1):
         temday = nowdate - timedelta(days=d)
-        # Main Server
+        # UCAR Thredds Server call
         cat = TDSCatalog(url + str(temday.year) + str("%02d"%temday.month) + str("%02d"%temday.day) + '/catalog.xml')
         dataset_names = sorted(cat.datasets.keys())
 
