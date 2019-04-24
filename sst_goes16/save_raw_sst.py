@@ -29,7 +29,6 @@ def nearest(items, pivot):
 
 nowdate = datetime.utcnow()
 nowdate = nowdate.replace(second=0, microsecond=0)
-sstFile = dataset_names[1]
 
 # Use both servers to double check
 mainURL = 'https://thredds.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/'
