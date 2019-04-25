@@ -207,8 +207,6 @@ goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailyco
 
 # now make a rolling 1 day aka last 24 hours
 outpath = "/data/GOES/GOES-R/1day/"
-today = pd.date_range(pd.datetime.today(), pd.datetime.today()).tolist()
-threedays = pd.d(pd.datetime.today(), pd.datetime.today()).tolist()
 goes_nc = xr.open_dataset(
     "http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
 # grab the last 24 hours of sst dataset
