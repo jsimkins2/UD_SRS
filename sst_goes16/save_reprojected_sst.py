@@ -216,6 +216,7 @@ for t in range(len(goes_nc.time.values)):
     x = goes_nc['SST'][t]
     goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
 
+goes_nc = goes_nc.resample(time='2D').mean('time')
 outpath = "/data/GOES/GOES-R/rolling_1day/"
 goes_nc.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',
                   format='NETCDF3_CLASSIC')
