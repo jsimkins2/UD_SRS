@@ -10,10 +10,10 @@ import numpy as np
 # test - seems that the lower right hand corner is a solid region as far as data goes.
 # the algorithm processes from North Pole to South Pole and many times the failed datasets
 # are due to lack of time for algorithm to complete. Thus, we check the lower right hand corner.
-# we will check this region for gaps in the data. Instead of deleting the passes, let's just 
+# we will check this region for gaps in the data. Instead of deleting the passes, let's just
 # add a suspect folder and place them in there so they aren't just deleted
 
-
+date = "/Users/"
 nowdate = datetime.utcnow()
 datadir = "/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/"
 filenames = [f for f in listdir(datadir) if isfile(join(datadir, f))]
@@ -64,4 +64,3 @@ for t in range(0,len(ds.time.values)):
 #from itertools import groupby
 #[len(list(v)) for k,v in groupby(sst.values) if k==-999]
 '''
-
