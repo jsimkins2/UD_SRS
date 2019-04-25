@@ -24,6 +24,7 @@ from os import listdir
 from os.path import isfile, join
 import calendar
 
+# ignore this, we aren't using this data we are just using the projection found here
 nowdate = datetime.utcnow()
 cat = TDSCatalog('https://thredds-test.unidata.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/' + \
                   str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/catalog.xml')
@@ -44,9 +45,9 @@ def JulianDate_to_MMDDYYY(y,jd):
         month = month + 1
     return month,jd,y
 
-datadir = "/home/sat_ops/goesR/data/sst/temp2/"
+datadir = "/home/sat_ops/goesR/data/sst/backfill/b15temp/"
 sst_data = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
-datadir = "/home/sat_ops/goesR/data/sst/temp/"
+datadir = "/home/sat_ops/goesR/data/sst/backfill/ssttemp/"
 b15data = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))]) #
 
 ldatetime = []
@@ -60,7 +61,7 @@ for t in b15data:
 
 ldatetime = sorted(ldatetime)
 for fname in sst_data:
-    ds = xr.open_dataset("/home/sat_ops/goesR/data/sst/temp2/" + fname)
+    ds = xr.open_dataset("/home/sat_ops/goesR/data/sst/backfill/ssttemp/" + fname)
     dat = ds.metpy.parse_cf('SST')
     proj = dat.metpy.cartopy_crs
     dat_dqf = ds.metpy.parse_cf('DQF')
@@ -73,7 +74,7 @@ for fname in sst_data:
     gdatetime=datetime.strptime(ftime, '%Y%j%H%M')
     b15index= ldatetime.index(nearest(ldatetime, gdatetime))
 
-    ds = Dataset("/home/sat_ops/goesR/data/sst/temp/" + b15data[b15index])
+    ds = Dataset("/home/sat_ops/goesR/data/sst/backfill/b15temp/" + b15data[b15index])
     print(str(b15data[b15index]) + " matched with " + str(fname))
     ds = NetCDF4DataStore(ds)
     ds = xr.open_dataset(ds)
