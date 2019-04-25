@@ -206,7 +206,6 @@ goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailyco
 
 
 # now make a rolling 1 day aka last 24 hours
-outpath = "/data/GOES/GOES-R/1day/"
 goes_nc = xr.open_dataset(
     "http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
 # grab the last 24 hours of sst dataset
@@ -218,18 +217,13 @@ for t in range(len(goes_nc.time.values)):
     goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
 
 goes_nc = goes_nc.drop(['DQF'])
-goes_nc = goes_nc.mean('time')
 goes_nc['sst'] = goes_nc['SST']
 goes_nc = goes_nc.drop(['SST'])
 
-coords = {'latitude':goes_nc.latitude, 'longitude':goes_nc.longitude, 'projection':goes_nc.projection}
-coords['time'] = newtimestamp
-goes_nc=goes_nc.drop(['projection'])
-goes_nc = xr.DataArray(goes_nc['sst'].values, dims = ['longitude', 'latitude'])
-goes_nc = xr.concat([goes_nc], 'time')
-goes_nc = goes_nc.to_dataset(name='sst')
+goes_nc = goes_nc.mean('time')
+x = goes_nc.assign_coords(time=newtimestamp)
+goes_nc = x.expand_dims('time')
+
 outpath = "/data/GOES/GOES-R/rolling_1day/"
 goes_nc.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',
                   format='NETCDF3_CLASSIC')
-
-goes_nc['sst'].plot()
