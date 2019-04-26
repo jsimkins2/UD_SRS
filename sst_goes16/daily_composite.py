@@ -32,8 +32,7 @@ for d in range(0, len(datelist)):
     goes_nc = goes_nc.drop(['DQF'])
     goes_nc = goes_nc.resample(time='1D').mean('time')
     newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
-    x = goes_nc.assign_coords(time=newtimestamp)
-    goes_nc = x.expand_dims('time')
+    goes_nc.time.values = np.array([newtimestamp], dtype='float64')
     goes_nc.time.attrs['units'] = 'days since 1970-01-01T00:00:00Z'
     
     
