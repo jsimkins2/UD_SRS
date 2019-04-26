@@ -7,7 +7,7 @@ import pandas as pd
 # paths
 outpath1 = "/data/GOES/GOES-R/1day/"
 outpath = "/data/GOES/GOES-R/daily_composite/"
-datelist = pd.date_range('2019-04-16', pd.datetime.today()).tolist()
+datelist = pd.date_range('2018-10-30', pd.datetime.today()).tolist()
 for d in range(0, len(datelist)):
     print(datelist[d])
     goes_nc = xr.open_dataset(
@@ -31,7 +31,13 @@ for d in range(0, len(datelist)):
     # resample to a daily composite
     goes_nc = goes_nc.drop(['DQF'])
     goes_nc = goes_nc.resample(time='1D').mean('time')
-    goes_nc.time.values = np.array([newtimestamp], dtype='datetime64[ns]')
+    newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
+    x = goes_nc.assign_coords(time=newtimestamp)
+    goes_nc = x.expand_dims('time')
+    goes_nc.time.attrs['units'] = 'days since 1970-01-01T00:00:00Z'
+    
+    
+    
     outpath2 = "/data/GOES/GOES-R/daily_composite/"
     #landmask.to_netcdf(path=outpath2 + 'landmask_roffs_' +  'area' + str(a) + '_' + str(goes_nc.time.values[0])[0:10] + '_' + str(goes_nc.time.values[-1])[0:10] + '.nc', format='NETCDF3_CLASSIC')
     goes_nc.to_netcdf(path=outpath + '/' + str(datelist[d].year) + '/GOES16_SST_dailycomposite_' + str(datelist[d].year) + str("{0:0=3d}".format(
