@@ -80,5 +80,5 @@ for a in range(4,5):
         #forecast_nc['sst'] = forecast_nc['sst'].where(forecast_nc['sst'] < 2)
         #goes_nc= xr.concat([goes_nc, forecast_nc], dim='time')
 
-        landmask.to_netcdf(path=outpath + 'landmask_roffs_area' + str(a) + '.nc', format='NETCDF3_CLASSIC')
+        #landmask.to_netcdf(path=outpath + 'landmask_roffs_area' + str(a) + '.nc', format='NETCDF3_CLASSIC')
         goes_nc.to_netcdf(path=outpath + 'roffs_' +  'area' + str(a) + '_' + str(daysback[d]) + "day"  + '.nc', format='NETCDF3_CLASSIC')

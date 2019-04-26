@@ -7,7 +7,7 @@ import pandas as pd
 # paths
 outpath1 = "/data/GOES/GOES-R/1day/"
 outpath = "/data/GOES/GOES-R/daily_composite/"
-datelist = pd.date_range('2018-10-30', pd.datetime.today()).tolist()
+datelist = pd.date_range('2019-04-16', pd.datetime.today()).tolist()
 for d in range(0, len(datelist)):
     print(datelist[d])
     goes_nc = xr.open_dataset(
