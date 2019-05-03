@@ -82,3 +82,10 @@ for a in range(4,5):
 
         #landmask.to_netcdf(path=outpath + 'landmask_roffs_area' + str(a) + '.nc', format='NETCDF3_CLASSIC')
         goes_nc.to_netcdf(path=outpath + 'roffs_' +  'area' + str(a) + '_' + str(daysback[d]) + "day"  + '.nc', format='NETCDF3_CLASSIC')
+        
+        if daysback[d] == 7:
+            outpath = '/home/sat_ops/goesR/data/sst/roffs/area' + str(a) + '/'
+            goes_nc.to_netcdf(path=outpath + 'roffs_' +  'area' + str(a) + '_'
+            + datetime.strftime(pd.to_datetime(goes_nc.time.values[0]), '%Y%j%H%M') + '_' 
+            + datetime.strftime(pd.to_datetime(goes_nc.time.values[-1]), '%Y%j%H%M') + '.nc', format='NETCDF3_CLASSIC')
+
