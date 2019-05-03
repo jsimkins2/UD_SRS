@@ -34,7 +34,7 @@ for a in range(4,5):
         # grab sst data from the last 3 days and use DQF == 0 data
         print(d)
         goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst_daily.nc")
-        goes_nc = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), time=slice(datetime.strftime(nowday - timedelta(days=daysback[d] + addOffset), '%Y-%m-%d'), datetime.strftime(nowday - timedelta(days=dayOffset), '%Y-%m-%d')))
+        goes_nc = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), time=slice(datetime.strftime(nowday - timedelta(days=daysback[d] + addOffset), '%Y-%m-%d %H:%M:%S'), datetime.strftime(nowday - timedelta(days=dayOffset), '%Y-%m-%d %H:%M:%S')))
         # save multiple 1 week intervals
         #dayOffset = daysback[d] + 1
         #addOffset = 1
