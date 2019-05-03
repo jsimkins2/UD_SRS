@@ -4,8 +4,7 @@ import numpy as np
 import metpy
 from datetime import datetime, timedelta
 import pandas as pd
-# paths
-outpath = "/home/sat_ops/dineof/temp/"
+
 
 # define area of interest
 area1 = [32.5, 36, -78.25, -73.75]
@@ -79,7 +78,9 @@ for a in range(4,5):
         #forecast_nc.time.values = forecast_nc.time.values.astype('datetime64[s]') + (3600)
         #forecast_nc['sst'] = forecast_nc['sst'].where(forecast_nc['sst'] < 2)
         #goes_nc= xr.concat([goes_nc, forecast_nc], dim='time')
-
+        
+        # paths
+        outpath = "/home/sat_ops/dineof/temp/"
         #landmask.to_netcdf(path=outpath + 'landmask_roffs_area' + str(a) + '.nc', format='NETCDF3_CLASSIC')
         goes_nc.to_netcdf(path=outpath + 'roffs_' +  'area' + str(a) + '_' + str(daysback[d]) + "day"  + '.nc', format='NETCDF3_CLASSIC')
         
