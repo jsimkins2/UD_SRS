@@ -3,7 +3,7 @@ import xarray as xr
 import numpy as np
 import metpy
 from datetime import datetime, timedelta
-
+import pandas as pd
 # paths
 outpath = "/home/sat_ops/dineof/temp/"
 
