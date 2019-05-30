@@ -21,12 +21,12 @@ areas = {'area1': area1,
          'area4': area4,
          'area5': area5}
 
-
+nowday = datetime.utcnow()
 for a in range(4,5):
     for h in range(0,168): # 
         #print(a)
         hoursback=336 - h
-        day1=datetime.utcnow() - timedelta(hours=hoursback)
+        day1=nowday - timedelta(hours=hoursback)
         day2=day1 + timedelta(hours=168)
         area = areas['area' + str(a)]
 
