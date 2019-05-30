@@ -4,33 +4,95 @@ import numpy as np
 import metpy
 from datetime import datetime, timedelta
 import pandas as pd
-# paths
-outpath1 = "/data/GOES/GOES-R/1day/"
-outpath= "/data/GOES/GOES-R/daily_composite/"
-datelist = pd.date_range('2019-03-14',pd.datetime.today()).tolist()
-for d in range(0,len(datelist)):
-    print(datelist[d])
-    goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
-    goes_nc = goes_nc.sel(time=datetime.strftime(datelist[d].date(), '%Y-%m-%d'))
-    goes_nc = goes_nc.drop('Band15')
-    
-    for t in range(len(goes_nc.time.values)):
-        x = goes_nc['SST'][t]
-        goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
-        #x = goes_nc['DQF'][t]
-        #goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
-    
-    
-    goes_nc['sst'] = goes_nc['SST']
-    goes_nc = goes_nc.drop(['SST'])
-    goes_nc.to_netcdf(path=outpath1 + '/' + str(datelist[d].year) + '/GOES16_SST_1day_' + str(datelist[d].year) + str("{0:0=3d}".format(datelist[d].dayofyear)) + '_' + str("{0:0=2d}".format(datelist[d].month)) + str("{0:0=2d}".format(datelist[d].day)) + '.nc', format='NETCDF3_CLASSIC')
 
-    # resample to a daily composite
-    goes_nc = goes_nc.drop(['DQF'])
-    goes_nc = goes_nc.resample(time='1D').mean('time')
-    outpath2 = "/data/GOES/GOES-R/daily_composite/"
-    #landmask.to_netcdf(path=outpath2 + 'landmask_roffs_' +  'area' + str(a) + '_' + str(goes_nc.time.values[0])[0:10] + '_' + str(goes_nc.time.values[-1])[0:10] + '.nc', format='NETCDF3_CLASSIC')
-    goes_nc.to_netcdf(path=outpath + '/' + str(datelist[d].year) + '/GOES16_SST_dailycomposite_' + str(datelist[d].year) + str("{0:0=3d}".format(datelist[d].dayofyear)) + '_' + str("{0:0=2d}".format(datelist[d].month)) + str("{0:0=2d}".format(datelist[d].day)) + '.nc', format='NETCDF3_CLASSIC')
 
+# define area of interest
+area1 = [32.5, 36, -78.25, -73.75]
+area2 = [36.5, 40, -75.25, -72.0]
+area3 = [27.0, 30.5, -91.5, -85.5]
+area4 = [26.5, 29.5, -91.0, -86.5]
+area5 = [34, 36, -76, -74]
+
+outpath = "/home/sat_ops/dineof/temp/may_dineof/"
+# create a dictionary so these areas can be called via for loop
+areas = {'area1': area1,
+         'area2': area2,
+         'area3': area3,
+         'area4': area4,
+         'area5': area5}
+
+
+for a in range(4,5):
+    for h in range(0,168): # 
+        #print(a)
+        hoursback=336 - h
+        day1=datetime.utcnow() - timedelta(hours=hoursback)
+        day2=day1 + timedelta(hours=168)
+        area = areas['area' + str(a)]
+        '''
+        if d == 0:
+            dayOffset = 0
+            addOffset = 0
+        '''
+        goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst_daily.nc")
+        goes_nc = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]),
+                  time=slice(datetime.strftime(day1, '%Y-%m-%d %H:%M:%S'), datetime.strftime(day2, '%Y-%m-%d %H:%M:%S')))
+        # save multiple 1 week intervals
+        #dayOffset = daysback[d] + 1
+        #addOffset = 1
+
+        # COMMENTING OUT BELOW BECAUSE THIS STEP IS ALREADY BEING DONE IN 1DAY
+        #for t in range(len(goes_nc.time.values)):
+            #x = goes_nc['sst'][t]
+            #goes_nc['sst'][t] = x.where(goes_nc['DQF'][t] == 0)
+            #x = goes_nc['DQF'][t]
+            #goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
+        '''
+        landmask = goes_nc['DQF'][0]
+        landmask = landmask.rename('landmask')
+        landmask = landmask.where(landmask.values == 3, 1)
+        landmask = landmask.where(landmask.values == 1, 0)
+        goes_nc = goes_nc.drop(['DQF'])
+        #landmask.to_netcdf(path=outpath + 'landmask_roffs_area' + str(a) + '.nc', format='NETCDF3_CLASSIC')
+        '''
+        goes_nc.to_netcdf(path=outpath + 'roffs_' +  'area' + str(a) + '_' + str(daysback[d]) + "day"  + '.nc', format='NETCDF3_CLASSIC')
+
+
+
+'''
+daysback = [7,14,21] #must keep in brackets to python recognizes it as a list
+nowday = datetime.utcnow()
+for a in range(4,5):
+    for d in range(0,len(daysback)):
+        #print(a)
+        area = areas['area' + str(a)]
+        '''
+        if d == 0:
+            dayOffset = 0
+            addOffset = 0
+        '''
+        goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst_daily.nc")
+goes_nc = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]),
+          time=slice(datetime.strftime(day1), '%Y-%m-%d %H:%M:%S'), datetime.strftime(day2), '%Y-%m-%d %H:%M:%S')        # save multiple 1 week intervals
+        #dayOffset = daysback[d] + 1
+        #addOffset = 1
+
+        # COMMENTING OUT BELOW BECAUSE THIS STEP IS ALREADY BEING DONE IN 1DAY
+        #for t in range(len(goes_nc.time.values)):
+            #x = goes_nc['sst'][t]
+            #goes_nc['sst'][t] = x.where(goes_nc['DQF'][t] == 0)
+            #x = goes_nc['DQF'][t]
+            #goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
+
+        landmask = goes_nc['DQF'][0]
+        landmask = landmask.rename('landmask')
+        landmask = landmask.where(landmask.values == 3, 1)
+        landmask = landmask.where(landmask.values == 1, 0)
+        goes_nc = goes_nc.drop(['DQF'])
+
+        # paths
+        outpath = "/home/sat_ops/dineof/temp/"
+        #landmask.to_netcdf(path=outpath + 'landmask_roffs_area' + str(a) + '.nc', format='NETCDF3_CLASSIC')
+        goes_nc.to_netcdf(path=outpath + 'roffs_' +  'area' + str(a) + '_' + str(daysback[d]) + "day"  + '.nc', format='NETCDF3_CLASSIC')
 
 
