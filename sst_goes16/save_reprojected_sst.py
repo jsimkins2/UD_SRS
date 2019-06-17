@@ -208,7 +208,7 @@ goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailyco
     today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', format='NETCDF3_CLASSIC')
 
 
-# now make a rolling 1 day aka last 24 hours
+# now make a rolling 1 day aka last 24 hours IN CELSIUS
 goes_nc = xr.open_dataset(
     "http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
 # grab the last 24 hours of sst dataset
@@ -220,14 +220,40 @@ for t in range(len(goes_nc.time.values)):
     goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
 
 goes_nc = goes_nc.drop(['DQF'])
-goes_nc['sst'] = goes_nc['SST']
-goes_nc = goes_nc.drop(['SST'])
-
-goes_nc = goes_nc.mean('time')
+goes_nc['SST'] = goes_nc['SST'] - 273.15
+dat = goes_nc.metpy.parse_cf('SST')
+dat.attrs['units'] = 'Celsius'
+dat = dat.mean('time')
 newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
-x = goes_nc.assign_coords(time=newtimestamp)
-goes_nc = x.expand_dims('time')
-goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
+x = dat.assign_coords(time=newtimestamp)
+dat = x.expand_dims('time')
+dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 outpath = "/data/GOES/GOES-R/rolling_1day/"
-goes_nc.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',
+dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',
+                  format='NETCDF3_CLASSIC')
+
+
+# now make a rolling 1 day aka last 24 hours IN CELSIUS
+goes_nc = xr.open_dataset(
+    "http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
+# grab the last 24 hours of sst dataset
+goes_nc = goes_nc.isel(time=range(-24, 0))
+newtimestamp = goes_nc.time.values[-1]
+goes_nc = goes_nc.drop('Band15')
+for t in range(len(goes_nc.time.values)):
+    x = goes_nc['SST'][t]
+    goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
+
+goes_nc = goes_nc.drop(['DQF'])
+goes_nc['SST'] = (goes_nc['SST'] - 273.15)*(9/5) + 32
+dat = goes_nc.metpy.parse_cf('SST')
+dat = dat.where(dat > 32)
+dat.attrs['units'] = 'Fahrenheit'
+dat = dat.mean('time')
+newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
+x = dat.assign_coords(time=newtimestamp)
+dat = x.expand_dims('time')
+dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
+outpath = "/data/GOES/GOES-R/rolling_1day_fahrenheit/"
+dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day_fahrenheit.nc',
                   format='NETCDF3_CLASSIC')
