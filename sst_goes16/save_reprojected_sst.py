@@ -221,7 +221,7 @@ for t in range(len(goes_nc.time.values)):
 
 goes_nc = goes_nc.drop(['DQF'])
 goes_nc['SST'] = goes_nc['SST'] - 273.15
-dat = goes_nc.metpy.parse_cf('SST')
+dat = goes_nc
 dat.attrs['units'] = 'Celsius'
 dat = dat.mean('time')
 newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
@@ -233,7 +233,7 @@ dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',
                   format='NETCDF3_CLASSIC')
 
 
-# now make a rolling 1 day aka last 24 hours IN CELSIUS
+# now make a rolling 1 day aka last 24 hours IN FAHRENHEIT
 goes_nc = xr.open_dataset(
     "http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
 # grab the last 24 hours of sst dataset
@@ -246,8 +246,7 @@ for t in range(len(goes_nc.time.values)):
 
 goes_nc = goes_nc.drop(['DQF'])
 goes_nc['SST'] = (goes_nc['SST'] - 273.15)*(9/5) + 32
-dat = goes_nc.metpy.parse_cf('SST')
-dat = dat.where(dat > 32)
+dat = goes_nc
 dat.attrs['units'] = 'Fahrenheit'
 dat = dat.mean('time')
 newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
