@@ -31,7 +31,7 @@ nowdate = datetime.utcnow()
 nowdate = nowdate.replace(second=0, microsecond=0)
 
 # Use both servers to double check
-mainURL = 'https://thredds.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/'
+mainURL = 'https://thredds.ucar.edu/thredds/catalog/satellite/goes/east/products/SeaSurfaceTemperature/FullDisk/'
 testURL = 'https://thredds-test.unidata.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/'
 urlstr = [mainURL, testURL]
 
