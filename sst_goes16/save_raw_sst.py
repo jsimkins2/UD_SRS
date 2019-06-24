@@ -32,7 +32,7 @@ nowdate = nowdate.replace(second=0, microsecond=0)
 
 # Use both servers to double check
 mainURL = 'https://thredds.ucar.edu/thredds/catalog/satellite/goes/east/products/SeaSurfaceTemperature/FullDisk/'
-testURL = 'https://thredds-test.unidata.ucar.edu/thredds/catalog/satellite/goes16/GOES16/Products/SeaSurfaceTemperature/FullDisk/'
+testURL = 'https://thredds-test.unidata.ucar.edu/thredds/catalog/satellite/goes/east/products/SeaSurfaceTemperature/FullDisk/'
 urlstr = [mainURL, testURL]
 
 b15data = [f for f in listdir("/home/sat_ops/goesR/data/fulldisk/") if isfile(join("/home/sat_ops/goesR/data/fulldisk/", f))]
