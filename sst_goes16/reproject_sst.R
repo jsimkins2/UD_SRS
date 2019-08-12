@@ -12,10 +12,8 @@ for (y in yearseq){
   for (i in fnamelist){
     if (!file.exists(paste0(datadir, "rast_sst/", y,"/SST", i))){
       print(i)
-      goesfile <- nc_open(paste0(datadir,"raw/", y, "/",i))
       tryCatch({
-      nc_open(goesfile)
-      
+      goesfile <- nc_open(paste0(datadir,"raw/", y, "/",i))
       time.val = ncvar_get(goesfile, "time")
       
       sst = ncvar_get(goesfile, "SST")
