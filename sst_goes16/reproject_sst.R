@@ -13,6 +13,9 @@ for (y in yearseq){
     if (!file.exists(paste0(datadir, "rast_sst/", y,"/SST", i))){
       print(i)
       goesfile <- nc_open(paste0(datadir,"raw/", y, "/",i))
+      tryCatch({
+      nc_open(goesfile)
+      
       time.val = ncvar_get(goesfile, "time")
       
       sst = ncvar_get(goesfile, "SST")
@@ -51,6 +54,7 @@ for (y in yearseq){
                   xname="longitude", yname="latitude")
       
       nc_close(goesfile)
+      },error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
     }
   }
 }
