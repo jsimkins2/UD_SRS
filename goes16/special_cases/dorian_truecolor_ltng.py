@@ -174,7 +174,7 @@ if len(abi_names) > 0:
 
             ax.set_extent((-45, -105, 12, 50),crs=ccrs.PlateCarree())
             timestr = local.strftime('%Y-%m-%d %H:%M ') + et
-            fig.text(0.5,0.9, 'Hurricane Dorian TC + Ltng - Powered By CEMA\n'
+            fig.text(0.5,0.9, 'Hurricane Dorian ABI True Color + GLM Lightning - Powered By CEMA\n'
                     + timestr,horizontalalignment='center',fontsize=16)
             ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
                                             edgecolor='black', facecolor='none',linewidth=0.3))
@@ -216,7 +216,7 @@ if len(abi_names) > 0:
             im = ax.pcolormesh(dat['x'], dat['y'], b13, cmap=cpt_convert,vmin = v_min, vmax=v_max, transform=proj)
             ax.set_extent((-45, -105, 12, 50),crs=ccrs.PlateCarree())
             timestr = local.strftime('%Y-%m-%d %H:%M ') + et
-            fig.text(0.5,0.9, 'Hurricane Dorian Band13 - Powered By CEMA\n'
+            fig.text(0.5,0.9, 'Hurricane Dorian Band 13 - Powered By CEMA\n'
                     + timestr,horizontalalignment='center',fontsize=16)
             ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
                                             edgecolor='black', facecolor='none',linewidth=0.5))
