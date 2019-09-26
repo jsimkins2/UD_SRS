@@ -172,9 +172,9 @@ if len(abi_names) > 0:
             for g in range(0, len(ltng_lat)):
                 ax.scatter(ltng_lon[g], ltng_lat[g], s=18, marker=symbol, c='red', edgecolor='red', lw=0, transform=ltngproj)
 
-            ax.set_extent((-10, -105, 0, 50))
+            ax.set_extent((-45, -105, 0, 45))
             timestr = local.strftime('%Y-%m-%d %H:%M ') + et
-            fig.text(0.5,0.9, 'GOES16 Atlantic Basin - Powered By CEMA\n'
+            fig.text(0.5,0.9, 'Hurricane Dorian TC + Ltng - Powered By CEMA\n'
                     + timestr,horizontalalignment='center',fontsize=16)
             ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
                                             edgecolor='black', facecolor='none',linewidth=0.3))
@@ -214,9 +214,9 @@ if len(abi_names) > 0:
             fig = plt.figure(figsize=[16,9], dpi=100)
             ax = fig.add_subplot(1,1,1, projection=newproj)
             im = ax.pcolormesh(dat['x'], dat['y'], b13, cmap=cpt_convert,vmin = v_min, vmax=v_max, transform=proj)
-            ax.set_extent((-10, -105, 0, 50))
+            ax.set_extent((-45, -105, 0, 45))
             timestr = local.strftime('%Y-%m-%d %H:%M ') + et
-            fig.text(0.5,0.9, 'GOES16 Atlantic Basin - Powered By CEMA\n'
+            fig.text(0.5,0.9, 'Hurricane Dorian Band13 - Powered By CEMA\n'
                     + timestr,horizontalalignment='center',fontsize=16)
             ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
                                             edgecolor='black', facecolor='none',linewidth=0.5))
