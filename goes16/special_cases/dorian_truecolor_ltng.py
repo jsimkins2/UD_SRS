@@ -39,8 +39,9 @@ from PIL import Image
 import warnings
 warnings.simplefilter("ignore", category=DeprecationWarning)
 ############# Initial Set Up ##################
-datadir = "/home/sat_ops/goesR/data/fulldisk/"
-workdir = "/home/sat_ops/goesR/"
+datadir = "/home/sat_ops/goesR/special_cases/dorian/data/"
+ltngdir = "/home/sat_ops/goesR/special_cases/dorian/ltng_data/"
+workdir = "/home/sat_ops/goesR/special_cases/dorian/"
 
 def contrast_correction(color, contrast):
     F = (259*(contrast + 255))/(255.*259-contrast)
@@ -50,19 +51,20 @@ def contrast_correction(color, contrast):
     return COLOR
 
 
-file_names = [f for f in listdir(datadir) if isfile(join(datadir, f))]
-list2 = ['MCMIPF']
-m1list = [i for i in file_names if any(b in i for b in list2)]
+abi_names = [f for f in listdir(datadir) if isfile(join(datadir, f))]
+ltng_names = [f for f in listdir(ltngdir) if isfile(join(ltngdir, f))]
+abi_names = sorted(abi_names)
+ltng_names = sorted(ltng_names)
+ltng_names = ltng_names[1:]
 
-if len(ABI_datetime) > 0:
-    for n in range(0, len(ABI_datetime)):
-        if os.path.isfile(workdir + 'fulldisk/atlhurrtc/' + fnamelist[0][:-3] + ".png") == False:
-            t = ABI_datetime[n][:-3]
+if len(abi_names) > 0:
+    for n in range(0, len(abi_names)):
+        if os.path.isfile(workdir + 'tcimg/' + abi_names[n][:-3] + ".png") == False:
+            t = abi_names[n][:-3]
             print(t)
-            gdatetime=datetime.strptime(t, '%Y%j%H%M')
-            ltng_index = ldatetime.index(nearest(ldatetime, gdatetime))
-            Cnight = Dataset(datadir + fnamelist[0], 'r')
-            Cnight2 = xr.open_dataset(datadir + fnamelist[0])
+
+            Cnight = Dataset(datadir + abi_names[n], 'r')
+            Cnight2 = xr.open_dataset(datadir + abi_names[n])
             dat = Cnight2.metpy.parse_cf("CMI_C01")
             proj = dat.metpy.cartopy_crs
             newproj = ccrs.Mercator()
@@ -112,12 +114,11 @@ if len(ABI_datetime) > 0:
             ltng_lat = {}
             ltng_lon = {}
             
-            ltng_file = 
-            ltfile = ltng_files[lt]
-            L_file = ltngdir + 'OR_GLM-L2-LCFA_G16_s' + str(ltfile) + '.nc'  # GOES16 East
+            ltfile = ltng_names[n]
+            L_file = ltngdir + str(ltfile) + '.nc'  # GOES16 East
             L = Dataset(L_file, 'r')
-            ltng_lat[lt] = L.variables['flash_lat'][:]
-            ltng_lon[lt] = L.variables['flash_lon'][:]
+            ltng_lat = L.variables['flash_lat'][:]
+            ltng_lon = L.variables['flash_lon'][:]
 
             ltngxr = xr.open_dataset(L_file)
             ltngxr = ltngxr.metpy.parse_cf("flash_energy")
@@ -167,6 +168,9 @@ if len(ABI_datetime) > 0:
             fig = plt.figure(figsize=[16,9], dpi=100)
             ax = fig.add_subplot(1,1,1, projection=newproj)
             im = ax.pcolormesh(dat['x'], dat['y'], R, color=colorTuple, transform=proj)
+            for g in range(0, len(ltng_lat)):
+                ax.scatter(ltng_lon[g], ltng_lat[g], s=18, marker=symbol, c='red', edgecolor='red', lw=0, transform=ltngproj)
+
             ax.set_extent((-10, -105, 0, 50))
             timestr = local.strftime('%Y-%m-%d %H:%M ') + et
             fig.text(0.5,0.9, 'GOES16 Atlantic Basin - Powered By CEMA\n'
@@ -193,7 +197,7 @@ if len(ABI_datetime) > 0:
             # a uint8 array between 0-255
             im = np.array(im).astype(np.float) / 255
             plt.figimage(im,15, 30, zorder=1, alpha=0.8)
-            output_file = workdir + "fulldisk/" + "atlhurrtc/" + fnamelist[0][:-3] + ".png"
+            output_file = workdir + "tcimg/" +  abi_names[0][:-3] + ".png"
             fig.savefig(output_file, dpi=dpi, bbox_inches='tight')
             plt.close()
             
@@ -236,32 +240,34 @@ if len(ABI_datetime) > 0:
             im = np.array(im).astype(np.float) / 255
             fig.figimage(im,15, 30, zorder=1, alpha=0.8)
         
-            output_file = workdir + "fulldisk/" + "atlhurr13/" + fnamelist[0][:-3] + ".png"
+            output_file = workdir + "b13img/" +  abi_names[0][:-3] + ".png"
             fig.savefig(output_file, dpi=dpi, bbox_inches='tight')
             plt.close()
         
         
-            giflist = ["atlhurrtc", "atlhurr13"]
-            gifnames = ['atlantic_hurricane_truecolor', 'atlantic_hurricane_band13']
-            
-            for g in range(0,len(giflist)):
-                imgdir = workdir + "fulldisk/" + giflist[g] + '/'
-                
-                img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
-                img_names = sorted(img_list)[-20:]
-                
-                imglen = len(img_names)
-                images = []
-                dur_vals = []
-                for i in range(0,imglen -1):
-                    if i != imglen:
-                        dur_vals.append(.07)
-                dur_vals.append(2)
-                
-                for i in img_names:
-                    print(i)
-                    input_file=imgdir + str(i)
-                    images.append(imageio.imread(input_file, format="PNG"))
-                imageio.mimsave(workdir + 'fulldisk/' + gifnames[g] + '.gif', images, format='GIF', duration=dur_vals)
-        else:
-            print('up to date')
+giflist = ["tcimg", "b13img"]
+gifnames = ['dorian_truecolor', 'dorian_band13']
+
+for g in range(0,len(giflist)):
+    imgdir = workdir + giflist[g] + '/'
+    
+    img_list = [f for f in listdir(imgdir) if isfile(join(imgdir, f))]
+    img_names = sorted(img_list)
+    
+    imglen = len(img_names)
+    images = []
+    dur_vals = []
+    for i in range(0,imglen -1):
+        if i != imglen:
+            dur_vals.append(.07)
+    dur_vals.append(2)
+    
+    writer = imageio.get_writer(workdir + 'dorian.mp4', fps=20) 
+    for i in img_names:
+        print(i)
+        input_file=imgdir + str(i)
+        writer.append_data(imageio.imread(input_file, format="PNG"))
+    writer.close()
+    
+    
+    
