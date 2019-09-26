@@ -198,7 +198,7 @@ if len(abi_names) > 0:
             # a uint8 array between 0-255
             im = np.array(im).astype(np.float) / 255
             plt.figimage(im,15, 30, zorder=1, alpha=0.8)
-            output_file = workdir + "tcimg/" +  abi_names[0][:-3] + ".png"
+            output_file = workdir + "tcimg/" +  abi_names[n][:-3] + ".png"
             fig.savefig(output_file, dpi=dpi, bbox_inches='tight')
             plt.close()
             
@@ -241,7 +241,7 @@ if len(abi_names) > 0:
             im = np.array(im).astype(np.float) / 255
             fig.figimage(im,15, 30, zorder=1, alpha=0.8)
         
-            output_file = workdir + "b13img/" +  abi_names[0][:-3] + ".png"
+            output_file = workdir + "b13img/" +  abi_names[n][:-3] + ".png"
             fig.savefig(output_file, dpi=dpi, bbox_inches='tight')
             plt.close()
         
@@ -263,7 +263,7 @@ for g in range(0,len(giflist)):
             dur_vals.append(.07)
     dur_vals.append(2)
     
-    writer = imageio.get_writer(workdir + 'dorian.mp4', fps=20) 
+    writer = imageio.get_writer(workdir + gifnames[g] + '.mp4', fps=20) 
     for i in img_names:
         print(i)
         input_file=imgdir + str(i)
