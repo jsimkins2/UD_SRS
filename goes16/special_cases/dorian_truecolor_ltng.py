@@ -115,7 +115,7 @@ if len(abi_names) > 0:
             ltng_lon = {}
             
             ltfile = ltng_names[n]
-            L_file = ltngdir + str(ltfile) + '.nc'  # GOES16 East
+            L_file = ltngdir + str(ltfile) # GOES16 East
             L = Dataset(L_file, 'r')
             ltng_lat = L.variables['flash_lat'][:]
             ltng_lon = L.variables['flash_lon'][:]
