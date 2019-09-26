@@ -163,6 +163,7 @@ if len(abi_names) > 0:
             toprecy = 0.795
             bottomrecx = 0.125
             bottomrecy = 0.205
+            symbol = u'$\u26A1$'
             
         
             fig = plt.figure(figsize=[16,9], dpi=100)
