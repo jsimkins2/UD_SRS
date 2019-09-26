@@ -67,7 +67,7 @@ if len(abi_names) > 0:
             Cnight2 = xr.open_dataset(datadir + abi_names[n])
             dat = Cnight2.metpy.parse_cf("CMI_C01")
             proj = dat.metpy.cartopy_crs
-            newproj = ccrs.Mercator()
+            newproj = ccrs.PlateCarree()
             ##### Need to do this by band because I don't think the mcmipc exists on thredds
             # Load the RGB arrays
             R = Cnight.variables['CMI_C02'][:].data
