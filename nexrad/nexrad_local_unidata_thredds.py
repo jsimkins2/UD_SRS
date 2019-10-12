@@ -292,7 +292,8 @@ try:
     time_diff = nowtime - data_datetime
     if time_diff.total_seconds() > 1600:
         raise ValueError('Datetimes too far apart, moving to next site')
-except (HTTPError,ValueError):
+except:
+    pass
     try:
         site = 'KLWX'
         nowtime = datetime.utcnow().replace(second=0, microsecond=0)
@@ -304,7 +305,8 @@ except (HTTPError,ValueError):
         time_diff = nowtime - data_datetime
         if time_diff.total_seconds() > 1600:
             raise ValueError('Datetimes too far apart, moving to next site')
-    except (HTTPError,ValueError):
+    except:
+        pass
         site = 'KDIX'
         nowtime = datetime.utcnow().replace(second=0, microsecond=0)
         cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/nexrad/level2/' + site + '/' + str(nowtime.year) + str(nowtime.month).zfill(2) + str(nowtime.day).zfill(2) + '/catalog.xml')
