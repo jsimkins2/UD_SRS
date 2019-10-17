@@ -1,4 +1,5 @@
 import matplotlib as mpl
+mpl.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib import patheffects, ticker
 from matplotlib.patches import Rectangle
@@ -16,6 +17,10 @@ import cartopy.crs as ccrs
 import metpy
 
 workdir = "/home/sat_ops/"
+datadir = "/data/ncep_stageIV/indiv/2019"
+file_names = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
+file_names = file_names[-24:]
+
 ncep_nc = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/ncep_stage_iv.nc")
 # grab the last 24 hours of sst dataset
 ncep_nc = ncep_nc.isel(time=range(-24, 0))
