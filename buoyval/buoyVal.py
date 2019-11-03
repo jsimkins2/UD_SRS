@@ -23,7 +23,6 @@ stations = {'44027' : 'Jonesport, ME',
             '44007' : 'Portland, ME',
             '44005' : 'Gulf of Maine',
             '44013' : 'Boston, MA',
-            '44018' : 'Cape Cod, MA',
             '44020' : 'Nantucket Sound',
             '44011' : 'Georges Bank', 
             '44008' : 'Nantucket', 
@@ -47,13 +46,16 @@ for s in list(stations.keys()):
     # grab the buoy buoy data 
     
     buoy_nc = xr.open_dataset('https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/' + s + '/' + s + 'h' + str(year) + '.nc')
-    buoy_nc = buoy_nc.sel(time = slice('2019-01-01', '2019-10-15'))
+    buoy_nc = buoy_nc.sel(time = slice('2019-01-01', '2019-10-30'))
+        
     buoy_nc = buoy_nc['sea_surface_temperature']
+    buoy_nc = buoy_nc.where(buoy_nc > 2, drop=True) # 2 degrees celsius
     buoy_nc.values = buoy_nc.values + 273.15
     # grab goes 16 data at the same location and throw it into dataframe
+    
     lat_s = buoy_nc.latitude.values[0]
     lon_s = buoy_nc.longitude.values[0]
-    
+
     goes_nc = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc')
     goes_nc =goes_nc.drop(time=[np.datetime64('2000-01-01T11:43:21.000000000')])
     goes_nc =goes_nc.drop(time=[np.datetime64('2009-08-19T19:56:53.000000000')])
@@ -61,18 +63,25 @@ for s in list(stations.keys()):
     goes_nc =goes_nc.drop(time=[np.datetime64('2009-08-20T19:56:51.000000000')])
     goes_nc =goes_nc.drop(time=[np.datetime64('2009-09-27T10:52:10.000000000')])
     goes_nc =goes_nc.drop(time=[np.datetime64('2009-11-06T14:51:48.000000000')])
+    goes_nc =goes_nc.drop(time=[np.datetime64('2009-11-30T16:51:59.000000000')])
     goes_nc = goes_nc.drop('Band15')
-    goes_nc = goes_nc.sel(time = slice('2019-01-01', '2019-10-15'))
+    goes_nc = goes_nc.sel(time = slice('2019-01-01', '2019-10-30'))
     goes_nc = goes_nc.sel(latitude=lat_s, longitude=lon_s, method='nearest')
 
     
 
+    
     # match up the times for when there is good data for both
     if len(buoy_nc.time.values) > 1:
+        # commented out because it's slower actually? weird
+        #x=datetime.datetime.utcnow()
+        #goes_nc.SST = goes_nc.where(goes_nc['DQF'] == 0)
+        #datetime.datetime.utcnow() - x
+        
         for t in range(len(goes_nc.time.values)):
             x = goes_nc['SST'][t]
             goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
-        
+
         goes_nc = goes_nc.drop(['DQF'])
         goes_nc = goes_nc.metpy.parse_cf("SST")
         goes_nc = goes_nc.where(goes_nc.values > 273.15, np.nan)
@@ -86,8 +95,8 @@ for s in list(stations.keys()):
             
             timediff = buoy_nc.time.values[buoyTimeInd] - sstTime[0]
             timediff = timediff.astype('timedelta64[m]')
-            timediff = timediff / np.timedelta64(1, 'm')
-            if timediff < 60*3:
+            timediff = np.abs(timediff / np.timedelta64(1, 'm'))
+            if timediff < 60:
                 if math.isnan(goes_nc.values[val]) == False:
                     if math.isnan(buoy_nc.values[buoyTimeInd]) == False:
                         sst_time.append(goes_nc.time.values[val])
