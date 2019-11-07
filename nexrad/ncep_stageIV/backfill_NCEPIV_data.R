@@ -56,6 +56,7 @@ library(stringr)
 yearList = seq(2004,2007,by=1)
 yearList = append(yearList, 2019)
 
+yearList = list(2019)
 for (yr in yearList){
   newFiles = list.files(paste0('/data/ncep_stageIV/indiv/',yr, '/'))
   dayFiles = list()
@@ -81,6 +82,7 @@ for (yr in yearList){
                     str_pad(0, 2, pad = "0"), '.01hr.nc'))
       system(paste0("/usr/bin/ncrcat -h", fnames, " ",'/data/ncep_stageIV/', 'daily/', yr, '/', '/ST4.',yr,str_pad(m, 2, pad = "0"),str_pad(n, 2, pad = "0"),'dailycomp.01hr.nc'))
     }
+  }
 }
     
 
