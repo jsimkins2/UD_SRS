@@ -68,4 +68,4 @@ for key,val in temp.items():
 # Interpolate data onto grid using linear interpolation
 gref = griddata((glon,glat),list(float(temp.values())),(glon,glat),method='linear')
 from scipy import interpolate
-gref = interpolate.interp2d(grid_lons, grid_lats,var_array)
+gref = scipy.interpolate.interp2d(grid_lons, grid_lats,var_array)
