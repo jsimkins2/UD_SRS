@@ -150,4 +150,63 @@ for country in counties:
 
 
 
-                      
+
+
+
+##### New script since we couldn't add metpy 
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+from matplotlib.colors import ListedColormap
+import geopandas as gpd
+# Load the box module from shapely to create box objects
+from shapely.geometry import box
+import earthpy as et
+from earthpy import clip as cl
+
+# remove nan observations - this is metpys code, but we couldn't install metpy due to conflicts 
+# so we just took the funciton and will be able to use it just like this
+def remove_nan_observations(x, y, z):
+    r"""Remove all x, y, and z where z is nan.
+    Will not destroy original values.
+    Parameters
+    ----------
+    x: array_like
+        x coordinate
+    y: array_like
+        y coordinate
+    z: array_like
+        observation value
+    Returns
+    -------
+    x, y, z
+        List of coordinate observation pairs without
+        nan valued observations.
+    """
+    x_ = x[~np.isnan(z)]
+    y_ = y[~np.isnan(z)]
+    z_ = z[~np.isnan(z)]
+
+    return x_, y_, z_
+    
+    
+import cartopy.io.shapereader as shpreader
+import cartopy.crs as ccrs
+
+reader = shpreader.Reader('Downloads/cb_2018_us_county_500k/cb_2018_us_county_500k.shp')
+counties = reader.records()
+
+fig = plt.figure(figsize=(12,12))
+ax = fig.add_subplot(111, projection=ccrs.PlateCarree())
+ax.set_extent([-76.1, -75.02, 38.35, 40.25])
+#plt.pcolormesh(xi,yi,zi, cmap=cmap, norm=norm,transform=ccrs.PlateCarree())
+#plt.plot(lons,lats,'k.')
+#ax.add_feature(USCOUNTIES.with_scale('500k'))
+
+for country in counties:
+    if country.attributes['STATEFP'] == '10' or country.attributes['STATEFP'] == '24' or country.attributes['STATEFP'] == '42' or country.attributes['STATEFP'] == '34' or country.attributes['STATEFP'] == '51':
+        if country.attributes['NAME'] == 'Kent' or country.attributes['NAME'] == 'Sussex' or country.attributes['NAME'] == 'New Castle' or country.attributes['NAME'] == 'Chester':
+            ax.add_geometries(country.geometry, ccrs.PlateCarree(),facecolor='none')
+        else:
+            ax.add_geometries(country.geometry, ccrs.PlateCarree(),facecolor='gray')
