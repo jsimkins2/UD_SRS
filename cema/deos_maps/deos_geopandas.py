@@ -4,10 +4,38 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 from matplotlib.colors import ListedColormap
 import geopandas as gpd
-# Load the box module from shapely to create box objects
 from shapely.geometry import box
-import earthpy as et
-from earthpy import clip as cl
+from scipy.interpolate import griddata
+
+## Load in other functions from metpy that couldn't be laded 
+def remove_nan_observations(x, y, z):
+    r"""Remove all x, y, and z where z is nan.
+    Will not destroy original values.
+    Parameters
+    ----------
+    x: array_like
+        x coordinate
+    y: array_like
+        y coordinate
+    z: array_like
+        observation value
+    Returns
+    -------
+    x, y, z
+        List of coordinate observation pairs without
+        nan valued observations.
+    """
+    x_ = x[~np.isnan(z)]
+    y_ = y[~np.isnan(z)]
+    z_ = z[~np.isnan(z)]
+
+    return x_, y_, z_
+
+
+
+
+
+
 deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data.json")
 loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
 # index is the station nunumbers 
