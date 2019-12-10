@@ -7,6 +7,10 @@ import cartopy.feature as cfeature
 import cartopy.io.img_tiles as cimgt
 import cartopy.io.shapereader as shpreader
 import cartopy.feature as cfeature
+import geopandas
+from shapely.geometry import box, mapping
+import matplotlib.colors as clr
+
 def check_crs(crs):
     """Checks if the crs represents a valid grid, projection or ESPG string.
     Examples
@@ -120,16 +124,47 @@ da.rio.to_raster('/Users/james/Downloads/test.tif')
 
 xds = rioxarray.open_rasterio("/Users/james/Downloads/test.tif")
 
-import geopandas
-from shapely.geometry import box, mapping
 
+
+# read in deos special shapefiles
 deos_boundarys = gpd.read_file('Downloads/mapLayers/deoscounties.shp')
-clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, drop=True)
-
-
+bigdeos = gpd.read_file('Downloads/mapLayers/TRISTATE_OVERVIEW.shp')
 inland_bays = gpd.read_file('Downloads/mapLayers/InlandBays.shp')
+
+# create cartopy instance of obscure projection
 c = Proj('+proj=tmerc +lat_0=38 +lon_0=-75.41666666666667 +k=0.999995 +x_0=200000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
 oldproj = proj_to_cartopy(c)
 
+# clip the interpolated data based on the shapefiles
+clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, drop=True)
 cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, invert=True)
+
+
+
+### Call the function make_cmap which returns your colormap
+
+txt_cmap =  pd.read_csv('Downloads/colorramps/at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+raw_rgb = []
+for i in range(0,len(txt_cmap)):
+    raw_rgb.append(tuple([txt_cmap['r'][i], txt_cmap['g'][i], txt_cmap['b'][i]]))
+
+cmap = clr.LinearSegmentedColormap.from_list('custom blue', raw_rgb, N=700)
+
+fig = plt.figure(figsize=(12,12))
+ax = fig.add_subplot(111, projection=ccrs.Mercator())
+ax.set_extent([-76.1, -75.02, 38.35, 40.3], crs=ccrs.PlateCarree())
+for ind in range(0,len(bigdeos)):
+        ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
+                      facecolor='gray', edgecolor='black')
+im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0], cmap=cmap, vmin=-30, vmax=120,transform=ccrs.PlateCarree(),zorder=2)
+plt.plot(lons,lats,'k.', transform=ccrs.PlateCarree())
+for ind in range(0,len(deos_boundarys)):
+    ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
+                      facecolor='none', edgecolor='black', zorder=3, linewidth=1.5)
+for ind in range(0,len(inland_bays)):
+        ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
+                      facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
+plt.colorbar(im)
+
+
 

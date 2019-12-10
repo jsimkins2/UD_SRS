@@ -109,25 +109,3 @@ y = np.linspace(min(lats), max(lats), 500)
 xi,yi = np.meshgrid(x,y)
 # interpolate
 zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
-
-# Import all of your data at the top of your notebook to keep things organized.
-deos_boundarys = gpd.read_file(
-    'Downloads/mapLayers/deoscounties.shp')
-
-fig = plt.figure(figsize=(12,12))
-ax = fig.add_subplot(111, projection=ccrs.PlateCarree())
-ax.set_extent([-76.1, -75.02, 38.35, 40.25])
-ax.pcolormesh(xi,yi,zi, cmap=cmap, norm=norm,transform=ccrs.PlateCarree(), clip_path=(clip))
-plt.plot(lons,lats,'k.')
-#ax.add_feature(USCOUNTIES.with_scale('500k'))
-
-for county in deos_boundarys['NAME']:
-    ind = deos_boundarys[deos_boundarys['NAME'] == county].index[0]
-    ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),facecolor='none', edgecolor='black')
-else:
-    ax.add_geometries(facecolor='gray')
-
-ind = can[can['name'] == state].index[0]
-
-ax.add_geometries([can['geometry'][ind]], ccrs.PlateCarree(),
-                  facecolor=facecolor, edgecolor=edgecolor)
