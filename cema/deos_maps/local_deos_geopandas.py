@@ -23,8 +23,8 @@ import matplotlib as mpl
 import pandas as pd
 
 # declare paths
-shapePaths = "/home/james/mapLayers/"
-colorPaths = "/home/james/colorramps/"
+shapePaths = "/Users/James/Downloads/mapLayers/"
+colorPaths = "/Users/James/Downloads/colorramps/"
 ## define custom functions
 def remove_nan_observations(x, y, z):
     r"""Remove all x, y, and z where z is nan.
@@ -212,6 +212,7 @@ def distance_matrix(x0, y0, x1, y1):
 deos_boundarys = gpd.read_file(shapePaths + 'deoscounties.shp')
 bigdeos = gpd.read_file(shapePaths + 'TRISTATE_OVERVIEW.shp')
 inland_bays = gpd.read_file(shapePaths + 'InlandBays.shp')
+state_outline = gpd.read_file(shapePaths + 'tristateMultiaddedPACo.shp')
 
 # create cartopy instance of obscure projection
 c = Proj('+proj=tmerc +lat_0=38 +lon_0=-75.41666666666667 +k=0.999995 +x_0=200000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
@@ -367,9 +368,9 @@ for var in list(nameDict.keys()):
         da.attrs['units'] = 'Fahrenheit'
         da.attrs['standard_name'] = 'Temperature'
         da.rio.set_spatial_dims('lon', 'lat')
-        da.rio.to_raster('/home/james/temp/' + nameDict[var] + '.tif', overwrite=True)
+        da.rio.to_raster('Downloads/' + nameDict[var] + '.tif', overwrite=True)
         
-        xds = rioxarray.open_rasterio('/home/james/temp/' + nameDict[var] +'.tif')
+        xds = rioxarray.open_rasterio('Downloads/' + nameDict[var] +'.tif')
         # clip the interpolated data based on the shapefiles
         clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, drop=True)
         cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, invert=True)
@@ -407,167 +408,187 @@ for var in list(nameDict.keys()):
         plt.plot(lons,lats,'k.', transform=ccrs.PlateCarree())
         for ind in range(0,len(deos_boundarys)):
             ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
-                              facecolor='none', edgecolor='black', zorder=3, linewidth=1.5)
+                              facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
         for ind in range(0,len(inland_bays)):
                 ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
                               facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
         #plt.colorbar(im)
         plt.title(nameDict[var])
-        plt.savefig("/var/www/html/imagery/deos_" + nameDict[var] + ".png")
+        plt.savefig("Downloads/" + nameDict[var] + ".png")
 
 
 
-for var in list(nameDict.keys()):
-    lats=list()
-    lons=list()
-    for key in station_id:
-        lats.append(loc_deos[rev_station_dict[str(key)]]['latitude'])
-        lons.append(loc_deos[rev_station_dict[str(key)]]['longitude'])
+var = 'Wind Direction'
+lats=list()
+lons=list()
+for key in station_id:
+    lats.append(loc_deos[rev_station_dict[str(key)]]['latitude'])
+    lons.append(loc_deos[rev_station_dict[str(key)]]['longitude'])
+
+# add in four corners to expand the interpolated grid
+lons = lons + list([-76.15,-76.15, -74.98,  -74.98])
+lats = lats + list([38.3, 40.3, 38.3, 40.3])
+
+temp = list()
+# Begin the for loop to place a location on a map
+for s in station_id:
+    if str(s) in list(station_dict.values()):
+        ID = str(s)
+    try:
+        temp.append(float(deos_data[date_deos][s][var]))
+    except:
+        temp.append(np.nan)
     
-    # add in four corners to expand the interpolated grid
-    lons = lons + list([-76.15,-76.15, -74.98,  -74.98])
-    lats = lats + list([38.3, 40.3, 38.3, 40.3])
-    if var == 'Wind Direction':
-        temp = list()
-        # Begin the for loop to place a location on a map
-        for s in station_id:
-            if str(s) in list(station_dict.values()):
-                ID = str(s)
-            try:
-                temp.append(float(deos_data[date_deos][s][var]))
-            except:
-                temp.append(np.nan)
-            
-        # just in case one of the gauges is out
-        try:
-            t1 = float(deos_data[date_deos][2321][var])
-        except:
-            t1 = np.nanmean(temp)
-        
-        try:
-            t2 = float(deos_data[date_deos][2980][var])
-        except:
-            t2 = np.nanmean(temp)
-        
-        try:
-            t3 = float(deos_data[date_deos][2304][var])
-        except:
-            t3 = np.nanmean(temp)
-        
-        try:
-            t4 = float(deos_data[date_deos][2983][var])
-        except:
-            t4 = np.nanmean(temp)
-        
-        temp = temp + list([t1,t2,t3,t4])
-        
-        lons=np.array(lons)
-        lats=np.array(lats)
-        temp = np.array(temp)
-        
-        # alright, now inteprolate wind speed values to put underneath wind directions
-        ws = list()
-        # Begin the for loop to place a location on a map
-        for s in station_id:
-            if str(s) in list(station_dict.values()):
-                ID = str(s)
-            try:
-                ws.append(float(deos_data[date_deos][s][var]))
-            except:
-                ws.append(np.nan)
-            
-        # just in case one of the gauges is out
-        try:
-            t1 = float(deos_data[date_deos][2321][var])
-        except:
-            t1 = np.nanmean(ws)
-        
-        try:
-            t2 = float(deos_data[date_deos][2980][var])
-        except:
-            t2 = np.nanmean(ws)
-        
-        try:
-            t3 = float(deos_data[date_deos][2304][var])
-        except:
-            t3 = np.nanmean(ws)
-        
-        try:
-            t4 = float(deos_data[date_deos][2983][var])
-        except:
-            t4 = np.nanmean(ws)
-        
-        ws = ws + list([t1,t2,t3,t4])
-        
-        lons=np.array(lons)
-        lats=np.array(lats)
-        ws = np.array(ws)
+# just in case one of the gauges is out
+try:
+    t1 = float(deos_data[date_deos][2321][var])
+except:
+    t1 = np.nanmean(temp)
 
-        lons,lats, ws = remove_nan_observations(lons,lats, ws)
-        x = np.linspace(min(lons), max(lons), 750)
-        y = np.linspace(min(lats), max(lats), 750)
-        xi,yi = np.meshgrid(x,y)
-        # interpolate
-        #zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
-        # try the idw interpolation scheme
-        xi, yi = xi.flatten(), yi.flatten()
+try:
+    t2 = float(deos_data[date_deos][2980][var])
+except:
+    t2 = np.nanmean(temp)
 
-        # Calculate IDW
-        zi = linear_rbf(lons,lats,ws,xi,yi)
-        zi=zi.reshape((len(x), len(y)))
-        
-        da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
-        da.rio.set_crs("epsg:4326")
-        da.attrs['units'] = 'Fahrenheit'
-        da.attrs['standard_name'] = 'Temperature'
-        da.rio.set_spatial_dims('lon', 'lat')
-        da.rio.to_raster('/home/james/temp/' + nameDict[var] + '.tif', overwrite=True)
-        
-        xds = rioxarray.open_rasterio('/home/james/temp/' + nameDict[var] +'.tif')
+try:
+    t3 = float(deos_data[date_deos][2304][var])
+except:
+    t3 = np.nanmean(temp)
 
-        # define other stuff
-        temp[temp < 0] = np.nan
-        temp[temp > 360] = np.nan
-        txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+try:
+    t4 = float(deos_data[date_deos][2983][var])
+except:
+    t4 = np.nanmean(temp)
+
+temp = temp + list([t1,t2,t3,t4])
+
+lons=np.array(lons)
+lats=np.array(lats)
+temp = np.array(temp)
+temp[temp < 0] = np.nan
+temp[temp > 360] = np.nan
+# alright, now inteprolate wind speed values to put underneath wind directions
+ws = list()
+# Begin the for loop to place a location on a map
+for s in station_id:
+    if str(s) in list(station_dict.values()):
+        ID = str(s)
+    try:
+        ws.append(float(deos_data[date_deos][s]['Wind Speed']))
+    except:
+        ws.append(np.nan)
     
-        ### Call the function make_cmap which returns your colormap
-        raw_rgb = []
-        for i in range(0,len(txt_cmap)):
-            raw_rgb.append(tuple([txt_cmap['r'][i], txt_cmap['g'][i], txt_cmap['b'][i]]))
-        cmap= make_cmap(raw_rgb, bit=True)
-        bounds = []
-        
-        for i in range(1,len(list(txt_cmap['bound']))):
-            lin=np.linspace(list(txt_cmap['bound'])[i-1],list(txt_cmap['bound'])[i], 40)
-            bounds.extend(list(lin))
-            
-        norm = BoundaryNorm(bounds,ncolors=cmap.N)
-        
-        if var == 'Gage Precipitation (60)':
-            cmaplist = [cmap(i) for i in range(cmap.N)]
-            # force the first color entry to be grey
-            cmaplist[0] = (.75, .75, .75, .8)
-            # create the new map
-            cmap = mpl.colors.LinearSegmentedColormap.from_list(
-                'Custom cmap', cmaplist, cmap.N)
-        
-        fig = plt.figure(figsize=(12,12))
-        ax = fig.add_subplot(111, projection=ccrs.Mercator())
-        ax.set_extent([-76.1, -75.02, 38.35, 40.3], crs=ccrs.PlateCarree())
-        for ind in range(0,len(bigdeos)):
-                ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
-                              facecolor='silver', edgecolor='black')
-        im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
-        plt.plot(lons,lats,'k.', transform=ccrs.PlateCarree())
-        for ind in range(0,len(deos_boundarys)):
-            ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
-                              facecolor='none', edgecolor='black', zorder=3, linewidth=1.5)
-        for ind in range(0,len(inland_bays)):
-                ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
-                              facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
-        #plt.colorbar(im)
-        plt.title(nameDict[var])
-        plt.savefig("/var/www/html/imagery/deos_" + nameDict[var] + ".png")
+# just in case one of the gauges is out
+try:
+    t1 = float(deos_data[date_deos][2321]['Wind Speed'])
+except:
+    t1 = np.nanmean(ws)
+
+try:
+    t2 = float(deos_data[date_deos][2980]['Wind Speed'])
+except:
+    t2 = np.nanmean(ws)
+
+try:
+    t3 = float(deos_data[date_deos][2304]['Wind Speed'])
+except:
+    t3 = np.nanmean(ws)
+
+try:
+    t4 = float(deos_data[date_deos][2983]['Wind Speed'])
+except:
+    t4 = np.nanmean(ws)
+
+ws = ws + list([t1,t2,t3,t4])
+
+lons=np.array(lons)
+lats=np.array(lats)
+ws = np.array(ws)
+# define other stuff
+txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+ws[ws < 0] = np.nan
+ws[ws > 90] = np.nan
+
+ws_with_nans = ws
+lons_with_nans=lons
+lats_with_nans=lats
+lons,lats, ws = remove_nan_observations(lons,lats, ws)
+x = np.linspace(min(lons), max(lons), 750)
+y = np.linspace(min(lats), max(lats), 750)
+xi,yi = np.meshgrid(x,y)
+# interpolate
+#zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
+# try the idw interpolation scheme
+xi, yi = xi.flatten(), yi.flatten()
+
+# Calculate IDW
+zi = linear_rbf(lons,lats,ws,xi,yi)
+zi=zi.reshape((len(x), len(y)))
+
+da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
+da.rio.set_crs("epsg:4326")
+da.attrs['units'] = 'Fahrenheit'
+da.attrs['standard_name'] = 'Temperature'
+da.rio.set_spatial_dims('lon', 'lat')
+da.rio.to_raster('Downloads/' + nameDict[var] + '.tif', overwrite=True)
+
+xds = rioxarray.open_rasterio('Downloads/' + nameDict[var] +'.tif')
+# clip the interpolated data based on the shapefiles
+clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, drop=True)
+cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, invert=True)
+
+
+
+
+### Call the function make_cmap which returns your colormap
+raw_rgb = []
+for i in range(0,len(txt_cmap)):
+    raw_rgb.append(tuple([txt_cmap['r'][i], txt_cmap['g'][i], txt_cmap['b'][i]]))
+cmap= make_cmap(raw_rgb, bit=True)
+bounds = []
+
+for i in range(1,len(list(txt_cmap['bound']))):
+    lin=np.linspace(list(txt_cmap['bound'])[i-1],list(txt_cmap['bound'])[i], 40)
+    bounds.extend(list(lin))
+    
+norm = BoundaryNorm(bounds,ncolors=cmap.N)
+def wind_components(speed, wdir):
+    u = -speed * np.sin(wdir)
+    v = -speed * np.cos(wdir)
+    return u, v
+
+ws_with_nans = ws_with_nans[temp != np.nan]
+lats_with_nans = lats_with_nans[temp != np.nan]
+lons_with_nans = lons_with_nans[temp != np.nan]
+mws = np.ma.masked_where(ws_with_nans < 1, ws_with_nans)
+mtemp = np.ma.masked_where(ws_with_nans < 1, temp)
+mlats = np.ma.masked_where(ws_with_nans < 1, lats_with_nans)
+mlons = np.ma.masked_where(ws_with_nans < 1, lats_with_nans)
+u,v = wind_components(mws.compressed(), mtemp.compressed())
+ui,vi = np.meshgrid(u,v)
+
+fig = plt.figure(figsize=(12,12))
+ax = fig.add_subplot(111, projection=ccrs.Mercator())
+ax.set_extent([-76.1, -75.02, 38.35, 40.3], crs=ccrs.PlateCarree())
+
+for ind in range(0,len(bigdeos)):
+        ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
+                      facecolor='silver', edgecolor='black')
+im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
+ax.quiver(mlons.compressed(),mlats.compressed(),u,v, scale=20,transform=ccrs.PlateCarree(),zorder=3)
+plt.plot(np.ma.masked_array(mlons, ~mlons.mask),np.ma.masked_array(mlats, ~mlats.mask), 'ko',fillstyle='none', linewidth=1, markersize=8,transform=ccrs.PlateCarree(),zorder=3)
+
+for ind in range(0,len(deos_boundarys)):
+    ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
+                      facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
+for ind in range(0,len(inland_bays)):
+    ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
+                      facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
+ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+plt.colorbar(im)
+plt.title(nameDict[var])
+plt.savefig("Downloads/" + nameDict[var] + ".png")
 
 
 
@@ -576,10 +597,21 @@ for var in list(nameDict.keys()):
 
 
 
+fig = plt.figure(figsize=(12,12))
+ax = fig.add_subplot(111, projection=ccrs.Mercator())
+ax.set_extent([-76.1, -75.02, 38.35, 40.3], crs=ccrs.PlateCarree())
+for ind in range(0,len(bigdeos)):
+        ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
+                      facecolor='silver', edgecolor='black')
+im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
+ax.quiver(np.array([lons_with_nans[10]]),np.array([lats_with_nans[10]]), np.array([1]),np.array([1]), scale=20,transform=ccrs.PlateCarree(),zorder=3)
+ax.quiver(np.array([lons_with_nans[10],lons_with_nans[20]]),np.array([lats_with_nans[10],lats_with_nans[20]]), np.array([1,1]),np.array([1,1]), scale=20,transform=ccrs.PlateCarree(),zorder=3)
 
-
-
-
-
+for vel in range(0,len(temp_with_nans)):
+    if ws_with_nans[vel] > 1:
+        u,v=wind_components(ws_with_nans[vel], temp_with_nans[vel])
+        ax.quiver(np.array([lons_with_nans[vel]]),np.array([lats_with_nans[vel]]), np.array([u]),np.array([v]), scale=20,transform=ccrs.PlateCarree(),zorder=3)
+    else:
+        plt.plot(lons_with_nans[vel],lats_with_nans[vel], 'ko',fillstyle='none', linewidth=1, markersize=8,transform=ccrs.PlateCarree())
 
 
