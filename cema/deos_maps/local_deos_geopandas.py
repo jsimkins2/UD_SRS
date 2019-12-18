@@ -21,6 +21,7 @@ import matplotlib.colors as clr
 from matplotlib.colors import BoundaryNorm
 import matplotlib as mpl
 import pandas as pd
+import matplotlib.patheffects as path_effects
 
 # declare paths
 shapePaths = "/Users/James/Downloads/mapLayers/"
@@ -296,12 +297,14 @@ for var in list(nameDict.keys()):
         temp = np.array(temp)
         
         if var == 'Gage Precipitation (60)':
+            temp = temp/25.4
             temp[temp < 0] = np.nan
             temp[temp > 15] = np.nan
             vmin=0
             vmax=12
+            rounder = 2
             txt_cmap =  pd.read_csv(colorPaths + 'rain_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-
+            
         if var == 'Air Temperature':
             temp = temp - 273.15
             temp = (temp*(9/5)) + 32
@@ -309,8 +312,9 @@ for var in list(nameDict.keys()):
             temp[temp > 120] = np.nan
             vmin=-30
             vmax=120
+            rounder = 1
             txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-        
+            
         if var == 'Dew Point Temperature':
             temp = temp - 273.15
             temp = (temp*(9/5)) + 32
@@ -318,13 +322,15 @@ for var in list(nameDict.keys()):
             temp[temp > 90] = np.nan
             vmin=-40
             vmax=120
+            rounder = 1
             txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-
+            
         if var == 'Barometric Pressure':
             vmin=950
             vmax=1045
             temp[temp < 930] = np.nan
             temp[temp > 1100] = np.nan
+            rounder = 0
             txt_cmap =  pd.read_csv(colorPaths + 'bp_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
 
         if var == 'Relative humidity':
@@ -332,6 +338,7 @@ for var in list(nameDict.keys()):
             vmax=100
             temp[temp < 0] = np.nan
             temp[temp > 100] = np.nan
+            rounder = 0
             txt_cmap =  pd.read_csv(colorPaths + 'rh_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
 
         if var == 'Wind Chill':
@@ -341,13 +348,16 @@ for var in list(nameDict.keys()):
             temp[temp > 120] == np.nan
             vmin=-30
             vmax=120
+            rounder = 1
             txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
         
         if var == 'Wind Speed':
+            temp = temp * 2.237
             temp[temp < 0] = np.nan
             temp[temp > 90] = np.nan
             vmin=0
             vmax=52
+            rounder = 1
             txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
         
         lons,lats, temp = remove_nan_observations(lons,lats, temp)
@@ -389,15 +399,8 @@ for var in list(nameDict.keys()):
             bounds.extend(list(lin))
             
         norm = BoundaryNorm(bounds,ncolors=cmap.N)
-        
-        if var == 'Gage Precipitation (60)':
-            cmaplist = [cmap(i) for i in range(cmap.N)]
-            # force the first color entry to be grey
-            cmaplist[0] = (.75, .75, .75, .8)
-            # create the new map
-            cmap = mpl.colors.LinearSegmentedColormap.from_list(
-                'Custom cmap', cmaplist, cmap.N)
-        
+        #or lons[l] != -75.913585 
+
         fig = plt.figure(figsize=(12,12))
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
         ax.set_extent([-76.1, -75.02, 38.35, 40.3], crs=ccrs.PlateCarree())
@@ -405,13 +408,30 @@ for var in list(nameDict.keys()):
                 ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                               facecolor='silver', edgecolor='black')
         im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
-        plt.plot(lons,lats,'k.', transform=ccrs.PlateCarree())
+        for l in range(0,len(lons)):
+            if var == 'Relative humidity':
+                if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.727202:
+                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=9,weight='bold',verticalalignment='center',
+                    horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
+                    text.set_path_effects([path_effects.Stroke(linewidth=3, foreground='white'),path_effects.Normal()])
+            if var == 'Barometric Pressure':
+                if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
+                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=9,weight='bold',verticalalignment='center',
+                    horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
+                    text.set_path_effects([path_effects.Stroke(linewidth=3, foreground='white'),path_effects.Normal()])
+            else:
+                if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
+                    text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=9,weight='bold',verticalalignment='center',
+                    horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
+                    text.set_path_effects([path_effects.Stroke(linewidth=3, foreground='white'),path_effects.Normal()])
         for ind in range(0,len(deos_boundarys)):
             ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
                               facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
         for ind in range(0,len(inland_bays)):
-                ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
+            ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
                               facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
         #plt.colorbar(im)
         plt.title(nameDict[var])
         plt.savefig("Downloads/" + nameDict[var] + ".png")
@@ -499,6 +519,7 @@ try:
 except:
     t4 = np.nanmean(ws)
 
+
 ws = ws + list([t1,t2,t3,t4])
 
 lons=np.array(lons)
@@ -510,6 +531,8 @@ ws[ws < 0] = np.nan
 ws[ws > 90] = np.nan
 
 ws_with_nans = ws
+ws=ws * 2.237
+
 lons_with_nans=lons
 lats_with_nans=lats
 lons,lats, ws = remove_nan_observations(lons,lats, ws)
@@ -541,6 +564,7 @@ cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, d
 
 
 ### Call the function make_cmap which returns your colormap
+### Call the function make_cmap which returns your colormap
 raw_rgb = []
 for i in range(0,len(txt_cmap)):
     raw_rgb.append(tuple([txt_cmap['r'][i], txt_cmap['g'][i], txt_cmap['b'][i]]))
@@ -552,20 +576,33 @@ for i in range(1,len(list(txt_cmap['bound']))):
     bounds.extend(list(lin))
     
 norm = BoundaryNorm(bounds,ncolors=cmap.N)
-def wind_components(speed, wdir):
-    u = -speed * np.sin(wdir)
-    v = -speed * np.cos(wdir)
+def wind_components(wspd, wdir):
+    rad = 4.0*np.arctan(1)/180.
+    u = -wspd*np.sin(rad*wdir)
+    v = -wspd*np.cos(rad*wdir)
     return u, v
 
-ws_with_nans = ws_with_nans[temp != np.nan]
-lats_with_nans = lats_with_nans[temp != np.nan]
-lons_with_nans = lons_with_nans[temp != np.nan]
+# now remove the lon values that we don't want
+ws_with_nans[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685)  | (lons_with_nans == -75.640685)] = np.nan
+temp[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685)   | (lons_with_nans == -75.640685)] = np.nan
+lats_with_nans[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685) |  (lons_with_nans == -75.640685)] = np.nan
+lons_with_nans[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685) |  (lons_with_nans == -75.640685)] = np.nan
+
+ws_with_nans = ws_with_nans[~np.isnan(temp)]
+lats_with_nans = lats_with_nans[~np.isnan(temp)]
+lons_with_nans = lons_with_nans[~np.isnan(temp)]
+temp = temp[~np.isnan(temp)]
+
 mws = np.ma.masked_where(ws_with_nans < 1, ws_with_nans)
 mtemp = np.ma.masked_where(ws_with_nans < 1, temp)
 mlats = np.ma.masked_where(ws_with_nans < 1, lats_with_nans)
-mlons = np.ma.masked_where(ws_with_nans < 1, lats_with_nans)
+mlons = np.ma.masked_where(ws_with_nans < 1, lons_with_nans)
+
+# calculate the u v components of the wind
 u,v = wind_components(mws.compressed(), mtemp.compressed())
-ui,vi = np.meshgrid(u,v)
+normu = u / np.sqrt(u**2 + v**2)
+normv = v / np.sqrt(u**2 + v**2)
+
 
 fig = plt.figure(figsize=(12,12))
 ax = fig.add_subplot(111, projection=ccrs.Mercator())
@@ -575,8 +612,9 @@ for ind in range(0,len(bigdeos)):
         ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                       facecolor='silver', edgecolor='black')
 im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
-ax.quiver(mlons.compressed(),mlats.compressed(),u,v, scale=20,transform=ccrs.PlateCarree(),zorder=3)
-plt.plot(np.ma.masked_array(mlons, ~mlons.mask),np.ma.masked_array(mlats, ~mlats.mask), 'ko',fillstyle='none', linewidth=1, markersize=8,transform=ccrs.PlateCarree(),zorder=3)
+ax.quiver(mlons.compressed(),mlats.compressed(),normu,normv,transform=ccrs.PlateCarree(),zorder=5,scale_units='xy', alpha=0.8, headwidth=4, pivot='middle')
+plt.plot(np.ma.masked_array(lons_with_nans, mask=~mlons.mask),np.ma.masked_array(lats_with_nans, ~mlats.mask), 'ko',fillstyle='none', 
+         mew=1.7, markersize=10,transform=ccrs.PlateCarree(),zorder=5,alpha=0.8)
 
 for ind in range(0,len(deos_boundarys)):
     ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
@@ -587,8 +625,7 @@ for ind in range(0,len(inland_bays)):
 ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
 ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
 plt.colorbar(im)
-plt.title(nameDict[var])
-plt.savefig("Downloads/" + nameDict[var] + ".png")
+plt.title(nameDict[var] + str(date_deos))
 
 
 
@@ -597,21 +634,24 @@ plt.savefig("Downloads/" + nameDict[var] + ".png")
 
 
 
-fig = plt.figure(figsize=(12,12))
-ax = fig.add_subplot(111, projection=ccrs.Mercator())
-ax.set_extent([-76.1, -75.02, 38.35, 40.3], crs=ccrs.PlateCarree())
-for ind in range(0,len(bigdeos)):
-        ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
-                      facecolor='silver', edgecolor='black')
-im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
-ax.quiver(np.array([lons_with_nans[10]]),np.array([lats_with_nans[10]]), np.array([1]),np.array([1]), scale=20,transform=ccrs.PlateCarree(),zorder=3)
-ax.quiver(np.array([lons_with_nans[10],lons_with_nans[20]]),np.array([lats_with_nans[10],lats_with_nans[20]]), np.array([1,1]),np.array([1,1]), scale=20,transform=ccrs.PlateCarree(),zorder=3)
 
-for vel in range(0,len(temp_with_nans)):
-    if ws_with_nans[vel] > 1:
-        u,v=wind_components(ws_with_nans[vel], temp_with_nans[vel])
-        ax.quiver(np.array([lons_with_nans[vel]]),np.array([lats_with_nans[vel]]), np.array([u]),np.array([v]), scale=20,transform=ccrs.PlateCarree(),zorder=3)
-    else:
-        plt.plot(lons_with_nans[vel],lats_with_nans[vel], 'ko',fillstyle='none', linewidth=1, markersize=8,transform=ccrs.PlateCarree())
+
+
+
+
+
+
+
+
+'''
+        if var == 'Gage Precipitation (60)':
+            cmaplist = [cmap(i) for i in range(cmap.N)]
+            # force the first color entry to be grey
+            cmaplist[0] = (.75, .75, .75, .8)
+            # create the new map
+            cmap = mpl.colors.LinearSegmentedColormap.from_list(
+                'Custom cmap', cmaplist, cmap.N)
+'''
+
 
 

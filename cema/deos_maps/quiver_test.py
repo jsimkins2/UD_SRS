@@ -408,7 +408,7 @@ for ind in range(0,len(bigdeos)):
                       facecolor='silver', edgecolor='black')
 im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
 ax.quiver(mlons.compressed(),mlats.compressed(),u,v, scale=20,transform=ccrs.PlateCarree(),zorder=3, alpha=0.7)
-plt.plot(np.ma.masked_array(lons_with_nans, mask=~mlons.mask),np.ma.masked_array(lats_with_nans, ~mlats.mask), 'ko',fillstyle='none', linewidth=1, markersize=8,transform=ccrs.PlateCarree(),zorder=3)
+plt.plot(np.ma.masked_array(lons_with_nans, mask=~mlons.mask),np.ma.masked_array(lats_with_nans, ~mlats.mask), 'ko',fillstyle='none', linewidth=2, markersize=9,transform=ccrs.PlateCarree(),zorder=3)
 
 for ind in range(0,len(deos_boundarys)):
     ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
