@@ -435,7 +435,7 @@ for var in list(nameDict.keys()):
         plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
 
         im1 = image.imread(shapePaths + "deos_logo.png")
-        plt.figimage(im1, 25, 40 ,zorder=30, alpha=1)
+        plt.figimage(im1, 425, 180 ,zorder=30, alpha=1)
         plt.savefig("/var/www/html/imagery/deos_" + nameDict[var] + ".png")
 
 
@@ -629,7 +629,7 @@ plt.text(-76.13, 38.503, 'Wind',horizontalalignment='left',color='white',weight=
 plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
 
 im1 = image.imread(shapePaths + "deos_logo.png")
-plt.figimage(im1, 25, 40 ,zorder=30, alpha=1)
+plt.figimage(im1, 425, 180 ,zorder=30, alpha=1)
 
 plt.savefig("/var/www/html/imagery/deos_" + nameDict[var] + ".png")
 
@@ -820,5 +820,5 @@ plt.text(-76.13, 38.503, 'Feels Like (F)',horizontalalignment='left',color='whit
 plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
 
 im1 = image.imread(shapePaths + "deos_logo.png")
-plt.figimage(im1, 25, 40 ,zorder=30, alpha=1)
+plt.figimage(im1, 425, 180 ,zorder=30, alpha=1)
 plt.savefig("/var/www/html/imagery/deos_feelslike.png")
