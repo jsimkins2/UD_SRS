@@ -230,7 +230,7 @@ station_id = list(deos_data.index)
 date_deos = deos_data.columns[0]
 dst = "EST" if time.localtime().tm_isdst==0 else "EDT"
 zuluDIFF = 5 if dst=='EST' else 4
-deos_dateSTR = str(str(date_deos.month) + '/' + str(date_deos.day) + '/' + str(date_deos.year) + ' ' + str(date_deos.hour - zuluDIFF) + ':' + str(date_deos.minute) + ' ' + dst)
+deos_dateSTR = str("{0:0=2d}".format(date_deos.month) + '/' + "{0:0=2d}".format(date_deos.day) + '/' + str(date_deos.year) + ' ' + "{0:0=2d}".format(date_deos.hour - zuluDIFF) + ':' + "{0:0=2d}".format(date_deos.minute) + ' ' + dst)
 
 # create a dict of station IDs with the name of the station
 station_dict = {}
