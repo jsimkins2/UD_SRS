@@ -534,6 +534,7 @@ ws[ws < 0] = np.nan
 ws[ws > 90] = np.nan
 
 ws_with_nans = ws
+ws_w_nans = ws
 lons_with_nans=lons
 lats_with_nans=lats
 lons,lats, ws = remove_nan_observations(lons,lats, ws)
@@ -743,9 +744,9 @@ feelsLike = np.ma.filled(m1,m2)
 
 # replace certain feels like values with air temperature given conditions
 for i in range(0,len(feelsLike)):
-    if ws_with_nans[i] < 1 and ws_with_nans[i] >= 0:
-        if np.isnan(dewP_array[i]) == False:
-            if np.isnan(airT_array[i]) == False:
+    if np.isnan(dewP_array[i]) == False:
+        if np.isnan(airT_array[i]) == False:
+            if ws_w_nans[i] < 1 and ws_w_nans[i] >= 0:
                 feelsLike[i] = airT_array[i]
 
 
