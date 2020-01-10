@@ -45,6 +45,11 @@ import sys
 import calendar
 import imageio
 
+# monkey patch from nightmare that is january 10th
+from matplotlib.axes import Axes
+from cartopy.mpl.geoaxes import GeoAxes
+GeoAxes._pcolormesh_patched = Axes.pcolormesh
+
 # Some plotting work here with help from Dan Moore
 def regrid_to_cartesian(radar, lon0, lat0):
     display = pyart.graph.RadarMapDisplayCartopy(radar)
