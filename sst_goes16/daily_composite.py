@@ -1,4 +1,4 @@
-# prepare goes16 sst data for dineof
+# backfill all of the 1day goes sst files that we missed
 import xarray as xr
 import numpy as np
 import metpy
@@ -7,7 +7,7 @@ import pandas as pd
 # paths
 outpath1 = "/data/GOES/GOES-R/1day/"
 outpath2 = "/data/GOES/GOES-R/daily_composite/"
-datelist = pd.date_range('2019-06-20', pd.datetime.today()).tolist()
+datelist = pd.date_range('2020-01-01', pd.datetime.today()).tolist()
 for d in range(0, len(datelist)):
     print(datelist[d])
     goes_nc = xr.open_dataset(
