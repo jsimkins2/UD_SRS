@@ -35,6 +35,11 @@ import calendar
 from cpt_convert import loadCPT # Import the CPT convert function
 import imageio
 from PIL import Image
+# monkey patch from nightmare that is january 10th
+from matplotlib.axes import Axes
+from cartopy.mpl.geoaxes import GeoAxes
+GeoAxes._pcolormesh_patched = Axes.pcolormesh
+
 #suppress deprecation warnings
 import warnings
 warnings.simplefilter("ignore", category=DeprecationWarning)
