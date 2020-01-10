@@ -35,7 +35,10 @@ import imageio
 import warnings
 warnings.simplefilter("ignore", category=DeprecationWarning)
 
-
+# monkey patch from nightmare that is january 10th
+from matplotlib.axes import Axes
+from cartopy.mpl.geoaxes import GeoAxes
+GeoAxes._pcolormesh_patched = Axes.pcolormesh
 ############# Initial Set Up ##################
 workdir = "/home/sat_ops/goesR/truecolor/"
 datadir = "/home/sat_ops/goesR/data/mcmipc/"
