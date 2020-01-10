@@ -40,6 +40,10 @@ import cartopy.feature as cfeature
 from urllib.error import HTTPError
 import imageio
 
+# monkey patch from nightmare that is january 10th
+from matplotlib.axes import Axes
+from cartopy.mpl.geoaxes import GeoAxes
+GeoAxes._pcolormesh_patched = Axes.pcolormesh
 
 
 def plot_velocity(radar, dataset, imgdir):
