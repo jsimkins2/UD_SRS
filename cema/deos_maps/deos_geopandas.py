@@ -749,6 +749,10 @@ for i in range(0,len(feelsLike)-4):
                 if ws_w_nans[i] >= 0:
                     feelsLike[i] = airT_array[i]
 
+for i in range(len(feelsLike)-4,len(feelsLike)):
+    if np.isnan(feelsLike[i]) == True:
+        feelsLike[i] = airT_array[i]
+
 
 # remove the nan values of feelsLike from the applicable arrays
 lats = lats[~np.isnan(feelsLike)]

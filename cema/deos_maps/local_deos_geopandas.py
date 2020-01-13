@@ -723,11 +723,12 @@ m2 = np.ma.masked_invalid(temp2)
 feelsLike = np.ma.filled(m1,m2)
 
 # replace certain feels like values with air temperature given conditions
-for i in range(0,len(feelsLike)):
-    if ws_with_nans[i] < 1 and ws_with_nans[i] >= 0:
+for i in range(0,len(feelsLike)-4):
+    if np.isnan(feelsLike[i]) == True:
         if np.isnan(dewP_array[i]) == False:
             if np.isnan(airT_array[i]) == False:
-                feelsLike[i] = airT_array[i]
+                if ws_w_nans[i] >= 0:
+                    feelsLike[i] = airT_array[i]
 
 
 # remove the nan values of feelsLike from the applicable arrays
