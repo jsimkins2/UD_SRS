@@ -607,7 +607,7 @@ normv = v / np.sqrt(u**2 + v**2)
 
 fig = plt.figure(figsize=(12,12))
 ax = fig.add_subplot(111, projection=ccrs.Mercator())
-ax.set_extent([-76.1, -75.02, 38.35, 40.3], crs=ccrs.PlateCarree())
+ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
 
 for ind in range(0,len(bigdeos)):
         ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
