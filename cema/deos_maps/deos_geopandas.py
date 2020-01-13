@@ -630,7 +630,6 @@ plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',color='white',w
 
 im1 = image.imread(shapePaths + "deos_logo.png")
 plt.figimage(im1, 425, 180 ,zorder=30, alpha=1)
-
 plt.savefig("/var/www/html/imagery/deos_" + nameDict[var] + ".png")
 
 
