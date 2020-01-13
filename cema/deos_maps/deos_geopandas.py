@@ -745,7 +745,7 @@ feelsLike = np.ma.filled(m1,m2)
 for i in range(0,len(feelsLike)):
     if np.isnan(dewP_array[i]) == False:
         if np.isnan(airT_array[i]) == False:
-            if ws_w_nans[i] < 1 and ws_w_nans[i] >= 0:
+            if ws_w_nans[i] >= 0:
                 feelsLike[i] = airT_array[i]
 
 
