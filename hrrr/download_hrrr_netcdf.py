@@ -100,5 +100,5 @@ if os.path.isfile(datadir + dataset_name[:-5] + 'nc') == False:
 
 if os.path.isfile(datadir + 'gridsurf.npy') == False:
     print('regridding the hrrr')
-    os.system("python /home/sat_ops/goesR/github/UD_SRS/hrrr/regrid_hrrr.py")
+    os.system("python3 /home/sat_ops/goesR/github/UD_SRS/hrrr/regrid_hrrr.py")
     
