@@ -28,6 +28,7 @@ import time
 # declare paths
 shapePaths = "/home/james/mapLayers/"
 colorPaths = "/home/james/colorramps/"
+my_dpi = 100
 ## define custom functions
 def remove_nan_observations(x, y, z):
     r"""Remove all x, y, and z where z is nan.
@@ -400,9 +401,9 @@ for var in list(nameDict.keys()):
         norm = BoundaryNorm(bounds,ncolors=cmap.N)
     
         
-        fig = plt.figure(figsize=(12,12))
+        fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
-        ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
+        ax.set_extent([-76.15, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
         for ind in range(0,len(bigdeos)):
                 ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                               facecolor='silver', edgecolor='black')
@@ -410,18 +411,18 @@ for var in list(nameDict.keys()):
         for l in range(0,len(lons)):
             if var == 'Relative humidity':
                 if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.727202:
-                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=9,weight='bold',transform=ccrs.PlateCarree(),zorder=7)
-                    text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
+                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',transform=ccrs.PlateCarree(),zorder=7,horizontalalignment='center',verticalalignment='center')
+                    text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
             if var == 'Barometric Pressure':
                 if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
-                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=9,weight='bold',verticalalignment='center',
+                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
-                    text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
+                    text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
             if var == 'Gage Precipitation (60)' or var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed':
                 if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
-                    text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=9,weight='bold',verticalalignment='center',
+                    text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=6.5,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
-                    text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
+                    text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
         for ind in range(0,len(deos_boundarys)):
             ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
                               facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
@@ -431,12 +432,12 @@ for var in list(nameDict.keys()):
         ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
         ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
         #plt.title(nameDict[var])
-        plt.text(-76.13, 38.503, fancyDict[var],horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
-        plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
+        plt.text(-76.13, 38.503, fancyDict[var],horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
+        plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
 
         im1 = image.imread(shapePaths + "deos_logo.png")
-        plt.figimage(im1, 425, 180 ,zorder=30, alpha=1)
-        plt.savefig("/var/www/html/imagery/deos_" + nameDict[var] + ".png")
+        plt.figimage(im1, 24, 40 ,zorder=30, alpha=1)
+        plt.savefig("/var/www/html/imagery/deos_" + nameDict[var] + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
 
 
 
@@ -605,17 +606,17 @@ normu = u / np.sqrt(u**2 + v**2)
 normv = v / np.sqrt(u**2 + v**2)
 
 
-fig = plt.figure(figsize=(12,12))
+fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
 ax = fig.add_subplot(111, projection=ccrs.Mercator())
-ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
+ax.set_extent([-76.15, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
 
 for ind in range(0,len(bigdeos)):
         ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                       facecolor='silver', edgecolor='black')
 im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
-ax.quiver(mlons.compressed(),mlats.compressed(),normu,normv,transform=ccrs.PlateCarree(),zorder=5,scale_units='xy', alpha=0.8, headwidth=4, pivot='middle')
+ax.quiver(mlons.compressed(),mlats.compressed(),normu,normv,transform=ccrs.PlateCarree(),zorder=5,scale_units='xy', alpha=0.8, headwidth=4.5, pivot='middle')
 plt.plot(np.ma.masked_array(lons_with_nans, mask=~mlons.mask),np.ma.masked_array(lats_with_nans, ~mlats.mask), 'ko',fillstyle='none', 
-         mew=1.7, markersize=10,transform=ccrs.PlateCarree(),zorder=5,alpha=0.8)
+         mew=1.7, markersize=7,transform=ccrs.PlateCarree(),zorder=5,alpha=0.8)
 
 for ind in range(0,len(deos_boundarys)):
     ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
@@ -625,12 +626,12 @@ for ind in range(0,len(inland_bays)):
                       facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
 ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
 ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
-plt.text(-76.13, 38.503, 'Wind',horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
-plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
+plt.text(-76.13, 38.503, 'Wind',horizontalalignment='left',color='white',weight='bold',size=6,zorder=30,transform=ccrs.PlateCarree())
+plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
 
 im1 = image.imread(shapePaths + "deos_logo.png")
-plt.figimage(im1, 425, 180 ,zorder=30, alpha=1)
-plt.savefig("/var/www/html/imagery/deos_" + nameDict[var] + ".png")
+plt.figimage(im1, 24, 40 ,zorder=30, alpha=1)
+plt.savefig("/var/www/html/imagery/deos_wdir.png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
 
 
 ############################## feels like mapping ######################################
@@ -799,18 +800,18 @@ for i in range(1,len(list(txt_cmap['bound']))):
 norm = BoundaryNorm(bounds,ncolors=cmap.N)
 #or lons[l] != -75.913585 
 
-fig = plt.figure(figsize=(12,12))
+fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
 ax = fig.add_subplot(111, projection=ccrs.Mercator())
-ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
+ax.set_extent([-76.15, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
 for ind in range(0,len(bigdeos)):
         ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                       facecolor='silver', edgecolor='black')
 im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
 for l in range(0,len(lons)):
     if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
-        text = plt.text(lons[l],lats[l],str(round(feelsLike[l], rounder)), size=9,weight='bold',verticalalignment='center',
+        text = plt.text(lons[l],lats[l],str(round(feelsLike[l], rounder)), size=6.5,weight='bold',verticalalignment='center',
         horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
-        text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
+        text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
 for ind in range(0,len(deos_boundarys)):
     ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
                       facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
@@ -820,9 +821,13 @@ for ind in range(0,len(inland_bays)):
 ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
 ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
 #plt.title(nameDict[var])
-plt.text(-76.13, 38.503, 'Feels Like (F)',horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
-plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
+plt.text(-76.13, 38.503, 'Feels Like (F)',horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
+plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
 
 im1 = image.imread(shapePaths + "deos_logo.png")
-plt.figimage(im1, 425, 180 ,zorder=30, alpha=1)
-plt.savefig("/var/www/html/imagery/deos_feelslike.png")
+plt.figimage(im1, 24, 40 ,zorder=30, alpha=1)
+plt.savefig("/var/www/html/imagery/deos_feelslike.png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
+
+
+
+
