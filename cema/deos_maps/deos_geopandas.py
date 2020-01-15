@@ -50,7 +50,6 @@ def remove_nan_observations(x, y, z):
     x_ = x[~np.isnan(z)]
     y_ = y[~np.isnan(z)]
     z_ = z[~np.isnan(z)]
-
     return x_, y_, z_
 def check_crs(crs):
     """Checks if the crs represents a valid grid, projection or ESPG string.
@@ -89,16 +88,11 @@ def proj_to_cartopy(proj):
     -------
     a cartopy.crs.Projection object
     """
-
     import cartopy.crs as ccrs
-
     proj = check_crs(proj)
-
     #if proj.is_latlong():
         #return ccrs.PlateCarree()
-
     srs = proj.srs
-
     km_proj = {'lon_0': 'central_longitude',
                'lat_0': 'central_latitude',
                'x_0': 'false_easting',
@@ -140,18 +134,15 @@ def proj_to_cartopy(proj):
             kw_globe[km_globe[k]] = v
         if k in km_std:
             kw_std[km_std[k]] = v
-
     globe = None
     if kw_globe:
         globe = ccrs.Globe(**kw_globe)
     if kw_std:
         kw_proj['standard_parallels'] = (kw_std['lat_1'], kw_std['lat_2'])
-
     # mercatoooor
     if cl.__name__ == 'Mercator':
         kw_proj.pop('false_easting', None)
         kw_proj.pop('false_northing', None)
-
     return cl(globe=globe, **kw_proj)
 def make_cmap(colors, position=None, bit=False):
     '''
@@ -183,18 +174,14 @@ def make_cmap(colors, position=None, bit=False):
         cdict['red'].append((pos, color[0], color[0]))
         cdict['green'].append((pos, color[1], color[1]))
         cdict['blue'].append((pos, color[2], color[2]))
-
     cmap = mpl.colors.LinearSegmentedColormap('my_colormap',cdict,256*4)
     return cmap
 def linear_rbf(x, y, z, xi, yi):
     dist = distance_matrix(x,y, xi,yi)
-
     # Mutual pariwise distances between observations
     internal_dist = distance_matrix(x,y, x,y)
-
     # Now solve for the weights such that mistfit at the observations is minimized
     weights = np.linalg.solve(internal_dist, z)
-
     # Multiply the weights for each interpolated point by the distances
     zi =  np.dot(dist.T, weights)
     return zi
@@ -202,13 +189,11 @@ def linear_rbf(x, y, z, xi, yi):
 def distance_matrix(x0, y0, x1, y1):
     obs = np.vstack((x0, y0)).T
     interp = np.vstack((x1, y1)).T
-
     # Make a distance matrix between pairwise observations
     # Note: from <http://stackoverflow.com/questions/1871536>
     # (Yay for ufuncs!)
     d0 = np.subtract.outer(obs[:,0], interp[:,0])
     d1 = np.subtract.outer(obs[:,1], interp[:,1])
-
     return np.hypot(d0, d1)
 
 
@@ -231,8 +216,8 @@ station_id = list(deos_data.index)
 date_deos = deos_data.columns[0]
 dst = "EST" if time.localtime().tm_isdst==0 else "EDT"
 zuluDIFF = 5 if dst=='EST' else 4
-date_deos = date_deos - timedelta(hours=zuluDIFF)
-deos_dateSTR = str("{0:0=2d}".format(date_deos.month) + '/' + "{0:0=2d}".format(date_deos.day) + '/' + str(date_deos.year) + ' ' + "{0:0=2d}".format(date_deos.hour) + ':' + "{0:0=2d}".format(date_deos.minute) + ' ' + dst)
+date_deos_est = date_deos - timedelta(hours=zuluDIFF)
+deos_dateSTR = str("{0:0=2d}".format(date_deos_est.month) + '/' + "{0:0=2d}".format(date_deos_est.day) + '/' + str(date_deos_est.year) + ' ' + "{0:0=2d}".format(date_deos_est.hour) + ':' + "{0:0=2d}".format(date_deos_est.minute) + ' ' + dst)
 
 # create a dict of station IDs with the name of the station
 station_dict = {}
