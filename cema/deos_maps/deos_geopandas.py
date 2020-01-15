@@ -617,7 +617,7 @@ for ind in range(0,len(bigdeos)):
 im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
 ax.quiver(mlons.compressed(),mlats.compressed(),normu,normv,transform=ccrs.PlateCarree(),zorder=5,scale_units='xy', alpha=0.8, headwidth=4.5, pivot='middle')
 plt.plot(np.ma.masked_array(lons_with_nans, mask=~mlons.mask),np.ma.masked_array(lats_with_nans, ~mlats.mask), 'ko',fillstyle='none', 
-         mew=1.7, markersize=7,transform=ccrs.PlateCarree(),zorder=5,alpha=0.8)
+         mew=1.7, markersize=5,transform=ccrs.PlateCarree(),zorder=5,alpha=0.8)
 
 for ind in range(0,len(deos_boundarys)):
     ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
