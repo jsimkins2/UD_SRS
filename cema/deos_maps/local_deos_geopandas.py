@@ -222,8 +222,9 @@ c = Proj('+proj=tmerc +lat_0=38 +lon_0=-75.41666666666667 +k=0.999995 +x_0=20000
 oldproj = proj_to_cartopy(c)
 
 # grab data from json files
-deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data.json")
+deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data2.json")
 loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
+# deos_data['2020-02-06 18:30:00'][2302]
 # index is the station nunumbers 
 station_id = list(deos_data.index)
 # need to find time value
@@ -240,8 +241,8 @@ rev_station_dict = dict(zip(station_dict.values(),station_dict.keys()))
 
 
 
-nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temperature','Wind Speed','Wind Direction','Barometric Pressure','Relative humidity'], ['precip', 'airT', 'dewP', 'wspeed', 'wdir', 'pres', 'rh']))
-fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)']))
+nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temperature','Wind Speed','Wind Direction','Barometric Pressure','Relative humidity', '24 Hour Precipitation', 'Peak Wind Gust Speed (60)'], ['precip', 'airT', 'dewP', 'wspeed', 'wdir', 'pres', 'rh', 'dailyprecip', 'gust']))
+fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)', '24-hr Rain (in)', '1-hr Peak Wind Gust (mph)']))
 for var in list(nameDict.keys()):
     lats=list()
     lons=list()
@@ -301,7 +302,16 @@ for var in list(nameDict.keys()):
             vmax=12
             rounder = 2
             txt_cmap =  pd.read_csv(colorPaths + 'rain_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-            
+
+        if var == '24 Hour Precipitation':
+            temp = temp/25.4
+            temp[temp < 0] = np.nan
+            temp[temp > 15] = np.nan
+            vmin=0
+            vmax=12
+            rounder = 2
+            txt_cmap =  pd.read_csv(colorPaths + 'rain_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+                
         if var == 'Air Temperature':
             temp = temp - 273.15
             temp = (temp*(9/5)) + 32
@@ -348,7 +358,16 @@ for var in list(nameDict.keys()):
             vmax=52
             rounder = 1
             txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-        
+
+        if var == 'Peak Wind Gust Speed (60)':
+            temp = temp * 2.237
+            temp[temp < 0] = np.nan
+            temp[temp > 90] = np.nan
+            vmin=0
+            vmax=52
+            rounder = 1
+            txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+
         lons,lats, temp = remove_nan_observations(lons,lats, temp)
         x = np.linspace(min(lons), max(lons), 750)
         y = np.linspace(min(lats), max(lats), 750)
@@ -407,7 +426,7 @@ for var in list(nameDict.keys()):
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=9,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                     text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
-            if var == 'Gage Precipitation (60)' or var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed':
+            if var == 'Gage Precipitation (60)' or var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed' or var == 'Peak Wind Gust Speed (60)' or var == '24 Hour Precipitation':
                 if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
                     text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=9,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
