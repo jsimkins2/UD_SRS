@@ -208,7 +208,7 @@ c = Proj('+proj=tmerc +lat_0=38 +lon_0=-75.41666666666667 +k=0.999995 +x_0=20000
 oldproj = proj_to_cartopy(c)
 
 # grab data from json files
-deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data2.json")
+deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data.json")
 loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
 # index is the station nunumbers 
 station_id = list(deos_data.index)
@@ -418,12 +418,12 @@ for var in list(nameDict.keys()):
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
         for ind in range(0,len(deos_boundarys)):
             ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
-                              facecolor='none', edgecolor='gray', zorder=3, linewidth=1.2)
+                              facecolor='none', edgecolor='gray', zorder=3, linewidth=0.5)
         for ind in range(0,len(inland_bays)):
             ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
-                              facecolor='white', edgecolor='black',zorder=3, linewidth=1.2)
-        ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.2)
-        ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.2)
+                              facecolor='white', edgecolor='black',zorder=3, linewidth=0.5)
+        ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
+        ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
         #plt.title(nameDict[var])
         if var == 'Peak Wind Gust Speed (60)':
             plt.text(-76.13, 38.503, fancyDict[var],horizontalalignment='left',weight='bold',color='white',size=5,zorder=30,transform=ccrs.PlateCarree())
@@ -617,12 +617,12 @@ plt.plot(np.ma.masked_array(lons_with_nans, mask=~mlons.mask),np.ma.masked_array
 
 for ind in range(0,len(deos_boundarys)):
     ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
-                      facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
+                      facecolor='none', edgecolor='gray', zorder=3, linewidth=0.5)
 for ind in range(0,len(inland_bays)):
     ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
-                      facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
-ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
-ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+                      facecolor='white', edgecolor='black',zorder=3, linewidth=0.5)
+ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
+ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
 plt.text(-76.13, 38.503, 'Wind',horizontalalignment='left',color='white',weight='bold',size=6,zorder=30,transform=ccrs.PlateCarree())
 plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
 
@@ -811,12 +811,12 @@ for l in range(0,len(lons)):
         text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
 for ind in range(0,len(deos_boundarys)):
     ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
-                      facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
+                      facecolor='none', edgecolor='gray', zorder=3, linewidth=0.5)
 for ind in range(0,len(inland_bays)):
     ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
-                      facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
-ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
-ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+                      facecolor='white', edgecolor='black',zorder=3, linewidth=0.5)
+ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
+ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
 #plt.title(nameDict[var])
 plt.text(-76.13, 38.503, 'Feels Like (F)',horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
 plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
