@@ -226,9 +226,8 @@ for s in list(loc_deos.columns):
 
 rev_station_dict = dict(zip(station_dict.values(),station_dict.keys()))
 
-nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temperature','Wind Speed','Wind Direction','Barometric Pressure','Relative humidity'], ['precip', 'airT', 'dewP', 'wspeed', 'wdir', 'pres', 'rh']))
-fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)', 'Wind Chill (F)']))
-
+nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temperature','Wind Speed','Wind Direction','Barometric Pressure','Relative humidity', '24 Hour Precipitation', 'Peak Wind Gust Speed (60)'], ['precip', 'airT', 'dewP', 'wspeed', 'wdir', 'pres', 'rh', '24hr_precip', 'gust']))
+fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)', '24-hr Rain (in)', '1-hr Peak Wind Gust (mph)']))
 for var in list(nameDict.keys()):
     lats=list()
     lons=list()
@@ -239,7 +238,7 @@ for var in list(nameDict.keys()):
     # add in four corners to expand the interpolated grid
     lons = lons + list([-76.15,-76.15, -74.98,  -74.98])
     lats = lats + list([38.3, 40.3, 38.3, 40.3])
-    if var == 'Wind Direction':
+    if var == 'Wind Direction' or var == 'Wind Chill':
         pass
     else:
         # target grid to interpolate to
@@ -288,7 +287,16 @@ for var in list(nameDict.keys()):
             vmax=12
             rounder = 2
             txt_cmap =  pd.read_csv(colorPaths + 'rain_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-            
+
+        if var == '24 Hour Precipitation':
+            temp = temp/25.4
+            temp[temp < 0] = np.nan
+            temp[temp > 15] = np.nan
+            vmin=0
+            vmax=12
+            rounder = 2
+            txt_cmap =  pd.read_csv(colorPaths + 'rain_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+                
         if var == 'Air Temperature':
             temp = temp - 273.15
             temp = (temp*(9/5)) + 32
@@ -310,7 +318,7 @@ for var in list(nameDict.keys()):
             vmax=120
             rounder = 1
             txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-             
+            
         if var == 'Barometric Pressure':
             vmin=950
             vmax=1045
@@ -327,16 +335,6 @@ for var in list(nameDict.keys()):
             rounder = 0
             txt_cmap =  pd.read_csv(colorPaths + 'rh_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
 
-        if var == 'Wind Chill':
-            temp = temp - 273.15
-            temp = (temp*(9/5)) + 32
-            temp[temp < -50] == np.nan
-            temp[temp > 120] == np.nan
-            vmin=-30
-            vmax=120
-            rounder = 1
-            txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-        
         if var == 'Wind Speed':
             temp = temp * 2.237
             temp[temp < 0] = np.nan
@@ -345,7 +343,16 @@ for var in list(nameDict.keys()):
             vmax=52
             rounder = 1
             txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-        
+
+        if var == 'Peak Wind Gust Speed (60)':
+            temp = temp * 2.237
+            temp[temp < 0] = np.nan
+            temp[temp > 90] = np.nan
+            vmin=0
+            vmax=52
+            rounder = 1
+            txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+
         lons,lats, temp = remove_nan_observations(lons,lats, temp)
         x = np.linspace(min(lons), max(lons), 750)
         y = np.linspace(min(lats), max(lats), 750)
@@ -385,8 +392,8 @@ for var in list(nameDict.keys()):
             bounds.extend(list(lin))
             
         norm = BoundaryNorm(bounds,ncolors=cmap.N)
-    
-        
+        #or lons[l] != -75.913585 
+
         fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
         ax.set_extent([-76.15, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
@@ -397,29 +404,33 @@ for var in list(nameDict.keys()):
         for l in range(0,len(lons)):
             if var == 'Relative humidity':
                 if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.727202:
-                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',transform=ccrs.PlateCarree(),zorder=7,horizontalalignment='center',verticalalignment='center')
+                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',transform=ccrs.PlateCarree(),zorder=7)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
             if var == 'Barometric Pressure':
                 if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
-            if var == 'Gage Precipitation (60)' or var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed':
+            if var == 'Gage Precipitation (60)' or var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed' or var == 'Peak Wind Gust Speed (60)' or var == '24 Hour Precipitation':
                 if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
                     text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=6.5,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
         for ind in range(0,len(deos_boundarys)):
             ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
-                              facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
+                              facecolor='none', edgecolor='gray', zorder=3, linewidth=0.5)
         for ind in range(0,len(inland_bays)):
             ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
-                              facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
-        ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
-        ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+                              facecolor='white', edgecolor='black',zorder=3, linewidth=0.5)
+        ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
+        ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
         #plt.title(nameDict[var])
-        plt.text(-76.13, 38.503, fancyDict[var],horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
-        plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
+        if var == 'Peak Wind Gust Speed (60)':
+            plt.text(-76.13, 38.503, fancyDict[var],horizontalalignment='left',weight='bold',color='white',size=5,zorder=30,transform=ccrs.PlateCarree())
+            plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
+        else:
+            plt.text(-76.13, 38.503, fancyDict[var],horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
+            plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
 
         im1 = image.imread(shapePaths + "deos_logo.png")
         plt.figimage(im1, 24, 40 ,zorder=30, alpha=1)
@@ -606,12 +617,12 @@ plt.plot(np.ma.masked_array(lons_with_nans, mask=~mlons.mask),np.ma.masked_array
 
 for ind in range(0,len(deos_boundarys)):
     ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
-                      facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
+                      facecolor='none', edgecolor='gray', zorder=3, linewidth=0.5)
 for ind in range(0,len(inland_bays)):
     ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
-                      facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
-ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
-ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+                      facecolor='white', edgecolor='black',zorder=3, linewidth=0.5)
+ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
+ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
 plt.text(-76.13, 38.503, 'Wind',horizontalalignment='left',color='white',weight='bold',size=6,zorder=30,transform=ccrs.PlateCarree())
 plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
 
@@ -800,12 +811,12 @@ for l in range(0,len(lons)):
         text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
 for ind in range(0,len(deos_boundarys)):
     ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
-                      facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
+                      facecolor='none', edgecolor='gray', zorder=3, linewidth=0.5)
 for ind in range(0,len(inland_bays)):
     ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
-                      facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
-ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
-ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+                      facecolor='white', edgecolor='black',zorder=3, linewidth=0.5)
+ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
+ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
 #plt.title(nameDict[var])
 plt.text(-76.13, 38.503, 'Feels Like (F)',horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
 plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
