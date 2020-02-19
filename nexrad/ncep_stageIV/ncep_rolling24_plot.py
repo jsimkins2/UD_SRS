@@ -24,9 +24,12 @@ import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from metpy.plots import colortables
 from matplotlib.colors import BoundaryNorm
+from datetime import datetime, timedelta
+
+nowday = datetime.utcnow()
 
 workdir = "/home/james/"
-datadir = "/data/ncep_stageIV/indiv/2019"
+datadir = "/data/ncep_stageIV/indiv/" + str(nowday.year)
 file_names = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
 file_names = file_names[-168:]
 
@@ -171,7 +174,7 @@ plt.close()
 
 ##### now do daily
 workdir = "/home/james/"
-datadir = "/data/ncep_stageIV/indiv/2019"
+datadir = "/data/ncep_stageIV/indiv/" + str(nowday.year)
 file_names = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
 file_names = file_names[-24:]
 
@@ -324,7 +327,7 @@ plt.close()
 ##### last hour  
 
 workdir = "/home/james/"
-datadir = "/data/ncep_stageIV/indiv/2019"
+datadir = "/data/ncep_stageIV/indiv/" + str(nowday.year)
 file_names = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
 file_names = file_names[-1:]
 
