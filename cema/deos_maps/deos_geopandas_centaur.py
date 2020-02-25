@@ -421,11 +421,16 @@ if diff_time.seconds < 70:
                         text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
                         horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                         text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
-                if var == 'Gage Precipitation (60)' or var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed' or var == 'Peak Wind Gust Speed (60)' or var == '24 Hour Precipitation':
+                if var == 'Gage Precipitation (60)' or var == '24 Hour Precipitation':
                     if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
-                        text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=6.5,weight='bold',verticalalignment='center',
+                        text = plt.text(lons[l],lats[l],str('{:.2f}'.format(round(temp[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
                         horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                         text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
+                if var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed' or var == 'Peak Wind Gust Speed (60)':
+                    if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
+                        text = plt.text(lons[l],lats[l],str('{:.1f}'.format(round(temp[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
+                        horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
+                        text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()]) 
             for ind in range(0,len(deos_boundarys)):
                 ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
                                   facecolor='none', edgecolor='gray', zorder=3, linewidth=0.5)
@@ -816,7 +821,7 @@ if diff_time.seconds < 70:
     im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
     for l in range(0,len(lons)):
         if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
-            text = plt.text(lons[l],lats[l],str(round(feelsLike[l], rounder)), size=6.5,weight='bold',verticalalignment='center',
+            text = plt.text(lons[l],lats[l],str('{:.1f}'.format(round(feelsLike[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
             horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
             text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
     for ind in range(0,len(deos_boundarys)):
