@@ -359,7 +359,7 @@ if diff_time.seconds < 70:
                 temp[temp < 0] = np.nan
                 temp[temp > 90] = np.nan
                 vmin=0
-                vmax=52
+                vmax=120
                 rounder = 1
                 txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
     

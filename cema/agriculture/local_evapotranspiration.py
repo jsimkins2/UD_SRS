@@ -349,7 +349,14 @@ clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, drop
 cl_prec = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, invert=True)
 
 cl = cl_prec - cl_et
-temp = prec - et
+temp = (prec - et) / 10 # convert from mm to cm
+
+#### custom colormap  
+import matplotlib as mpl
+startcolor = '#8B4513'
+midcolor = '#FFFFFF'
+endcolor = '#008000'
+own_cmap1 = mpl.colors.LinearSegmentedColormap.from_list( 'own2', [startcolor, midcolor, endcolor] )
 
 
 fig = plt.figure(figsize=(12,12))
@@ -358,7 +365,7 @@ ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
 for ind in range(0,len(bigdeos)):
         ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                       facecolor='silver', edgecolor='black')
-im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap='jet',transform=ccrs.PlateCarree(),zorder=2)
+im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=own_cmap1,transform=ccrs.PlateCarree(),zorder=2, vmin=-10, vmax=10)
 
 for l in range(0,len(lons)):
     if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
@@ -380,6 +387,7 @@ plt.text(-76.13, 38.503, 'P-ET',horizontalalignment='left',color='white',weight=
 plt.text(-76.13, 38.473, '2020-02-17',horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
 
 im1 = image.imread("Downloads/maplayers/deos_logo.png")
-plt.figimage(im1, 25, 40 ,zorder=30, alpha=1)
+plt.figimage(im1, 350, 150 ,zorder=30, alpha=1)
 plt.savefig("Downloads/P_et.png")
+
 
