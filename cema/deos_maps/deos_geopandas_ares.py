@@ -434,7 +434,7 @@ if diff_time.seconds < 70:
                         text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
                 if var == 'Barometric Pressure':
                     if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.076665 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
-                        text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
+                        text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=5.8,weight='bold',verticalalignment='center',
                         horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                         text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
                 if var == 'Gage Precipitation (60)' or var == '24 Hour Precipitation':
