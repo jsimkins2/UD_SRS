@@ -236,8 +236,8 @@ for var in list(nameDict.keys()):
         lons.append(loc_deos[rev_station_dict[str(key)]]['longitude'])
     
     # add in four corners to expand the interpolated grid
-    lons = lons + list([-76.15,-76.15, -74.98,  -74.98])
-    lats = lats + list([38.3, 40.3, 38.3, 40.3])
+    lons = lons + list([-76.35,-76.35, -74.68,  -74.68])
+    lats = lats + list([38.0, 40.6, 38.0, 40.6])
     if var == 'Wind Direction' or var == 'Wind Chill':
         pass
     else:
@@ -256,6 +256,7 @@ for var in list(nameDict.keys()):
         try:
             t1 = float(deos_data[date_deos][2321][var])
         except:
+            pass
             try:
                 t1 = float(deos_data[date_deos][2932][var])
             except:
@@ -264,6 +265,7 @@ for var in list(nameDict.keys()):
         try:
             t2 = float(deos_data[date_deos][2999][var])
         except:
+            pass
             try:
                 t2 = float(deos_data[date_deos][2982][var])
             except:
@@ -272,6 +274,7 @@ for var in list(nameDict.keys()):
         try:
             t3 = float(deos_data[date_deos][2304][var])
         except:
+            pass
             try:
                 t3 = float(deos_data[date_deos][2747][var])
             except:
@@ -280,6 +283,7 @@ for var in list(nameDict.keys()):
         try:
             t4 = float(deos_data[date_deos][2983][var])
         except:
+            pass
             try:
                 t4 = float(deos_data[date_deos][2984][var])
             except:
@@ -406,7 +410,8 @@ for var in list(nameDict.keys()):
         norm = BoundaryNorm(bounds,ncolors=cmap.N)
         #or lons[l] != -75.913585 
 
-        fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
+        #fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
+        fig = plt.figure(figsize=(10, 16), dpi=my_dpi)
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
         ax.set_extent([-76.15, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
         for ind in range(0,len(bigdeos)):
@@ -419,7 +424,7 @@ for var in list(nameDict.keys()):
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',transform=ccrs.PlateCarree(),zorder=7)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
             if var == 'Barometric Pressure':
-                if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
+                if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.076665 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
@@ -448,7 +453,7 @@ for var in list(nameDict.keys()):
         else:
             plt.text(-76.13, 38.503, fancyDict[var],horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
             plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
-
+        plt.colorbar(im)
         im1 = image.imread(shapePaths + "deos_logo.png")
         plt.figimage(im1, 24, 40 ,zorder=30, alpha=1)
         plt.savefig("/var/www/html/imagery/deos_" + nameDict[var] + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
