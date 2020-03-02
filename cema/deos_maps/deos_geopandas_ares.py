@@ -1,4 +1,4 @@
-# deos geopandas to be run at home 
+# deos geopandas to be run at home
 import os
 from datetime import datetime, timedelta
 stat = os.stat("/home/deos/web_push/map_data.json")
@@ -34,7 +34,7 @@ if diff_time.seconds < 70:
     import matplotlib.patheffects as path_effects
     import matplotlib.image as image
     import time
-    
+
     # declare paths
     shapePaths = "/home/map_maker/deos_maps/mapLayers/"
     colorPaths = "/home/map_maker/deos_maps/colorramps/"
@@ -195,7 +195,7 @@ if diff_time.seconds < 70:
         # Multiply the weights for each interpolated point by the distances
         zi =  np.dot(dist.T, weights)
         return zi
-    
+
     def distance_matrix(x0, y0, x1, y1):
         obs = np.vstack((x0, y0)).T
         interp = np.vstack((x1, y1)).T
@@ -205,22 +205,22 @@ if diff_time.seconds < 70:
         d0 = np.subtract.outer(obs[:,0], interp[:,0])
         d1 = np.subtract.outer(obs[:,1], interp[:,1])
         return np.hypot(d0, d1)
-    
-    
+
+
     # read in deos special shapefiles
     deos_boundarys = gpd.read_file(shapePaths + 'deoscounties.shp')
     bigdeos = gpd.read_file(shapePaths + 'TRISTATE_OVERVIEW.shp')
     inland_bays = gpd.read_file(shapePaths + 'InlandBays.shp')
     state_outline = gpd.read_file(shapePaths + 'tristateMultiaddedPACo.shp')
-    
+
     # create cartopy instance of obscure projection
     c = Proj('+proj=tmerc +lat_0=38 +lon_0=-75.41666666666667 +k=0.999995 +x_0=200000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
     oldproj = proj_to_cartopy(c)
-    
+
     # grab data from json files
     deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data.json")
     loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
-    # index is the station nunumbers 
+    # index is the station nunumbers
     station_id = list(deos_data.index)
     # need to find time value
     date_deos = deos_data.columns[0]
@@ -228,14 +228,14 @@ if diff_time.seconds < 70:
     zuluDIFF = 5 if dst=='EST' else 4
     date_deos_est = date_deos - timedelta(hours=zuluDIFF)
     deos_dateSTR = str("{0:0=2d}".format(date_deos_est.month) + '/' + "{0:0=2d}".format(date_deos_est.day) + '/' + str(date_deos_est.year) + ' ' + "{0:0=2d}".format(date_deos_est.hour) + ':' + "{0:0=2d}".format(date_deos_est.minute) + ' ' + dst)
-    
+
     # create a dict of station IDs with the name of the station
     station_dict = {}
     for s in list(loc_deos.columns):
         station_dict[s] = loc_deos[s]['station_id']
-    
+
     rev_station_dict = dict(zip(station_dict.values(),station_dict.keys()))
-    
+
     nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temperature','Wind Speed','Wind Direction','Barometric Pressure','Relative humidity', '24 Hour Precipitation', 'Peak Wind Gust Speed (60)'], ['precip', 'airT', 'dewP', 'wspeed', 'wdir', 'pres', 'rh', '24hr_precip', 'gust']))
     fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)', '24-hr Rain (in)', '1-hr Peak Wind Gust (mph)']))
     for var in list(nameDict.keys()):
@@ -244,7 +244,7 @@ if diff_time.seconds < 70:
         for key in station_id:
             lats.append(loc_deos[rev_station_dict[str(key)]]['latitude'])
             lons.append(loc_deos[rev_station_dict[str(key)]]['longitude'])
-        
+
         # add in four corners to expand the interpolated grid
         lons = lons + list([-76.35,-76.35, -74.68,  -74.68])
         lats = lats + list([38.0, 40.6, 38.0, 40.6])
@@ -261,7 +261,7 @@ if diff_time.seconds < 70:
                     temp.append(float(deos_data[date_deos][s][var]))
                 except:
                     temp.append(np.nan)
-                
+
             # just in case one of the gauges is out
             try:
                 t1 = float(deos_data[date_deos][2321][var])
@@ -271,7 +271,7 @@ if diff_time.seconds < 70:
                     t1 = float(deos_data[date_deos][2932][var])
                 except:
                     t1 = np.nanmean(temp)
-            
+
             try:
                 t2 = float(deos_data[date_deos][2999][var])
             except:
@@ -280,7 +280,7 @@ if diff_time.seconds < 70:
                     t2 = float(deos_data[date_deos][2982][var])
                 except:
                     t2 = np.nanmean(temp)
-            
+
             try:
                 t3 = float(deos_data[date_deos][2304][var])
             except:
@@ -289,7 +289,7 @@ if diff_time.seconds < 70:
                     t3 = float(deos_data[date_deos][2747][var])
                 except:
                     t3 = np.nanmean(temp)
-            
+
             try:
                 t4 = float(deos_data[date_deos][2983][var])
             except:
@@ -298,13 +298,13 @@ if diff_time.seconds < 70:
                     t4 = float(deos_data[date_deos][2984][var])
                 except:
                     t4 = np.nanmean(temp)
-            
+
             temp = temp + list([t1,t2,t3,t4])
-            
+
             lons=np.array(lons)
             lats=np.array(lats)
             temp = np.array(temp)
-            
+
             if var == 'Gage Precipitation (60)':
                 temp = temp/25.4
                 temp[temp < 0] = np.nan
@@ -313,7 +313,7 @@ if diff_time.seconds < 70:
                 vmax=12
                 rounder = 2
                 txt_cmap =  pd.read_csv(colorPaths + 'rain_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-    
+
             if var == '24 Hour Precipitation':
                 temp = temp/25.4
                 temp[temp < 0] = np.nan
@@ -322,7 +322,7 @@ if diff_time.seconds < 70:
                 vmax=12
                 rounder = 2
                 txt_cmap =  pd.read_csv(colorPaths + 'rain_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-                    
+
             if var == 'Air Temperature':
                 temp = temp - 273.15
                 temp = (temp*(9/5)) + 32
@@ -333,7 +333,7 @@ if diff_time.seconds < 70:
                 vmax=120
                 rounder = 1
                 txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-                
+
             if var == 'Dew Point Temperature':
                 temp = temp - 273.15
                 temp = (temp*(9/5)) + 32
@@ -344,7 +344,7 @@ if diff_time.seconds < 70:
                 vmax=120
                 rounder = 1
                 txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-                
+
             if var == 'Barometric Pressure':
                 vmin=940
                 vmax=1050
@@ -352,7 +352,7 @@ if diff_time.seconds < 70:
                 temp[temp > 1100] = np.nan
                 rounder = 0
                 txt_cmap =  pd.read_csv(colorPaths + 'bp_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-    
+
             if var == 'Relative humidity':
                 vmin=0
                 vmax=100
@@ -360,7 +360,7 @@ if diff_time.seconds < 70:
                 temp[temp > 100] = np.nan
                 rounder = 0
                 txt_cmap =  pd.read_csv(colorPaths + 'rh_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-    
+
             if var == 'Wind Speed':
                 temp = temp * 2.237
                 temp[temp < 0] = np.nan
@@ -369,7 +369,7 @@ if diff_time.seconds < 70:
                 vmax=52
                 rounder = 1
                 txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-    
+
             if var == 'Peak Wind Gust Speed (60)':
                 temp = temp * 2.237
                 temp[temp < 0] = np.nan
@@ -378,7 +378,7 @@ if diff_time.seconds < 70:
                 vmax=120
                 rounder = 1
                 txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-    
+
             lons,lats, temp = remove_nan_observations(lons,lats, temp)
             x = np.linspace(min(lons), max(lons), 750)
             y = np.linspace(min(lats), max(lats), 750)
@@ -387,66 +387,66 @@ if diff_time.seconds < 70:
             #zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
             # try the idw interpolation scheme
             xi, yi = xi.flatten(), yi.flatten()
-    
+
             # Calculate IDW
             zi = linear_rbf(lons,lats,temp,xi,yi)
             zi=zi.reshape((len(x), len(y)))
-            
+
             da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
             da.rio.set_crs("epsg:4326")
             da.attrs['units'] = 'Fahrenheit'
             da.attrs['standard_name'] = 'Temperature'
             da.rio.set_spatial_dims('lon', 'lat')
             da.rio.to_raster('/home/map_maker/deos_maps/temp/' + nameDict[var] + '.tif', overwrite=True)
-            
+
             xds = rioxarray.open_rasterio('/home/map_maker/deos_maps/temp/' + nameDict[var] +'.tif')
             # clip the interpolated data based on the shapefiles
             clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, drop=True)
             cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, invert=True)
-            
-            
-            
+
+
+
             ### Call the function make_cmap which returns your colormap
             raw_rgb = []
             for i in range(0,len(txt_cmap)):
                 raw_rgb.append(tuple([txt_cmap['r'][i], txt_cmap['g'][i], txt_cmap['b'][i]]))
             cmap= make_cmap(raw_rgb, bit=True)
             bounds = []
-            
+
             for i in range(1,len(list(txt_cmap['bound']))):
                 lin=np.linspace(list(txt_cmap['bound'])[i-1],list(txt_cmap['bound'])[i], 40)
                 bounds.extend(list(lin))
-                
+
             norm = BoundaryNorm(bounds,ncolors=cmap.N)
-            #or lons[l] != -75.913585 
-    
+            #or lons[l] != -75.913585
+
             fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
             ax = fig.add_subplot(111, projection=ccrs.Mercator())
-            ax.set_extent([-76.15, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
+            ax.set_extent([-76.35, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
             for ind in range(0,len(bigdeos)):
                     ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                                   facecolor='silver', edgecolor='black')
             im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
             for l in range(0,len(lons)):
                 if var == 'Relative humidity':
-                    if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.727202:
+                    if lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.727202:
                         text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',transform=ccrs.PlateCarree(),zorder=7)
                         text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
                 if var == 'Barometric Pressure':
-                    if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.076665 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
+                    if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.076665 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
                         text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
                         horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                         text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
                 if var == 'Gage Precipitation (60)' or var == '24 Hour Precipitation':
-                    if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
+                    if lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
                         text = plt.text(lons[l],lats[l],str('{:.2f}'.format(round(temp[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
                         horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                         text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
                 if var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed' or var == 'Peak Wind Gust Speed (60)':
-                    if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
+                    if lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
                         text = plt.text(lons[l],lats[l],str('{:.1f}'.format(round(temp[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
                         horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
-                        text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()]) 
+                        text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
             for ind in range(0,len(deos_boundarys)):
                 ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
                                   facecolor='none', edgecolor='gray', zorder=3, linewidth=0.5)
@@ -462,24 +462,24 @@ if diff_time.seconds < 70:
             else:
                 plt.text(-76.13, 38.503, fancyDict[var],horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
                 plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
-    
+
             im1 = image.imread(shapePaths + "deos_logo.png")
             plt.figimage(im1, 24, 40 ,zorder=30, alpha=1)
             plt.savefig("/home/map_maker/deos_maps/imagery/deos_" + nameDict[var] + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
-    
-    
-    
+
+
+
     var = 'Wind Direction'
     lats=list()
     lons=list()
     for key in station_id:
         lats.append(loc_deos[rev_station_dict[str(key)]]['latitude'])
         lons.append(loc_deos[rev_station_dict[str(key)]]['longitude'])
-    
+
     # add in four corners to expand the interpolated grid
-    lons = lons + list([-76.15,-76.15, -74.98,  -74.98])
+    lons = lons + list([-76.35,-76.35, -74.68,  -74.68])
     lats = lats + list([38.3, 40.3, 38.3, 40.3])
-    
+
     temp = list()
     # Begin the for loop to place a location on a map
     for s in station_id:
@@ -489,30 +489,30 @@ if diff_time.seconds < 70:
             temp.append(float(deos_data[date_deos][s][var]))
         except:
             temp.append(np.nan)
-        
+
     # just in case one of the gauges is out
     try:
         t1 = float(deos_data[date_deos][2321][var])
     except:
         t1 = np.nanmean(temp)
-    
+
     try:
         t2 = float(deos_data[date_deos][2980][var])
     except:
         t2 = np.nanmean(temp)
-    
+
     try:
         t3 = float(deos_data[date_deos][2304][var])
     except:
         t3 = np.nanmean(temp)
-    
+
     try:
         t4 = float(deos_data[date_deos][2983][var])
     except:
         t4 = np.nanmean(temp)
-    
+
     temp = temp + list([t1,t2,t3,t4])
-    
+
     lons=np.array(lons)
     lats=np.array(lats)
     temp = np.array(temp)
@@ -528,31 +528,31 @@ if diff_time.seconds < 70:
             ws.append(float(deos_data[date_deos][s]['Wind Speed']))
         except:
             ws.append(np.nan)
-        
+
     # just in case one of the gauges is out
     try:
         t1 = float(deos_data[date_deos][2321]['Wind Speed'])
     except:
         t1 = np.nanmean(ws)
-    
+
     try:
         t2 = float(deos_data[date_deos][2980]['Wind Speed'])
     except:
         t2 = np.nanmean(ws)
-    
+
     try:
         t3 = float(deos_data[date_deos][2304]['Wind Speed'])
     except:
         t3 = np.nanmean(ws)
-    
+
     try:
         t4 = float(deos_data[date_deos][2983]['Wind Speed'])
     except:
         t4 = np.nanmean(ws)
-    
-    
+
+
     ws = ws + list([t1,t2,t3,t4])
-    
+
     lons=np.array(lons)
     lats=np.array(lats)
     ws = np.array(ws)
@@ -561,7 +561,7 @@ if diff_time.seconds < 70:
     txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
     ws[ws < 0] = np.nan
     ws[ws > 90] = np.nan
-    
+
     ws_with_nans = ws
     ws_w_nans = ws
     lons_with_nans=lons
@@ -574,78 +574,78 @@ if diff_time.seconds < 70:
     #zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
     # try the idw interpolation scheme
     xi, yi = xi.flatten(), yi.flatten()
-    
+
     # Calculate IDW
     zi = linear_rbf(lons,lats,ws,xi,yi)
     zi=zi.reshape((len(x), len(y)))
-    
+
     da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
     da.rio.set_crs("epsg:4326")
     da.attrs['units'] = 'Fahrenheit'
     da.attrs['standard_name'] = 'Temperature'
     da.rio.set_spatial_dims('lon', 'lat')
     da.rio.to_raster('/home/map_maker/deos_maps/temp/' + nameDict[var] + '.tif', overwrite=True)
-    
+
     xds = rioxarray.open_rasterio('/home/map_maker/deos_maps/temp/' + nameDict[var] +'.tif')
     # clip the interpolated data based on the shapefiles
     clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, drop=True)
     cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, invert=True)
-    
-    
-    
-    
+
+
+
+
     ### Call the function make_cmap which returns your colormap
     raw_rgb = []
     for i in range(0,len(txt_cmap)):
         raw_rgb.append(tuple([txt_cmap['r'][i], txt_cmap['g'][i], txt_cmap['b'][i]]))
     cmap= make_cmap(raw_rgb, bit=True)
     bounds = []
-    
+
     for i in range(1,len(list(txt_cmap['bound']))):
         lin=np.linspace(list(txt_cmap['bound'])[i-1],list(txt_cmap['bound'])[i], 40)
         bounds.extend(list(lin))
-        
+
     norm = BoundaryNorm(bounds,ncolors=cmap.N)
     def wind_components(wspd, wdir):
         rad = 4.0*np.arctan(1)/180.
         u = -wspd*np.sin(rad*wdir)
         v = -wspd*np.cos(rad*wdir)
         return u, v
-    
+
     # now remove the lon values that we don't want
-    ws_with_nans[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685)  | (lons_with_nans == -75.640685)] = np.nan
-    temp[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685)   | (lons_with_nans == -75.640685)] = np.nan
-    lats_with_nans[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685) |  (lons_with_nans == -75.640685)] = np.nan
-    lons_with_nans[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685) |  (lons_with_nans == -75.640685)] = np.nan
-    
+    ws_with_nans[(lons_with_nans == -76.35) | (lons_with_nans == -74.68) | (lons_with_nans == -75.062685)  | (lons_with_nans == -75.640685)] = np.nan
+    temp[(lons_with_nans == -76.35) | (lons_with_nans == -74.68) | (lons_with_nans == -75.062685)   | (lons_with_nans == -75.640685)] = np.nan
+    lats_with_nans[(lons_with_nans == -76.35) | (lons_with_nans == -74.68) | (lons_with_nans == -75.062685) |  (lons_with_nans == -75.640685)] = np.nan
+    lons_with_nans[(lons_with_nans == -76.35) | (lons_with_nans == -74.68) | (lons_with_nans == -75.062685) |  (lons_with_nans == -75.640685)] = np.nan
+
     ws_with_nans = ws_with_nans[~np.isnan(temp)]
     lats_with_nans = lats_with_nans[~np.isnan(temp)]
     lons_with_nans = lons_with_nans[~np.isnan(temp)]
     temp = temp[~np.isnan(temp)]
-    
+
     mws = np.ma.masked_where(ws_with_nans < 1, ws_with_nans)
     mtemp = np.ma.masked_where(ws_with_nans < 1, temp)
     mlats = np.ma.masked_where(ws_with_nans < 1, lats_with_nans)
     mlons = np.ma.masked_where(ws_with_nans < 1, lons_with_nans)
-    
+
     # calculate the u v components of the wind
     u,v = wind_components(mws.compressed(), mtemp.compressed())
     normu = u / np.sqrt(u**2 + v**2)
     normv = v / np.sqrt(u**2 + v**2)
-    
-    
+
+
     fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
     ax = fig.add_subplot(111, projection=ccrs.Mercator())
-    ax.set_extent([-76.15, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
-    
+    ax.set_extent([-76.35, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
+
     for ind in range(0,len(bigdeos)):
             ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                           facecolor='silver', edgecolor='black')
     im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
     ax.quiver(mlons.compressed(),mlats.compressed(),normu,normv,transform=ccrs.PlateCarree(),zorder=5,scale_units='xy', alpha=0.8, headwidth=4.5, pivot='middle')
-    plt.plot(np.ma.masked_array(lons_with_nans, mask=~mlons.mask),np.ma.masked_array(lats_with_nans, ~mlats.mask), 'ko',fillstyle='none', 
+    plt.plot(np.ma.masked_array(lons_with_nans, mask=~mlons.mask),np.ma.masked_array(lats_with_nans, ~mlats.mask), 'ko',fillstyle='none',
              mew=1.3, markersize=5.5,transform=ccrs.PlateCarree(),zorder=5,alpha=0.8)
-    
+
     for ind in range(0,len(deos_boundarys)):
         ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
                           facecolor='none', edgecolor='gray', zorder=3, linewidth=0.5)
@@ -656,17 +656,17 @@ if diff_time.seconds < 70:
     ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
     plt.text(-76.13, 38.503, 'Wind',horizontalalignment='left',color='white',weight='bold',size=6,zorder=30,transform=ccrs.PlateCarree())
     plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
-    
+
     im1 = image.imread(shapePaths + "deos_logo.png")
     plt.figimage(im1, 24, 40 ,zorder=30, alpha=1)
     plt.savefig("/home/map_maker/deos_maps/imagery/deos_wdir.png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
-    
-    
+
+
     ############################## feels like mapping ######################################
     ############################## feels like mapping ######################################
     ############################## feels like mapping ######################################
     ############################## feels like mapping ######################################
-    
+
     var = 'Wind Chill'
     temp = list()
     # Begin the for loop to place a location on a map
@@ -677,28 +677,28 @@ if diff_time.seconds < 70:
             temp.append(float(deos_data[date_deos][s][var]))
         except:
             temp.append(np.nan)
-        
+
     # just in case one of the gauges is out
     try:
         t1 = float(deos_data[date_deos][2321][var])
     except:
         t1 = np.nanmean(temp)
-    
+
     try:
         t2 = float(deos_data[date_deos][2980][var])
     except:
         t2 = np.nanmean(temp)
-    
+
     try:
         t3 = float(deos_data[date_deos][2304][var])
     except:
         t3 = np.nanmean(temp)
-    
+
     try:
         t4 = float(deos_data[date_deos][2983][var])
     except:
         t4 = np.nanmean(temp)
-    
+
     temp = temp + list([t1,t2,t3,t4])
     lons=np.array(lons)
     lats=np.array(lats)
@@ -707,7 +707,7 @@ if diff_time.seconds < 70:
     temp = (temp*(9/5)) + 32
     temp[temp < -50] == np.nan
     temp[temp > 40] == np.nan
-    
+
     ### now read in heat index if it exists
     var = 'Heat Index'
     lats=list()
@@ -715,11 +715,11 @@ if diff_time.seconds < 70:
     for key in station_id:
         lats.append(loc_deos[rev_station_dict[str(key)]]['latitude'])
         lons.append(loc_deos[rev_station_dict[str(key)]]['longitude'])
-    
+
     # add in four corners to expand the interpolated grid
-    lons = lons + list([-76.15,-76.15, -74.98,  -74.98])
+    lons = lons + list([-76.35,-76.35, -74.68,  -74.68])
     lats = lats + list([38.3, 40.3, 38.3, 40.3])
-    
+
     temp2 = list()
     # Begin the for loop to place a location on a map
     for s in station_id:
@@ -729,33 +729,33 @@ if diff_time.seconds < 70:
             temp2.append(float(deos_data[date_deos][s][var]))
         except:
             temp2.append(np.nan)
-        
+
     # just in case one of the gauges is out
     try:
         t1 = float(deos_data[date_deos][2321][var])
     except:
         t1 = np.nanmean(temp2)
-    
+
     try:
         t2 = float(deos_data[date_deos][2980][var])
     except:
         t2 = np.nanmean(temp2)
-    
+
     try:
         t3 = float(deos_data[date_deos][2304][var])
     except:
         t3 = np.nanmean(temp2)
-    
+
     try:
         t4 = float(deos_data[date_deos][2983][var])
     except:
         t4 = np.nanmean(temp2)
-    
+
     temp2 = temp2 + list([t1,t2,t3,t4])
     lons=np.array(lons)
     lats=np.array(lats)
     temp2 = np.array(temp2)
-    
+
     temp2 = temp2 - 273.15
     temp2 = (temp2*(9/5)) + 32
     temp2[temp2 < 80] == np.nan
@@ -764,12 +764,12 @@ if diff_time.seconds < 70:
     vmax=120
     rounder = 1
     txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
-    
+
     # combine heat index and wind chill arrays into one masked array
     m1 = np.ma.masked_invalid(temp)
     m2 = np.ma.masked_invalid(temp2)
     feelsLike = np.ma.filled(m1,m2)
-    
+
     # replace certain feels like values with air temperature given conditions
     for i in range(0,len(feelsLike)-4):
         if np.isnan(feelsLike[i]) == True:
@@ -777,17 +777,17 @@ if diff_time.seconds < 70:
                 if np.isnan(airT_array[i]) == False:
                     if ws_w_nans[i] >= 0:
                         feelsLike[i] = airT_array[i]
-    
+
     for i in range(len(feelsLike)-4,len(feelsLike)):
         if np.isnan(feelsLike[i]) == True:
             feelsLike[i] = airT_array[i]
-    
-    
+
+
     # remove the nan values of feelsLike from the applicable arrays
     lats = lats[~np.isnan(feelsLike)]
     lons = lons[~np.isnan(feelsLike)]
     feelsLike = feelsLike[~np.isnan(feelsLike)]
-    
+
     x = np.linspace(min(lons), max(lons), 750)
     y = np.linspace(min(lats), max(lats), 750)
     xi,yi = np.meshgrid(x,y)
@@ -795,48 +795,48 @@ if diff_time.seconds < 70:
     #zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
     # try the idw interpolation scheme
     xi, yi = xi.flatten(), yi.flatten()
-    
+
     # Calculate IDW
     zi = linear_rbf(lons,lats,feelsLike,xi,yi)
     zi=zi.reshape((len(x), len(y)))
-    
+
     da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
     da.rio.set_crs("epsg:4326")
     da.attrs['units'] = 'Fahrenheit'
     da.attrs['standard_name'] = 'Temperature'
     da.rio.set_spatial_dims('lon', 'lat')
     da.rio.to_raster('/home/map_maker/deos_maps/temp/FeelsLike.tif', overwrite=True)
-    
+
     xds = rioxarray.open_rasterio('/home/map_maker/deos_maps/temp/FeelsLike.tif')
     # clip the interpolated data based on the shapefiles
     clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, drop=True)
     cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, invert=True)
-    
-    
-    
+
+
+
     ### Call the function make_cmap which returns your colormap
     raw_rgb = []
     for i in range(0,len(txt_cmap)):
         raw_rgb.append(tuple([txt_cmap['r'][i], txt_cmap['g'][i], txt_cmap['b'][i]]))
     cmap= make_cmap(raw_rgb, bit=True)
     bounds = []
-    
+
     for i in range(1,len(list(txt_cmap['bound']))):
         lin=np.linspace(list(txt_cmap['bound'])[i-1],list(txt_cmap['bound'])[i], 40)
         bounds.extend(list(lin))
-        
+
     norm = BoundaryNorm(bounds,ncolors=cmap.N)
-    #or lons[l] != -75.913585 
-    
+    #or lons[l] != -75.913585
+
     fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
     ax = fig.add_subplot(111, projection=ccrs.Mercator())
-    ax.set_extent([-76.15, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
+    ax.set_extent([-76.35, -75, 38.44, 40.26], crs=ccrs.PlateCarree())
     for ind in range(0,len(bigdeos)):
             ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                           facecolor='silver', edgecolor='black')
     im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
     for l in range(0,len(lons)):
-        if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
+        if lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
             text = plt.text(lons[l],lats[l],str('{:.1f}'.format(round(feelsLike[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
             horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
             text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
@@ -851,10 +851,9 @@ if diff_time.seconds < 70:
     #plt.title(nameDict[var])
     plt.text(-76.13, 38.503, 'Feels Like (F)',horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
     plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
-    
+
     im1 = image.imread(shapePaths + "deos_logo.png")
     plt.figimage(im1, 24, 40 ,zorder=30, alpha=1)
     plt.savefig("/home/map_maker/deos_maps/imagery/deos_feelslike.png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
 else:
     print("no new data yet..waiting...")
-
