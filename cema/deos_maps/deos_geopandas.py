@@ -604,10 +604,10 @@ def wind_components(wspd, wdir):
     return u, v
 
 # now remove the lon values that we don't want
-ws_with_nans[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685)  | (lons_with_nans == -75.640685)] = np.nan
-temp[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685)   | (lons_with_nans == -75.640685)] = np.nan
-lats_with_nans[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685) |  (lons_with_nans == -75.640685)] = np.nan
-lons_with_nans[(lons_with_nans == -76.15) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685) |  (lons_with_nans == -75.640685)] = np.nan
+ws_with_nans[(lons_with_nans == -76.35) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685)  | (lons_with_nans == -75.640685)] = np.nan
+temp[(lons_with_nans == -76.35) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685)   | (lons_with_nans == -75.640685)] = np.nan
+lats_with_nans[(lons_with_nans == -76.35) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685) |  (lons_with_nans == -75.640685)] = np.nan
+lons_with_nans[(lons_with_nans == -76.35) | (lons_with_nans == -74.98) | (lons_with_nans == -75.062685) |  (lons_with_nans == -75.640685)] = np.nan
 
 ws_with_nans = ws_with_nans[~np.isnan(temp)]
 lats_with_nans = lats_with_nans[~np.isnan(temp)]
@@ -827,7 +827,7 @@ for ind in range(0,len(bigdeos)):
                       facecolor='silver', edgecolor='black')
 im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
 for l in range(0,len(lons)):
-    if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
+    if lons[l] != -76.35 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
         text = plt.text(lons[l],lats[l],str('{:.1f}'.format(round(feelsLike[l], rounder))), size=6.5,weight='bold',verticalalignment='center',
         horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
         text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
