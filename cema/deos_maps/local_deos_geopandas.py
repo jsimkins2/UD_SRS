@@ -335,8 +335,8 @@ for var in list(nameDict.keys()):
             txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
             
         if var == 'Barometric Pressure':
-            vmin=950
-            vmax=1045
+                vmin=940
+            vmax=1050
             temp[temp < 930] = np.nan
             temp[temp > 1100] = np.nan
             rounder = 0

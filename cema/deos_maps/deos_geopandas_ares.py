@@ -266,22 +266,34 @@ if diff_time.seconds < 70:
             try:
                 t1 = float(deos_data[date_deos][2321][var])
             except:
-                t1 = np.nanmean(temp)
+                try:
+                    t1 = float(deos_data[date_deos][2321][var])
+                except:
+                    t1 = np.nanmean(temp)
             
             try:
                 t2 = float(deos_data[date_deos][2980][var])
             except:
-                t2 = np.nanmean(temp)
+                try:
+                    t2 = float(deos_data[date_deos][2980][var])
+                except:
+                    t2 = np.nanmean(temp)
             
             try:
                 t3 = float(deos_data[date_deos][2304][var])
             except:
-                t3 = np.nanmean(temp)
+                try:
+                    t3 = float(deos_data[date_deos][2304][var])
+                except:
+                    t3 = np.nanmean(temp)
             
             try:
                 t4 = float(deos_data[date_deos][2983][var])
             except:
-                t4 = np.nanmean(temp)
+                try:
+                    t4 = float(deos_data[date_deos][2983][var])
+                except:
+                    t4 = np.nanmean(temp)
             
             temp = temp + list([t1,t2,t3,t4])
             
@@ -330,8 +342,8 @@ if diff_time.seconds < 70:
                 txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
                 
             if var == 'Barometric Pressure':
-                vmin=950
-                vmax=1045
+                vmin=940
+                vmax=1050
                 temp[temp < 930] = np.nan
                 temp[temp > 1100] = np.nan
                 rounder = 0

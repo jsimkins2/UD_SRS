@@ -256,22 +256,34 @@ for var in list(nameDict.keys()):
         try:
             t1 = float(deos_data[date_deos][2321][var])
         except:
-            t1 = np.nanmean(temp)
+            try:
+                t1 = float(deos_data[date_deos][2932][var])
+            except:
+                t1 = np.nanmean(temp)
         
         try:
-            t2 = float(deos_data[date_deos][2980][var])
+            t2 = float(deos_data[date_deos][2999][var])
         except:
-            t2 = np.nanmean(temp)
+            try:
+                t2 = float(deos_data[date_deos][2982][var])
+            except:
+                t2 = np.nanmean(temp)
         
         try:
             t3 = float(deos_data[date_deos][2304][var])
         except:
-            t3 = np.nanmean(temp)
+            try:
+                t3 = float(deos_data[date_deos][2747][var])
+            except:
+                t3 = np.nanmean(temp)
         
         try:
             t4 = float(deos_data[date_deos][2983][var])
         except:
-            t4 = np.nanmean(temp)
+            try:
+                t4 = float(deos_data[date_deos][2984][var])
+            except:
+                t4 = np.nanmean(temp)
         
         temp = temp + list([t1,t2,t3,t4])
         
