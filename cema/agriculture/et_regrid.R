@@ -5,15 +5,17 @@ library(ncdf4)
 ####################################################################
 ############ Housekeeping #################
 ####################################################################
-
-# load in the most recent datetime.txt - this will be used to set the path for the NC outfile
-datetimeET = read.table(paste0(temPath, "datetime.txt"),stringsAsFactor = FALSE)[[1]]
-epochDatetime = as.numeric(as.POSIXct(x = paste0(datetimeET, " 23:59:00"), format = "%Y-%m-%d %H:%M:%S", origin = "1970-01-01", tz="UTC"))
+# load in dtime
+args = commandArgs(trailingOnly=TRUE)
+datetimeET = args[1]
+epochDatetime = as.numeric(as.POSIXct(x = paste0(datetimeET, " 23:59:00"), format = "%Y%m%d %H:%M:%S", origin = "1970-01-01", tz="UTC"))
 tunits = "seconds since 1970-01-01"
 
 # set the paths
-temPath = "/Users/james/Downloads/"
-outPathNC = "/Users/james/Downloads/"
+temPath = "/home/sat_ops/deos/temp/"
+outPathNC = "/data/DEOS/refET/"
+
+
 
 ####################################################################
 ############ Raster Operations #################
@@ -23,7 +25,7 @@ outPathNC = "/Users/james/Downloads/"
 ETrast = raster(paste0(temPath, "ETtemp.tif"))
 
 # Open the default Precip File that we want to replicate the grid of 
-precRast = raster(paste0(temppath, "ST4.2020030311.01hr.nc"))
+precRast = raster(paste0(temPath, "ST4.2020030311.01hr.nc"))
 precRast = crop(precRast, extent(-76.5, -74.2, 38.1, 40.8))
 
 # resample the ETrast to the precRast grid - bilinear by default, works the same way as mean
@@ -39,13 +41,13 @@ writeRaster(resET, paste0(temPath, "temp.nc"),format="CDF", overwrite=TRUE,
 ############ Make the netCDF file CF compliant #################
 ####################################################################
 # name our nc file 
-ncfname = paste0(outPathNC, "DEOS_refET_", substr(datetimeET, 1,4),substr(datetimeET, 6,7),substr(datetimeET, 9,10), ".nc")
+ncfname = paste0(outPathNC, "/", substr(datetimeET, 1,4), "/DEOS_refET_", substr(datetimeET, 1,4),substr(datetimeET, 5,6),substr(datetimeET, 7,8), ".nc")
 
 # reopen the nc file we just created
 tempNC = nc_open(paste0(temPath, "temp.nc"))
 tempET = ncvar_get(tempNC, "refET")
 dims = tempNC$dim
-
+nc_close(tempNC)
 # define dimensions
 londim <- ncdim_def("longitude","degrees_east",as.double(dims$longitude$vals)) 
 latdim <- ncdim_def("latitude","degrees_north",as.double(dims$latitude$vals))

@@ -5,11 +5,13 @@ import xarray as xr
 import pandas as pd
 import time
 from calendar import monthrange
+import os
+import numpy as np
 #################################################################
 # declare paths
 #################################################################
-temPath = "/Users/james/Downloads/"
-outPathNC = "/"
+temPath = "/home/sat_ops/deos/temp/"
+outPathNC = "/data/DEOS/refET/"
 #################################################################
 # declare in functions
 #################################################################
@@ -72,88 +74,83 @@ fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature 
 # create a dictionary for months
 monthDict = dict(zip([1,2,3,4,5,6,7,8,9,10,11,12], ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']))
 
-# begin a loop that checks to see if we have the file, then proceeds if the netcdf file doesn't exist within the nc out folder
-yearList = [2014,2015,2016,2017,2018,2019,2020]
-monthList = [1,2,3,4,5,6,7,8,9,10,11,12]
-for y in yearList:
-    for m in monthList:
-        dayList = range(1,monthrange(y,m)[1] + 1)
-        for d in dayList:
-            nowtime = datetime.strptime(str("{:04d}".format(y) + "-" + "{:02d}".format(m) + "-" + "{:02d}".format(d)), "%Y-%m-%d")
-            #nowtime = datetime.utcnow() - timedelta(days=2)
-            daytime = str("{:04d}".format(nowtime.year) + "-" + "{:02d}".format(nowtime.month) + "-" + "{:02d}".format(nowtime.day))
-            if os.path.isfile(outPathNC + "/" + str(nowtime.year) + "/" + str("DEOS_refET_" + "{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day) + ".nc")) == False:
-                lats=list()
-                lons=list()
-                et = list()
-                for key in rev_station_dict:
-                    stat_path = "http://128.175.28.202/deos_json/daily_summary/" + rev_station_dict[key] + "_" + monthDict[nowtime.month] + "-" + str(nowtime.year) + ".json"
-                    #print(stat_path)
-                    try:
-                        et_data = pd.read_json(stat_path)
-                        # use this for when we are real-time et.append(int(float(et_data[rev_station_dict[key]][str(str(nowtime.year) + "-" + str("{0:0=2d}".format(nowtime.month)) + "-" + str("{0:0=2d}".format(nowtime.day)))]['Reference Evapotrans.']['Value'])))
-                        et.append(round(float(et_data[rev_station_dict[key]][daytime]['Reference Evapotrans.']['Value']),4))
-                        lats.append(loc_deos[rev_station_dict[key]]['latitude'])
-                        lons.append(loc_deos[rev_station_dict[key]]['longitude'])
-                    except:
-                        pass
-                
-                
-                # add in four corners to expand the interpolated grid
-                lons = lons + list([-76.65,-76.65, -74.28,  -74.68])
-                lats = lats + list([38.0, 40.9, 38.0, 40.6])
-                try:
-                    t1 = float(deos_data[date_deos][2321][var])
-                except:
-                    t1 = np.nanmean(et)
-                
-                try:
-                    t2 = float(deos_data[date_deos][2980][var])
-                except:
-                    t2 = np.nanmean(et)
-                
-                try:
-                    t3 = float(deos_data[date_deos][2304][var])
-                except:
-                    t3 = np.nanmean(et)
-                
-                try:
-                    t4 = float(deos_data[date_deos][2983][var])
-                except:
-                    t4 = np.nanmean(et)
-                
-                et = et + list([t1,t2,t3,t4])
-                
-                lons=np.array(lons)
-                lats=np.array(lats)
-                et = np.array(et)
-                
-                x = np.linspace(min(lons), max(lons), 750)
-                y = np.linspace(min(lats), max(lats), 750)
-                xi,yi = np.meshgrid(x,y)
-                # interpolate
-                #zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
-                # try the idw interpolation scheme
-                xi, yi = xi.flatten(), yi.flatten()
-                
-                # Calculate IDW
-                zi = linear_rbf(lons,lats,et,xi,yi)
-                zi=zi.reshape((len(x), len(y)))
-                
-                da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
-                da.rio.set_attrs(da_attrs, inplace=True)
-                da.rio.set_crs("epsg:4326",inplace=True)
-                da.rio.set_spatial_dims('lon', 'lat', inplace=True)
-                da.rio.to_raster(temPath + "ETtemp.tif", overwrite=True)
-                # now write the datetime to a txt file so R can read it - we have to do it this way because rioxarray won't save attributes
-                text_file = open(temPath + "datetime.txt", "wt")
-                n = text_file.write(str(daytime) + " ")
-                text_file.close()
-                
-                # now that it's been interpolated as a spatial dataset, send to R so we can regrid and save as netCDF4
-                regrid = "Rscript /home/sat_ops/goesR/data/sst/scripts/flip_lat_sst.R " + fname
-                os.system(regrid)
-            else:
-                print(str("DEOS_refET_" + "{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day) + ".nc") + " already exists")
-
-
+daysback = range(1,8)
+for dy in daysback:
+    nowtime = datetime.utcnow() - timedelta(days=dy)
+    daytime = str("{:04d}".format(nowtime.year) + "-" + "{:02d}".format(nowtime.month) + "-" + "{:02d}".format(nowtime.day))
+    
+    # begin file loop to check if it exists 
+    if os.path.isfile(outPathNC + "/" + str(nowtime.year) + "/" + str("DEOS_refET_" + "{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day) + ".nc")) == False:
+        lats=list()
+        lons=list()
+        et = list()
+        for key in rev_station_dict:
+            stat_path = "http://128.175.28.202/deos_json/daily_summary/" + rev_station_dict[key] + "_" + monthDict[nowtime.month] + "-" + str(nowtime.year) + ".json"
+            #print(stat_path)
+            try:
+                et_data = pd.read_json(stat_path)
+                # use this for when we are real-time et.append(int(float(et_data[rev_station_dict[key]][str(str(nowtime.year) + "-" + str("{0:0=2d}".format(nowtime.month)) + "-" + str("{0:0=2d}".format(nowtime.day)))]['Reference Evapotrans.']['Value'])))
+                et.append(round(float(et_data[rev_station_dict[key]][daytime]['Reference Evapotrans.']['Value']),4))
+                lats.append(loc_deos[rev_station_dict[key]]['latitude'])
+                lons.append(loc_deos[rev_station_dict[key]]['longitude'])
+            except:
+                pass
+        
+        if len(et) != 0:
+            # add in four corners to expand the interpolated grid
+            lons = lons + list([-76.65,-76.65, -74.28,  -74.68])
+            lats = lats + list([38.0, 40.9, 38.0, 40.6])
+            try:
+                t1 = float(deos_data[date_deos][2321][var])
+            except:
+                t1 = np.nanmean(et)
+            
+            try:
+                t2 = float(deos_data[date_deos][2980][var])
+            except:
+                t2 = np.nanmean(et)
+            
+            try:
+                t3 = float(deos_data[date_deos][2304][var])
+            except:
+                t3 = np.nanmean(et)
+            
+            try:
+                t4 = float(deos_data[date_deos][2983][var])
+            except:
+                t4 = np.nanmean(et)
+            
+            et = et + list([t1,t2,t3,t4])
+            
+            lons=np.array(lons)
+            lats=np.array(lats)
+            et = np.array(et)
+            
+            x = np.linspace(min(lons), max(lons), 750)
+            y = np.linspace(min(lats), max(lats), 750)
+            xi,yi = np.meshgrid(x,y)
+            # interpolate
+            #zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
+            # try the idw interpolation scheme
+            xi, yi = xi.flatten(), yi.flatten()
+            
+            # Calculate IDW
+            zi = linear_rbf(lons,lats,et,xi,yi)
+            zi=zi.reshape((len(x), len(y)))
+            
+            da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
+            da.rio.set_crs("epsg:4326",inplace=True)
+            da.rio.set_spatial_dims('lon', 'lat', inplace=True)
+            da.rio.to_raster(temPath + "ETtemp.tif", overwrite=True)
+            dtime = str("{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day))
+            print(dtime)
+            # now that it's been interpolated as a spatial dataset, send to R so we can regrid and save as netCDF4
+            regrid = "Rscript /home/sat_ops/deos/scripts/et_regrid.R " + str(dtime)
+            os.system(regrid)
+            os.system("rm " + temPath + "ETtemp.tif")
+        else:
+            print("no data is present")
+    else:
+        print(str("DEOS_refET_" + "{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day) + ".nc") + " already exists")
+    
+    
