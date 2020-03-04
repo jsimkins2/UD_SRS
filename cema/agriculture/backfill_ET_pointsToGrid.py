@@ -75,10 +75,9 @@ fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature 
 monthDict = dict(zip([1,2,3,4,5,6,7,8,9,10,11,12], ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']))
 
 # begin a loop that checks to see if we have the file, then proceeds if the netcdf file doesn't exist within the nc out folder
-#yearList = [2014,2015,2016,2017,2018,2019,2020]
-#monthList = [1,2,3,4,5,6,7,8,9,10,11,12]
-yearList = [2014]
-monthList = [1]
+yearList = [2014,2015,2016,2017,2018,2019,2020]
+monthList = [1,2,3,4,5,6,7,8,9,10,11,12]
+
 for yr in yearList:
     for mn in monthList:
         dayList = range(1,monthrange(yr,mn)[1] + 1)
