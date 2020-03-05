@@ -72,10 +72,11 @@ nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temp
 fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)', '24-hr Rain (in)', '1-hr Peak Wind Gust (mph)']))
 
 # create a dictionary for months
-monthDict = dict(zip([1,2,3,4,5,6,7,8,9,10,11,12], ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']))
+monthDict = dict(zip([1,2,3,4,5,6,7,8,9,10,11,12], ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']))
 
 # begin a loop that checks to see if we have the file, then proceeds if the netcdf file doesn't exist within the nc out folder
-yearList = [2014,2015,2016,2017,2018,2019,2020]
+#yearList = [2014,2015,2016,2017,2018,2019,2020]
+yearList = [2017]
 monthList = [1,2,3,4,5,6,7,8,9,10,11,12]
 
 for yr in yearList:
@@ -94,10 +95,15 @@ for yr in yearList:
                     #print(stat_path)
                     try:
                         et_data = pd.read_json(stat_path)
+                        if yr == 2017 and mn == 7 or mn == 8 or mn == 9 or mn == 10 or mn == 11:
+                            et.append(round(float(et_data[rev_station_dict[key]][daytime][0]['Reference Evapotrans.']['Value']),4))
+                            lats.append(loc_deos[rev_station_dict[key]]['latitude'])
+                            lons.append(loc_deos[rev_station_dict[key]]['longitude'])
                         # use this for when we are real-time et.append(int(float(et_data[rev_station_dict[key]][str(str(nowtime.year) + "-" + str("{0:0=2d}".format(nowtime.month)) + "-" + str("{0:0=2d}".format(nowtime.day)))]['Reference Evapotrans.']['Value'])))
-                        et.append(round(float(et_data[rev_station_dict[key]][daytime]['Reference Evapotrans.']['Value']),4))
-                        lats.append(loc_deos[rev_station_dict[key]]['latitude'])
-                        lons.append(loc_deos[rev_station_dict[key]]['longitude'])
+                        else:
+                            et.append(round(float(et_data[rev_station_dict[key]][daytime]['Reference Evapotrans.']['Value']),4))
+                            lats.append(loc_deos[rev_station_dict[key]]['latitude'])
+                            lons.append(loc_deos[rev_station_dict[key]]['longitude'])
                     except:
                         pass
                 
