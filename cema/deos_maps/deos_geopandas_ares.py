@@ -2,10 +2,10 @@
 import os
 from datetime import datetime, timedelta
 stat = os.stat("/home/deos/web_push/map_data.json")
-mod_time = datetime.utcfromtimestamp(stat.st_mtime)
-nowtime = datetime.utcnow()
+#mod_time = datetime.utcfromtimestamp(stat.st_mtime)
+#nowtime = datetime.utcnow()
 
-diff_time = nowtime - mod_time
+#diff_time = nowtime - mod_time
 
 # if the time difference between now and the map_data.json is less than 70 seconds than update the maps
 # the cronjob will be set to every minute
@@ -224,7 +224,11 @@ loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
 station_id = list(deos_data.index)
 # need to find time value
 date_deos = deos_data.columns[0]
-dst = "EST" if time.localtime().tm_isdst==0 else "EDT"
+cur=time.time()
+os.environ["TZ"]="US/Eastern"
+time.tzset()
+
+dst = "EST" if time.localtime(cur).tm_isdst==0 else "EDT"
 zuluDIFF = 5 if dst=='EST' else 4
 date_deos_est = date_deos - timedelta(hours=zuluDIFF)
 deos_dateSTR = str("{0:0=2d}".format(date_deos_est.month) + '/' + "{0:0=2d}".format(date_deos_est.day) + '/' + str(date_deos_est.year) + ' ' + "{0:0=2d}".format(date_deos_est.hour) + ':' + "{0:0=2d}".format(date_deos_est.minute) + ' ' + dst)
