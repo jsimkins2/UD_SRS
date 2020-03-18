@@ -224,6 +224,8 @@ loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
 station_id = list(deos_data.index)
 # need to find time value
 date_deos = deos_data.columns[0]
+os.environ["TZ"]="US/Eastern"
+time.tzset()
 dst = "EST" if time.localtime().tm_isdst==0 else "EDT"
 zuluDIFF = 5 if dst=='EST' else 4
 date_deos_est = date_deos - timedelta(hours=zuluDIFF)
@@ -258,7 +260,8 @@ for var in list(nameDict.keys()):
             if str(s) in list(station_dict.values()):
                 ID = str(s)
             try:
-                temp.append(float(deos_data[date_deos][s][var]))
+                if deos_data[date_deos][s]['24 Hour Precipitation Count'] > 260:
+                    temp.append(float(deos_data[date_deos][s][var]))
             except:
                 temp.append(np.nan)
 
@@ -433,7 +436,7 @@ for var in list(nameDict.keys()):
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',transform=ccrs.PlateCarree(),zorder=7)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
             if var == 'Barometric Pressure':
-                if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
+                if lons[l] != 75.6108 and lons[l] != -75.247235 and lons[l] != -75.118033 and lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=5.8,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
