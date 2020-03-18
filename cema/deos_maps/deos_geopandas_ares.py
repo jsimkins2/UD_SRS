@@ -2,10 +2,10 @@
 import os
 from datetime import datetime, timedelta
 stat = os.stat("/home/deos/web_push/map_data.json")
-#mod_time = datetime.utcfromtimestamp(stat.st_mtime)
-#nowtime = datetime.utcnow()
+mod_time = datetime.utcfromtimestamp(stat.st_mtime)
+nowtime = datetime.utcnow()
 
-#diff_time = nowtime - mod_time
+diff_time = nowtime - mod_time
 
 # if the time difference between now and the map_data.json is less than 70 seconds than update the maps
 # the cronjob will be set to every minute
@@ -224,11 +224,7 @@ loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
 station_id = list(deos_data.index)
 # need to find time value
 date_deos = deos_data.columns[0]
-cur=time.time()
-os.environ["TZ"]="US/Eastern"
-time.tzset()
-
-dst = "EST" if time.localtime(cur).tm_isdst==0 else "EDT"
+dst = "EST" if time.localtime().tm_isdst==0 else "EDT"
 zuluDIFF = 5 if dst=='EST' else 4
 date_deos_est = date_deos - timedelta(hours=zuluDIFF)
 deos_dateSTR = str("{0:0=2d}".format(date_deos_est.month) + '/' + "{0:0=2d}".format(date_deos_est.day) + '/' + str(date_deos_est.year) + ' ' + "{0:0=2d}".format(date_deos_est.hour) + ':' + "{0:0=2d}".format(date_deos_est.minute) + ' ' + dst)
@@ -437,7 +433,7 @@ for var in list(nameDict.keys()):
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.5,weight='bold',transform=ccrs.PlateCarree(),zorder=7)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
             if var == 'Barometric Pressure':
-                if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.076665 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
+                if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=5.8,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
