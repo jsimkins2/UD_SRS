@@ -260,7 +260,12 @@ for var in list(nameDict.keys()):
             if str(s) in list(station_dict.values()):
                 ID = str(s)
             try:
-                if deos_data[date_deos][s]['24 Hour Precipitation Count'] > 260:
+                if var == '24 Hour Precipitation':
+                    if deos_data[date_deos][s]['24 Hour Precipitation Count'] > 260:
+                        temp.append(float(deos_data[date_deos][s][var]))
+                    else:
+                        temp.append(np.nan)
+                else:
                     temp.append(float(deos_data[date_deos][s][var]))
             except:
                 temp.append(np.nan)
