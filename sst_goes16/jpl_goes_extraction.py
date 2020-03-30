@@ -39,7 +39,6 @@ try:
             outfile = "/data/GOES/GOES-R/jpl_sst/" + str(sstTime.year) + "/jpl_goesSST_" + str(sstDate) + ".nc"
             jpl_tem.to_netcdf(path=outfile, format='NETCDF3_CLASSIC')
             #add in a time dimensinon
-            ncap2 -s \"defdim("time",1);time[time]=74875.0;time@long_name="Time";time@units="seconds since 1970-01-01"' -O jpl_goesSST_2020_0330_1200.nc out.nc
             addTime = "ncap2 -s " + "'" + "defdim(\"time\",1);time[time]=" + str(sstTime.timestamp()) + ";time@long_name=\"Time\";time@units=\"seconds since 1970-01-01\"" + "'" + " -O " + outfile + " " + outfile
             os.system(addTime)
             print("downloaded and saved " + str(sstDate) + ".nc")
