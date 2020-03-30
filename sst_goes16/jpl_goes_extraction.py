@@ -1,4 +1,6 @@
+
 # Download JPL version of GOES-16 SST data
+# this runs on /home/sat_ops/goesR/sstClimatology/mkanomaly.sh
 import os
 import numpy as np
 import xarray as xr
