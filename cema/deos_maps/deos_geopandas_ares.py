@@ -34,7 +34,7 @@ import pandas as pd
 import matplotlib.patheffects as path_effects
 import matplotlib.image as image
 import time
-
+import math
 # declare paths
 shapePaths = "/home/map_maker/deos_maps/mapLayers/"
 colorPaths = "/home/map_maker/deos_maps/colorramps/"
@@ -306,7 +306,9 @@ for var in list(nameDict.keys()):
                 t4 = float(deos_data[date_deos][2984][var])
             except:
                 t4 = np.nanmean(temp)
-
+        
+        if math.isnan(t1) == True and math.isnan(t2) == True and math.isnan(t3) == True and math.isnan(t4) == True:
+            t1,t2,t3,t4 = 0,0,0,0
         temp = temp + list([t1,t2,t3,t4])
 
         lons=np.array(lons)
@@ -325,7 +327,7 @@ for var in list(nameDict.keys()):
         if var == '24 Hour Precipitation':
             temp = temp/25.4
             temp[temp < 0] = np.nan
-            temp[temp > 15] = np.nan
+            temp[temp > 300] = np.nan
             vmin=0
             vmax=12
             rounder = 2

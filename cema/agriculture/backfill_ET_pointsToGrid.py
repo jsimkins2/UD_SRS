@@ -67,6 +67,16 @@ station_dict = {}
 for s in list(loc_deos.columns):
     station_dict[s] = loc_deos[s]['station_id']
 
+bad_sites = ['DNEM', 'DFHM','DWBD', 'DWWK', 'DSCR', 'DBUK1', 'DWCH', 'DTDF', 'DHOC', 'DCLY', 'DTLY', 'DCHI', 'DBKB', 'DWCC',
+             'DPPN', 'DMTC', 'DMCB', 'DSJR', 'DFRE', 'DSND', 'DVIO', 'DADV', 'DPAR', 'DBBB', 'DSBY', 'DDAG', 'DGUM', 'DELN',
+             'DMIL', 'DJCR', 'DPMH', 'DLEW', 'DNAS', 'DRBH', 'DIRL', 'DLNK', 'DSLB', 'DCPH']
+
+for bad in bad_sites:
+    try:
+        del station_dict[bad]
+    except:
+        pass
+
 rev_station_dict = dict(zip(station_dict.values(),station_dict.keys()))
 nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temperature','Wind Speed','Wind Direction','Barometric Pressure','Relative humidity', '24 Hour Precipitation', 'Peak Wind Gust Speed (60)'], ['precip', 'airT', 'dewP', 'wspeed', 'wdir', 'pres', 'rh', 'dailyprecip', 'gust']))
 fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)', '24-hr Rain (in)', '1-hr Peak Wind Gust (mph)']))
