@@ -28,7 +28,7 @@ for t in jpl.time.values:
 
 for sstDate in datetimes_jpl:
     sstTime = datetime.strptime(sstDate, "%Y_%m%d_%H%M")
-    print("processing" + sstTime)
+    print("processing" + str(sstTime))
     if os.path.isfile("/data/GOES/GOES-R/jpl_sst/" + str(sstTime.year) + "/jpl_goesSST_" + str(sstDate) + ".nc") == False:
         jpl_tem = jpl.sel(time=sstTime, method='nearest')
         
