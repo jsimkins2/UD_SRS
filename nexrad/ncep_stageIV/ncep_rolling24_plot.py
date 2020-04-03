@@ -37,7 +37,7 @@ file_names = file_names[-168:]
 ens_list = []
 for num in range(len(file_names)):
      ens = 'ens%d' % num
-     ens_list.append(xr.open_mfdataset(os.path.join(datadir, file_names[num])))
+     ens_list.append(xr.open_mfdataset(os.path.join(datadir, file_names[num]), combine='nested'))
 
 ds = xr.concat(ens_list, dim='time')
 
@@ -182,7 +182,7 @@ file_names = file_names[-24:]
 ens_list = []
 for num in range(len(file_names)):
      ens = 'ens%d' % num
-     ens_list.append(xr.open_mfdataset(os.path.join(datadir, file_names[num])))
+     ens_list.append(xr.open_mfdataset(os.path.join(datadir, file_names[num]), combine='nested'))
 
 ds = xr.concat(ens_list, dim='time')
 
@@ -335,7 +335,7 @@ file_names = file_names[-1:]
 ens_list = []
 for num in range(len(file_names)):
      ens = 'ens%d' % num
-     ens_list.append(xr.open_mfdataset(os.path.join(datadir, file_names[num])))
+     ens_list.append(xr.open_mfdataset(os.path.join(datadir, file_names[num]), combine='nested'))
 
 ds = xr.concat(ens_list, dim='time')
 
