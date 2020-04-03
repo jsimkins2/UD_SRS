@@ -28,11 +28,12 @@ for t in jpl.time.values:
 
 for sstDate in datetimes_jpl:
     sstTime = datetime.strptime(sstDate, "%Y_%m%d_%H%M")
+    print("processing" + sstTime)
     if os.path.isfile("/data/GOES/GOES-R/jpl_sst/" + str(sstTime.year) + "/jpl_goesSST_" + str(sstDate) + ".nc") == False:
         jpl_tem = jpl.sel(time=sstTime, method='nearest')
         
-        f = Dataset("/data/GOES/GOES-R/jpl_sst/" + str(nowdate.year) + "/" +
-                    dataset_name, 'w', format='NETCDF4')  # 'w' stands for write
+        f = Dataset("/data/GOES/GOES-R/jpl_sst/" + str(sstTime.year) + "/jpl_goesSST_" + str(sstDate) + ".nc", 
+                    'w', format='NETCDF4')  # 'w' stands for write
         # dimensions
         f.createDimension('longitude', jpl_tem['lon'].size)
         f.createDimension('latitude', jpl_tem['lat'].size)
