@@ -11,7 +11,7 @@ def remove_problematic_attrs(ds):
             
 nowdate = datetime.utcnow()
 nowdate = nowdate.replace(second=0, microsecond=0)
-temdate = datetime.strptime("2018-01-01", "%Y-%m-%d")
+temdate = nowdate - timedelta(days=3)
 mainURL = 'https://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/ABI_G16-STAR-L3C-v2.70.nc'
 
 # Begin loop
