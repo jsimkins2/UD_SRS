@@ -1,7 +1,6 @@
 # backfill all of the 1day goes sst files that we missed
 import xarray as xr
 import numpy as np
-import metpy
 from datetime import datetime, timedelta
 import pandas as pd
 # paths
