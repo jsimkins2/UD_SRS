@@ -153,6 +153,9 @@ goes_nc['sst'] = goes_nc['sea_surface_temperature']
 goes_nc = goes_nc.drop(['sea_surface_temperature'])
 
 outpath = "/data/GOES/GOES-R/1day/"
+# have to add the following line becuase of a weird xarray netcdf4 error when writing the xarray to netcdf
+del goes_nc.attrs['_NCProperties']
+
 goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_1day_' + str(today[0].year) + str("{0:0=3d}".format(
     today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', mode='w',format='NETCDF4')
 
@@ -198,6 +201,9 @@ newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timed
 x = dat.assign_coords(time=newtimestamp)
 dat = x.expand_dims('time')
 dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
+# have to add the following line becuase of a weird xarray netcdf4 error when writing the xarray to netcdf
+del goes_nc.attrs['_NCProperties']
+
 outpath = "/data/GOES/GOES-R/rolling_1day/"
 dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',mode='w',
                   format='NETCDF4')
@@ -232,6 +238,9 @@ newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timed
 x = dat.assign_coords(time=newtimestamp)
 dat = x.expand_dims('time')
 dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
+# have to add the following line becuase of a weird xarray netcdf4 error when writing the xarray to netcdf
+del goes_nc.attrs['_NCProperties']
+
 outpath = "/data/GOES/GOES-R/rolling_1day_fahrenheit/"
 dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day_fahrenheit.nc', mode='w',
                   format='NETCDF4')
