@@ -154,7 +154,7 @@ goes_nc = goes_nc.drop(['sea_surface_temperature'])
 
 outpath = "/data/GOES/GOES-R/1day/"
 goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_1day_' + str(today[0].year) + str("{0:0=3d}".format(
-    today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', format='NETCDF4')
+    today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', mode='w',format='NETCDF4')
 
 # resample to a daily composite
 goes_nc = goes_nc.drop(['quality_level'])
@@ -166,7 +166,7 @@ goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 
 outpath = "/data/GOES/GOES-R/daily_composite/"
 goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(
-    today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', format='NETCDF4')
+    today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', mode='w',format='NETCDF4')
 
 
 # now make a rolling 1 day aka last 24 hours IN CELSIUS
@@ -199,7 +199,7 @@ x = dat.assign_coords(time=newtimestamp)
 dat = x.expand_dims('time')
 dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 outpath = "/data/GOES/GOES-R/rolling_1day/"
-dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',
+dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',mode='w',
                   format='NETCDF4')
 
 
@@ -233,5 +233,5 @@ x = dat.assign_coords(time=newtimestamp)
 dat = x.expand_dims('time')
 dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 outpath = "/data/GOES/GOES-R/rolling_1day_fahrenheit/"
-dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day_fahrenheit.nc',
+dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day_fahrenheit.nc', mode='w',
                   format='NETCDF4')
