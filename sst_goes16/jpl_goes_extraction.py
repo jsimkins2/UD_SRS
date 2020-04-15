@@ -131,6 +131,7 @@ for sstDate in datetimes_jpl:
 
 # place the most recent days data (all 24 hours) in a file without resampling to daily res.
 today = pd.date_range(pd.datetime.today(), pd.datetime.today()).tolist()
+
 goes_nc = xr.open_dataset(
     "http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
 goes_nc = goes_nc.sel(time=datetime.strftime(today[0].date(), '%Y-%m-%d'))
@@ -173,7 +174,6 @@ tempNC = goes_nc
 outpath = "/data/GOES/GOES-R/daily_composite/"
 tempNC.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(
     today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', mode='w',format='NETCDF4')
-
 
 # now make a rolling 1 day aka last 24 hours IN CELSIUS
 goes_nc = xr.open_dataset(
