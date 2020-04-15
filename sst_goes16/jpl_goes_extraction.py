@@ -175,6 +175,7 @@ outpath = "/data/GOES/GOES-R/daily_composite/"
 tempNC.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(
     today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', mode='w',format='NETCDF4')
 
+print(tempNC)
 # now make a rolling 1 day aka last 24 hours IN CELSIUS
 goes_nc = xr.open_dataset(
     "http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
