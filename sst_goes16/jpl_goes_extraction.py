@@ -168,7 +168,7 @@ goes_nc.time.values = np.array([newtimestamp], dtype='float64')
 goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 
 # have to add the following line becuase of a weird xarray netcdf4 error when writing the xarray to netcdf
-del goes_nc.attrs['_NCProperties']
+#del goes_nc.attrs['_NCProperties']
 
 outpath = "/data/GOES/GOES-R/daily_composite/"
 goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(
