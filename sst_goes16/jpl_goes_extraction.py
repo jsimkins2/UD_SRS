@@ -132,9 +132,10 @@ for sstDate in datetimes_jpl:
 # place the most recent days data (all 24 hours) in a file without resampling to daily res.
 today = pd.date_range(pd.datetime.today(), pd.datetime.today()).tolist()
 
-goes_nc = xr.open_dataset(
+goes_main = xr.open_dataset(
     "http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
-goes_nc = goes_nc.sel(time=datetime.strftime(today[0].date(), '%Y-%m-%d'))
+
+goes_nc = goes_main.sel(time=datetime.strftime(today[0].date(), '%Y-%m-%d'))
 goes_nc = goes_nc.drop('projection')
 goes_nc = goes_nc.drop('dt_analysis')
 goes_nc = goes_nc.drop('satellite_zenith_angle')
@@ -170,17 +171,14 @@ goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 
 # have to add the following line becuase of a weird xarray netcdf4 error when writing the xarray to netcdf
 #del goes_nc.attrs['_NCProperties']
-tempNC = goes_nc
 outpath = "/data/GOES/GOES-R/daily_composite/"
-tempNC.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(
+goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(
     today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', mode='w',format='NETCDF4')
 
 print(tempNC)
 # now make a rolling 1 day aka last 24 hours IN CELSIUS
-goes_nc = xr.open_dataset(
-    "http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
 # grab the last 24 hours of sst dataset
-goes_nc = goes_nc.isel(time=range(-24, 0))
+goes_nc = goes_main.isel(time=range(-24, 0))
 goes_nc = goes_nc.drop('projection')
 goes_nc = goes_nc.drop('dt_analysis')
 goes_nc = goes_nc.drop('satellite_zenith_angle')
@@ -214,10 +212,8 @@ dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',mode='w',
 
 
 # now make a rolling 1 day aka last 24 hours IN FAHRENHEIT
-goes_nc = xr.open_dataset(
-    "http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
 # grab the last 24 hours of sst dataset
-goes_nc = goes_nc.isel(time=range(-24, 0))
+goes_nc = goes_main.isel(time=range(-24, 0))
 goes_nc = goes_nc.drop('projection')
 goes_nc = goes_nc.drop('dt_analysis')
 goes_nc = goes_nc.drop('satellite_zenith_angle')
