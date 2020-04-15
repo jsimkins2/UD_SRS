@@ -40,7 +40,7 @@ for d in range(0, len(datelist)):
     goes_nc = goes_nc.resample(time='1D').mean('time')
     
     newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00')) / np.timedelta64(1, 's')
-    goes_nc.time.values = np.array([newtimestamp], dtype='float64')
+    goes_nc['time'] = np.array([newtimestamp], dtype='float64')
     goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
     
     #landmask.to_netcdf(path=outpath2 + 'landmask_roffs_' +  'area' + str(a) + '_' + str(goes_nc.time.values[0])[0:10] + '_' + str(goes_nc.time.values[-1])[0:10] + '.nc', format='NETCDF3_CLASSIC')
