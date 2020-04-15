@@ -175,7 +175,6 @@ outpath = "/data/GOES/GOES-R/daily_composite/"
 goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(
     today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', mode='w',format='NETCDF4')
 
-print(tempNC)
 # now make a rolling 1 day aka last 24 hours IN CELSIUS
 # grab the last 24 hours of sst dataset
 goes_nc = goes_main.isel(time=range(-24, 0))
