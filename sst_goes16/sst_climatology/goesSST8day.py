@@ -33,5 +33,5 @@ newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timed
 x = goes_nc.assign_coords(time=newtimestamp)
 goes_nc = x.expand_dims('time')
 goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
-outpath = "/home/sat_ops/goesR/sstClimatology/"
+outpath = "/home/sat_ops/goesR/jpl_sst/sstClimatology/"
 goes_nc.to_netcdf(path=outpath + 'GOES16_SST_8day.nc')
