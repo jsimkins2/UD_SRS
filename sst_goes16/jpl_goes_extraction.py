@@ -165,7 +165,7 @@ goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_1day_' 
 goes_nc = goes_nc.drop(['quality_level'])
 goes_nc = goes_nc.resample(time='1D').mean('time')
 
-newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
+newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00')) / np.timedelta64(1, 's')
 goes_nc['time'] = np.array([newtimestamp], dtype='float64')
 goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 
@@ -198,7 +198,7 @@ dat = dat.drop(['sea_surface_temperature'])
 dat = dat.where(dat.sst > -1)
 dat.attrs['units'] = 'Celsius'
 dat = dat.mean('time')
-newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
+newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00')) / np.timedelta64(1, 's')
 x = dat.assign_coords(time=newtimestamp)
 dat = x.expand_dims('time')
 dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
@@ -233,7 +233,7 @@ dat = dat.drop(['sea_surface_temperature'])
 dat = dat.where(dat.sst > 31)
 dat.attrs['units'] = 'Fahrenheit'
 dat = dat.mean('time')
-newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
+newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00')) / np.timedelta64(1, 's')
 x = dat.assign_coords(time=newtimestamp)
 dat = x.expand_dims('time')
 dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
