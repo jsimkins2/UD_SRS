@@ -164,7 +164,7 @@ goes_nc = goes_nc.drop(['quality_level'])
 goes_nc = goes_nc.resample(time='1D').mean('time')
 
 newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
-goes_nc.time.values = np.array([newtimestamp], dtype='float64')
+goes_nc['time'] = np.array([newtimestamp], dtype='float64')
 goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 
 # have to add the following line becuase of a weird xarray netcdf4 error when writing the xarray to netcdf
