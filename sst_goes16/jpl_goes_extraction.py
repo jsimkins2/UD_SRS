@@ -130,6 +130,8 @@ for sstDate in datetimes_jpl:
 
 
 # now make a rolling 1 day aka last 24 hours IN CELSIUS
+goes_main = xr.open_dataset(
+    "http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
 # grab the last 24 hours of sst dataset
 goes_nc = goes_main.isel(time=range(-24, 0))
 goes_nc = goes_nc.drop('projection')
