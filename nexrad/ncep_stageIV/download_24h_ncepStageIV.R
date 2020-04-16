@@ -6,8 +6,8 @@ library(lubridate)
 library(ncdf4)
 datadir = "/home/james/ncep_stageIV/24h/"
 Sys.setenv(TZ="UTC")
-utcnow = now()
-utc14 = now() - days(2)
+utcnow = now() - days(1)
+utc14 = now() - days(4)
 stageUrls = list()
 for (d in seq(utc14, utcnow, by="hour")){
   dateTime = as.POSIXct.numeric(d,tz='UTC',origin='1970-01-01 00:00:00')
