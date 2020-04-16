@@ -6,7 +6,7 @@ import pandas as pd
 # paths
 outpath1 = "/data/GOES/GOES-R/1day/"
 outpath2 = "/data/GOES/GOES-R/daily_composite/"
-datelist = pd.date_range('2018-01-01', pd.datetime.today()).tolist()
+datelist = pd.date_range('2020-04-01', pd.datetime.today()).tolist()
 for d in range(0, len(datelist)):
     print(datelist[d])
     goes_main = xr.open_dataset(
