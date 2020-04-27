@@ -160,7 +160,7 @@ dat = x.expand_dims('time')
 dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 # have to add the following line becuase of a weird xarray netcdf4 error when writing the xarray to netcdf
 del goes_nc.attrs['_NCProperties']
-
+print("writing out 1day")
 outpath = "/data/GOES/GOES-R/rolling_1day/"
 dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',mode='w',
                   format='NETCDF4')
@@ -195,7 +195,7 @@ dat = x.expand_dims('time')
 dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 # have to add the following line becuase of a weird xarray netcdf4 error when writing the xarray to netcdf
 del goes_nc.attrs['_NCProperties']
-
+print("writing out 1day")
 outpath = "/data/GOES/GOES-R/rolling_1day_fahrenheit/"
 dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day_fahrenheit.nc', mode='w',
                   format='NETCDF4')
