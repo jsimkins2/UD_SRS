@@ -43,6 +43,8 @@ for d in range(0, len(datelist)):
     newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00')) / np.timedelta64(1, 's')
     goes_nc['time'] = np.array([newtimestamp], dtype='float64')
     goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
+    goes_nc.sst.attrs['units'] = "Celsius"
+    goes_nc.sst.attrs['data_summary'] = "Daily composite of SST with clear sky pixels (quality level = 5, or highest quality level data)"
     
     #landmask.to_netcdf(path=outpath2 + 'landmask_roffs_' +  'area' + str(a) + '_' + str(goes_nc.time.values[0])[0:10] + '_' + str(goes_nc.time.values[-1])[0:10] + '.nc', format='NETCDF3_CLASSIC')
     goes_nc.to_netcdf(path=outpath2 + '/' + str(datelist[d].year) + '/GOES16_SST_dailycomposite_' + str(datelist[d].year) + str("{0:0=3d}".format(
