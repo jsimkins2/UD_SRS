@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#serve deosAgPage.py --port 5000 --allow-websocket-origin=dev-web.demac.udel.edu:5000
+# panel serve refET_panel.py --port 8081 --allow-websocket-origin=agmap.cema.udel.edu:8081
 
 from cartopy import crs as ccrs
 import cartopy.io.shapereader as shpreader
@@ -56,8 +55,8 @@ dataset = pn.widgets.Select(name='Dataset', options=datasets, value=datasets[0])
 cmap = pn.widgets.Select(name='Color Ramp', options=cmap_keys, value=cmap_keys[0])
 start_date = pn.widgets.DatePicker(name='Start Date', value=(date.today() + timedelta(days=-3)))
 end_date = pn.widgets.DatePicker(name='End Date', value=(date.today() + timedelta(days=-1)))
-clb_min = pn.widgets.Spinner(name="Colorbar Minimum (mm day-1)", value=0, step=1, start=-5000, end=5000, width=100)
-clb_max = pn.widgets.Spinner(name="Colorbar Maximum (mm day-1)", value=1, step=1, start=-5000, end=5000, width=100)
+#clb_min = pn.widgets.Spinner(name="Colorbar Minimum (mm day-1)", value=-5000, step=1, start=-5000, end=5000, width=100)
+#clb_max = pn.widgets.Spinner(name="Colorbar Maximum (mm day-1)", value=-4999, step=1, start=-5000, end=5000, width=100)
     
 # information for quadmesh plot
 ylim=(38.3, 40.3)
@@ -80,7 +79,7 @@ shp1 = gv.Polygons(coastline).opts('Polygons', line_color='black',fill_color=Non
 
 # only use the @pn.depends if we are making an interactive plot call WITHOUT a button!
 #@pn.depends(dataset.param.value, start_date.param.value, end_date.param.value, clb_min.param.value, clb_max.param.value, cmap.param.value)
-def make_plot(dataset, start_date, end_date, clb_min, clb_max, cmap):
+def make_plot(dataset, start_date, end_date,cmap):              # clb_min, clb_max, 
      # Load and format the data
     sDate = datetime(start_date.year, start_date.month, start_date.day)
     eDate = datetime(end_date.year, end_date.month, end_date.day)
@@ -106,15 +105,12 @@ def make_plot(dataset, start_date, end_date, clb_min, clb_max, cmap):
         df = df.drop('Precipitation_Flux')
 
 
-     # create filter mask for the dataframe
-    vmin=clb_min
-    vmax=clb_max
     x = 'longitude'
     y = 'latitude'
      # create the Altair chart object
     chart = df.hvplot.quadmesh(width=width, height=height, x=x, y=y, cmap=cmap_dict[cmap], 
-             clim=(vmin,vmax),project=True, geo=True,title=quad_title,xlim=xlim,ylim=ylim,label="mm",
-             rasterize=True, dynamic=False) * shp * shp1
+            project=True, geo=True,title=quad_title,xlim=xlim,ylim=ylim,label="mm", #clim=(vmin,vmax)
+            rasterize=True, dynamic=False) * shp * shp1
     return chart
 
 
@@ -122,14 +118,12 @@ def make_plot(dataset, start_date, end_date, clb_min, clb_max, cmap):
 
 
 def update(event):
-    plotwindow[1].object = make_plot(dataset.value, start_date.value, end_date.value,
-            clb_min.value, clb_max.value, cmap.value)
+    plotwindow[1].object = make_plot(dataset.value, start_date.value, end_date.value,cmap.value) # clb_min, clb_max, 
 
 generate_button = pn.widgets.Button(name='Plot', button_type='primary')
 generate_button.on_click(update)
 
-sel_box = pn.WidgetBox(dataset, start_date, end_date, cmap, clb_min, clb_max,
-                                          generate_button)
+sel_box = pn.WidgetBox(dataset, start_date, end_date, cmap, generate_button) # clb_min, clb_max, 
 
 
 # In[6]:
@@ -140,16 +134,16 @@ title       = '<div style="font-size:50px">CEMA Agriculture Dashboard</div>'
 instruction = '<div style="font-size:25px">Select a dataset, set your parameters, and click plot</div>'
 oggm_logo   = '<a href="http://cema.udel.edu/"><img src="https://lh3.googleusercontent.com/proxy/WDIKz3hvsUgUMPZJpPgUfaznp5BiT-04YPlehRy2BV2HHYCw9xWRH5RwRD3MVCPmcXp6Ouq-8axaYra-KjwjAidNZ4LC" width=170></a>'
 pn_logo     = '<a href="https://panel.pyviz.org"><img src="http://panel.pyviz.org/_static/logo_stacked.png" width=140></a>'
+cema_logo = '/home/james/agriculture/shapefolder/cema2logo.png'
 
-header = pn.Row(pn.Pane(oggm_logo),  pn.layout.Spacer(width=10), 
+header = pn.Row(pn.panel(cema_logo, width=170),  pn.layout.Spacer(width=10), 
                 pn.Column(pn.Pane(title, width=1000), pn.Pane(instruction, width=1000)))
 
 
 # In[7]:
 
 
-plotwindow = pn.Row(sel_box, make_plot(dataset.value, start_date.value, end_date.value,
-            clb_min.value, clb_max.value, cmap.value))
+plotwindow = pn.Row(sel_box, make_plot(dataset.value, start_date.value, end_date.value, cmap.value)) #clbmin clbmax
 dashboard = pn.Column(header,pn.layout.Spacer(height=50), plotwindow)
 dashboard.servable()
 

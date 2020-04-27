@@ -37,6 +37,8 @@ for d in range(0, len(datelist)):
     # resample to a daily composite
     goes_nc = goes_nc.drop(['quality_level'])
     goes_nc = goes_nc.resample(time='1D').mean('time')
+    # convert to celsius
+    goes_nc['sst'] = goes_nc['sst'] - 273.15
     
     newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00')) / np.timedelta64(1, 's')
     goes_nc['time'] = np.array([newtimestamp], dtype='float64')

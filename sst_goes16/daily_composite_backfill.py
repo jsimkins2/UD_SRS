@@ -6,7 +6,7 @@ import pandas as pd
 # paths
 outpath1 = "/data/GOES/GOES-R/1day/"
 outpath2 = "/data/GOES/GOES-R/daily_composite/"
-datelist = pd.date_range('2020-04-01', pd.datetime.today()).tolist()
+datelist = pd.date_range('2018-01-01', pd.datetime.today()).tolist()
 for d in range(0, len(datelist)):
     print(datelist[d])
     goes_main = xr.open_dataset(
@@ -38,7 +38,8 @@ for d in range(0, len(datelist)):
     # resample to a daily composite
     goes_nc = goes_nc.drop(['quality_level'])
     goes_nc = goes_nc.resample(time='1D').mean('time')
-    
+    # convert to celsius
+    goes_nc['sst'] = goes_nc['sst'] - 273.15
     newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00')) / np.timedelta64(1, 's')
     goes_nc['time'] = np.array([newtimestamp], dtype='float64')
     goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
