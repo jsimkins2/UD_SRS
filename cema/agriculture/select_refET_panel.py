@@ -1,4 +1,4 @@
-# panel serve refET_panel.py --port 8081 --allow-websocket-origin=agmap.cema.udel.edu:8081
+# panel serve select_refET_panel.py --port 8081 --allow-websocket-origin=agmap.cema.udel.edu:8081
 
 from cartopy import crs as ccrs
 import cartopy.io.shapereader as shpreader
@@ -15,7 +15,7 @@ gv.extension('bokeh')
 bounds=(-76.2,38.3,-74.85, 40.3)
 
 # read in the refET dataset
-dsRefET = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/DEOSRefET.nc")
+dsRefET = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/DEOSAG.nc")
 dsRefET = dsRefET.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(bounds[0],bounds[2]))
 
 
@@ -45,14 +45,27 @@ endcolor = '#008000'
 own_cmap1 = mpl.colors.LinearSegmentedColormap.from_list( 'own2', [startcolor, midcolor, endcolor] )
 
 # create lists for select widget to pull from
-datasets = ['RefET', 'NCEP Stage IV Precip', 'NCEP Stage IV Precip - RefET']
+sum_dict = dict(zip(['Heating Degree Days', 'Cooling Degree Days','DEOS Precip',  'Energy Density', 
+                     'Reference Evapotranspiration', 'Growing Degree Days'],
+                    ['HDD', 'CDD',  'dailyprecip', 'energyDens','refET', 'GDD']))
+mean_dict = dict(zip(['Mean Temperature', 'Max Temperature', 'Min Temperature', 'Mean Wind Speed', 'Mean Dew Point',
+                      'Mean Relative Humidity', 'Max Relative Humidity', 'Min Relative Humidity', 
+                      'Mean Soil Temperature', 'Max Soil Temperature', 'Min Soil Temperature',
+                      'Mean Volumetric Water Content','Max Volumetric Water Content', 'Min Volumetric Water Content',
+                      'Mean Solar', 'Mean Wind Direction', 'Wind Gust', 'Min Wind Chill'],
+                     ['meanTemp', 'maxTemp', 'minTemp', 'meanWS','meanDP','meanRH', 'maxRH', 'minRH',
+                      'meanST', 'maxST', 'minST','meanVWC', 'maxVWC', 'minVWC','meanSolar', 'meanWD',
+                      'dailyGust', 'dailyMinWC']))
+
+datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + ['NCEP Stage IV Precip', 'NCEP Stage IV Precip - DEOS RefET']
+dataset = pn.widgets.Select(name='Dataset', options=datasets, value=datasets[10])
 cmap_keys = ['Drought', 'Jet', 'Viridis','Red-Yellow-Green', 'Red-Yellow-Blue', 'Cool-Warm', 'Spectral']
 cmap_values = [own_cmap1, 'jet', 'viridis', 'RdYlGn', 'RdYlBu' , 'coolwarm', 'Spectral']
 cmap_dict = dict(zip(cmap_keys,cmap_values))
 
 # define widgets
 dataset = pn.widgets.Select(name='Dataset', options=datasets, value=datasets[0])
-cmap = pn.widgets.Select(name='Color Ramp', options=cmap_keys, value=cmap_keys[0])
+cmap = pn.widgets.Select(name='Color Ramp', options=cmap_keys, value=cmap_keys[2])
 start_date = pn.widgets.DatePicker(name='Start Date', value=(date.today() + timedelta(days=-3)))
 end_date = pn.widgets.DatePicker(name='End Date', value=(date.today() + timedelta(days=-1)))
 #clb_min = pn.widgets.Spinner(name="Colorbar Minimum (mm day-1)", value=-5000, step=1, start=-5000, end=5000, width=100)
@@ -87,29 +100,38 @@ def make_plot(dataset, start_date, end_date,cmap):              # clb_min, clb_m
     quad_title = str(str(dataset) + "    Start Date : " +
                     datetime.strftime(sDate + timedelta(days=-1), "%Y-%m-%d") + " - End Date : " + 
                     datetime.strftime(eDate + timedelta(days=-1), "%Y-%m-%d"))
-    if dataset == 'RefET':
-        df = dsRefET
+    if any(dataset in s for s in mean_dict.keys()):
+        df = dsRefET[mean_dict[dataset]]
+        opLabel = 'Avg ' + df.units 
+        df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df = df.mean('time')
+
+    if any(dataset in s for s in sum_dict.keys()):
+        df = dsRefET[sum_dict[dataset]]
+        opLabel = 'Total ' + df.units
         df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
         df = df.sum('time')
     if dataset == 'NCEP Stage IV Precip':
         df = dsPrec
+        opLabel = 'Total mm'
         df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
         df = df.sum('time')
-    if dataset == 'NCEP Stage IV Precip - RefET':
-        df1 = dsRefET.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+    if dataset == 'NCEP Stage IV Precip - DEOS RefET':
+        dfref = dsRefET['refET']
+        df1 = dfref.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
         df1 = df1.sum('time')
         df2 = dsPrec.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
         df2 = df2.sum('time')
-        df = df2 - df1.refET.values
+        df = df2 - df1.values
         df['Precip - ET'] = df.Precipitation_Flux
         df = df.drop('Precipitation_Flux')
-
+        opLabel = 'Total mm'
 
     x = 'longitude'
     y = 'latitude'
      # create the Altair chart object
     chart = df.hvplot.quadmesh(width=width, height=height, x=x, y=y, cmap=cmap_dict[cmap], 
-            project=True, geo=True,title=quad_title,xlim=xlim,ylim=ylim,label="mm", #clim=(vmin,vmax)
+            project=True, geo=True,title=quad_title,xlim=xlim,ylim=ylim,label=opLabel, #clim=(vmin,vmax)
             rasterize=True, dynamic=False) * shp * shp1
     return chart
 
