@@ -116,6 +116,7 @@ def make_plot(dataset, start_date, end_date,cmap):              # clb_min, clb_m
         opLabel = 'Total mm'
         df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
         df = df.sum('time')
+        dwnldName = str("ncepStageIV.nc")
     if dataset == 'NCEP Stage IV Precip - DEOS RefET':
         dfref = dsRefET['refET']
         df1 = dfref.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
@@ -126,27 +127,40 @@ def make_plot(dataset, start_date, end_date,cmap):              # clb_min, clb_m
         df['Precip - ET'] = df.Precipitation_Flux
         df = df.drop('Precipitation_Flux')
         opLabel = 'Total mm'
-
+    
     x = 'longitude'
     y = 'latitude'
      # create the Altair chart object
     chart = df.hvplot.quadmesh(width=width, height=height, x=x, y=y, cmap=cmap_dict[cmap], 
             project=True, geo=True,title=quad_title,xlim=xlim,ylim=ylim,label=opLabel, #clim=(vmin,vmax)
             rasterize=True, dynamic=False) * shp * shp1
-    return chart
+    return chart, df
 
 
 # In[5]:
 
 
+# create update plot window button
 def update(event):
-    plotwindow[1].object = make_plot(dataset.value, start_date.value, end_date.value,cmap.value) # clb_min, clb_max, 
+    plotwindow[1].object = make_plot(dataset.value, start_date.value, end_date.value,cmap.value)[0] # clb_min, clb_max, 
 
 generate_button = pn.widgets.Button(name='Plot', button_type='primary')
 generate_button.on_click(update)
 
-sel_box = pn.WidgetBox(dataset, start_date, end_date, cmap, generate_button) # clb_min, clb_max, 
+############################################################
+# now create download netcdf button
+def nc_download(event):
+    dwnldwindow[1].object = make_plot(dataset.value, start_date.value, end_date.value,cmap.value)[1].to_netcdf(path = ncpath.value) # clb_min, clb_max, 
 
+download_button = pn.widgets.Button(name='Download File', button_type='success')
+download_button.on_click(nc_download)
+
+# declare the path & name string for the download box
+ncpath = pn.widgets.TextInput(name='File Download Path + Name', placeholder='~/Downloads/DEOS_AgWx.nc')
+
+# set the widget box for the widgets to be placed into
+sel_box = pn.WidgetBox(dataset, start_date, end_date, cmap, generate_button,
+                       pn.layout.Spacer(height=30),ncpath,download_button) # clb_min, clb_max, 
 
 # In[6]:
 
