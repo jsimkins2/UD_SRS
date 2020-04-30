@@ -150,7 +150,7 @@ generate_button.on_click(update)
 ############################################################
 # now create download netcdf button
 def nc_download(event):
-    dwnldwindow[1].object = make_plot(dataset.value, start_date.value, end_date.value,cmap.value)[1].to_netcdf(path = ncpath.value) # clb_min, clb_max, 
+    make_plot(dataset.value, start_date.value, end_date.value,cmap.value)[1].to_netcdf(path = ncpath.value) # clb_min, clb_max, 
 
 download_button = pn.widgets.Button(name='Download File', button_type='success')
 download_button.on_click(nc_download)
@@ -161,7 +161,6 @@ ncpath = pn.widgets.TextInput(name='File Download Path + Name', placeholder='~/D
 # set the widget box for the widgets to be placed into
 sel_box = pn.WidgetBox(dataset, start_date, end_date, cmap, generate_button,
                        pn.layout.Spacer(height=30),ncpath,download_button) # clb_min, clb_max, 
-
 # In[6]:
 
 
@@ -179,10 +178,9 @@ header = pn.Row(pn.panel(cema_logo, width=170),  pn.layout.Spacer(width=10),
 # In[7]:
 
 
-plotwindow = pn.Row(sel_box, make_plot(dataset.value, start_date.value, end_date.value, cmap.value)) #clbmin clbmax
+plotwindow = pn.Row(sel_box, make_plot(dataset.value, start_date.value, end_date.value, cmap.value)[0]) #clbmin clbmax
 dashboard = pn.Column(header,pn.layout.Spacer(height=50), plotwindow)
 dashboard.servable()
-
 
 # In[ ]:
 
