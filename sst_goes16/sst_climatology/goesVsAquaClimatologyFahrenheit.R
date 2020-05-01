@@ -13,8 +13,7 @@ xy <- cbind(rep(lon, length(lat)), rep(lat, each=length(lon)))
 xyv <- na.omit(cbind(xy, as.vector(sst)))
 r <- raster(extent(range(lon), range(lat)), res=1/30)
 r <- rasterize(xyv[, 1:2], r, xyv[,3], fun=mean) 
-r[r < 273.15] = NA
-r = r - 273.15
+r[r < 0] = NA
 
 clim.nc = nc_open("http://basin.ceoe.udel.edu/thredds/dodsC/aqua_clim_rolling8.nc")
 rec_time  <- max(clim.nc$dim$time$vals)
