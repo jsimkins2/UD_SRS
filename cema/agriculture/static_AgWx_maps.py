@@ -22,12 +22,16 @@ import pandas as pd
 import matplotlib.patheffects as path_effects
 import time
 import matplotlib.image as image
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 # declare paths
-shapePaths = "/Users/James/Downloads/mapLayers/"
-colorPaths = "/Users/James/Downloads/colorramps/"
-
+#shapePaths = "/Users/James/Downloads/mapLayers/"
+#colorPaths = "/Users/James/Downloads/colorramps/"
+# declare paths
+shapePaths = "/home/james/mapLayers/"
+colorPaths = "/home/james/colorramps/"
+my_dpi = 100
 def check_crs(crs):
     """Checks if the crs represents a valid grid, projection or ESPG string.
     Examples
@@ -169,28 +173,66 @@ mean_dict = dict(zip(['Mean Temperature', 'Max Temperature', 'Min Temperature', 
                      ['meanTemp', 'maxTemp', 'minTemp', 'meanWS','meanDP','meanRH', 'maxRH', 'minRH',
                       'meanST', 'maxST', 'minST','meanVWC', 'maxVWC', 'minVWC','meanSolar', 'meanWD',
                       'dailyGust', 'dailyMinWC']))
-
+daysback_dict = dict(zip(['3 Months', '1 Month', '1 Week', '1 Day'], [90, 30, 7, 1]))
 datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + ['NCEP Stage IV Precip', 'NCEP Stage IV Precip - DEOS RefET']
-var = 'resET'
-fig = plt.figure(figsize=(12,12))
-ax = fig.add_subplot(111, projection=ccrs.Mercator())
-ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
-for ind in range(0,len(bigdeos)):
-        ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
-                      facecolor='silver', edgecolor='black')
-im=ax.pcolormesh(cl['longitude'].values,cl['latitude'].values,cl.values,cmap=cmap,transform=ccrs.PlateCarree(),zorder=2)
-for ind in range(0,len(deos_boundarys)):
-    ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
-                      facecolor='none', edgecolor='black', zorder=3, linewidth=1.5)
-for ind in range(0,len(inland_bays)):
-    ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
-                      facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
-ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
-ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
-plt.title('refET')
-#plt.text(-76.13, 38.503, fancyDict[var],horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
-#plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
-plt.colorbar(im)
-im1 = image.imread("Downloads/maplayers/deos_logo.png")
-plt.figimage(im1, 25, 40 ,zorder=30, alpha=1)
-plt.savefig("Downloads/" + nameDict[var] + ".png")
+nowdate=datetime.utcnow()
+for var in datasets:
+    for db in daysback_dict.keys():
+        if any(var in s for s in mean_dict.keys()):
+            df = agwx_main[mean_dict[var]]
+            opLabel = 'Avg ' + df.units 
+            df = df.sel(time=slice(nowdate - timedelta(days=daysback_dict[db]), nowdate))
+            df = df.mean('time')
+            dfvarname = mean_dict[var]
+        if any(var in s for s in sum_dict.keys()):
+            df = agwx_main[sum_dict[var]]
+            opLabel = 'Total ' + df.units
+            df = df.sel(time=slice(nowdate - timedelta(days=daysback_dict[db]), nowdate))
+            df = df.sum('time')
+            dfvarname = sum_dict[var]
+        if var == 'NCEP Stage IV Precip':
+            df = dsPrec
+            opLabel = 'Total mm'
+            df = df.sel(time=slice(nowdate - timedelta(days=daysback_dict[db]), nowdate))
+            df = df.sum('time')
+            df = df['Precipitation_Flux']
+            dfvarname = 'ncepIVprecip'
+        if var == 'NCEP Stage IV Precip - DEOS RefET':
+            dfref = agwx_main['refET']
+            df1 = dfref.sel(time=slice(nowdate - timedelta(days=daysback_dict[db]), nowdate))
+            df1 = df1.sum('time')
+            df2 = dsPrec.sel(time=slice(nowdate - timedelta(days=daysback_dict[db]), nowdate))
+            df2 = df2.sum('time')
+            df = df2 - df1.values
+            df['Precip - ET'] = df.Precipitation_Flux
+            df = df.drop('Precipitation_Flux')
+            df = df['Precip - ET']
+            dfvarname = 'ncepIVprecip_deosET'
+            opLabel = 'Total mm'
+    
+
+        fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
+        ax = fig.add_subplot(111, projection=ccrs.Mercator())
+        ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
+        for ind in range(0,len(bigdeos)):
+                ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
+                              facecolor='silver', edgecolor='black')
+        im=ax.pcolormesh(df['longitude'].values,df['latitude'].values,df.values,cmap='Spectral',transform=ccrs.PlateCarree(),zorder=2)
+        for ind in range(0,len(deos_boundarys)):
+            ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
+                              facecolor='none', edgecolor='black', zorder=3, linewidth=1.5)
+        for ind in range(0,len(inland_bays)):
+            ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
+                              facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+        #plt.text(-76.13, 38.523, var,horizontalalignment='left',color='black',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
+        plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n       " + 
+                                     datetime.strftime(nowdate, "%m-%d-%Y")),
+                                     horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+        #cbaxes = inset_axes(ax, width="3%", height="100%", pad='1.95%', loc=1) 
+        cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
+        im1 = image.imread(shapePaths + "deos_logo.png")
+        plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
+        plt.savefig("/var/www/html/imagery/AgWx/" + dfvarname + "_" + str(daysback_dict[db]) + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
+        plt.close()

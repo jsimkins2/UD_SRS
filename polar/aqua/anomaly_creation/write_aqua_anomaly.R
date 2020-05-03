@@ -1,5 +1,6 @@
 library(ncdf4)
-yearseq = seq(2002,2017)
+library(lubridate)
+yearseq = year(today())
 datadir = "/data/Aqua/8_day/"
 for (y in yearseq){
   fnamelist = list.files(paste0(datadir, y, "/"))
@@ -7,7 +8,10 @@ for (y in yearseq){
     if (!file.exists(paste0("/data/Aqua/anomaly/", y, "/anomaly_", i))){
       aqua.nc <- nc_open(paste0("/data/Aqua/8_day/", y, "/",i))
       print(i)
-      jday = substr(i, 10, 12)              
+      jday = substr(i, 10, 12)
+      if (leap_year(y) == TRUE){
+        jday = as.character(as.integer(jday) - 1)
+      }
       data_dim <- aqua.nc$dim
       sst <- ncvar_get(aqua.nc, "sst")
       chl <- ncvar_get(aqua.nc, "chl_oc3")
@@ -38,7 +42,7 @@ for (y in yearseq){
       var.list <- list()
       var.list[[1]] <- ncdf4::ncvar_def(name="sst", units="Celsius", missval=-999, longname = "Sea Surface Temperature Anomaly", dim=data_dim)
       var.list[[2]] <- ncdf4::ncvar_def(name="chl_oc3", units="mg m^-3", missval=-999, longname = "Chlorophyll Concentration, OC3 Algorithm", dim=data_dim)
-      loc.file <- paste0("/data/Aqua/anomaly/anomaly_", i)
+      loc.file <- paste0("/data/Aqua/anomaly/", y, "/anomaly_", i)
       #loc.file <- "Downloads/atest.nc"
       #writing all we need to the output file
       loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, force_v4 = T)
