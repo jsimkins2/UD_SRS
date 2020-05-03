@@ -149,23 +149,20 @@ generate_button = pn.widgets.Button(name='Plot', button_type='primary')
 generate_button.on_click(update)
 
 ############################################################
-# now create download netcdf button
-def nc_download(event):
-    make_plot(dataset.value, start_date.value, end_date.value,cmap.value)[1].to_netcdf(path = ncpath.value) # clb_min, clb_max, 
+def download_cb():
+    bout = make_plot(dataset.value, start_date.value, end_date.value,cmap.value)[1].to_netcdf()
+    bio = BytesIO()
+    bio.write(bout)
+    bio.seek(0)
+    return bio
 
-#download_button = pn.widgets.Button(name='Download File', button_type='success')
-#download_button.on_click(nc_download)
-#ncpath = pn.widgets.TextInput(name='File Download Path + Name', placeholder='~/Downloads/DEOS_AgWx.nc')
-#fd = pn.widgets.FileDownload(
-#    file=make_plot(dataset.value, start_date.value, end_date.value,cmap.value)[1].to_netcdf(path=ncpath.value),
-#    filename='AgWx.nc')
-# declare the path & name string for the download box
-
+fd = pn.widgets.FileDownload(
+    callback=download_cb,
+    filename='AgWx.nc')
 
 # set the widget box for the widgets to be placed into
-sel_box = pn.WidgetBox(dataset, start_date, end_date, cmap, generate_button)#,
-                       #pn.layout.Spacer(height=30),ncpath,fd) # clb_min, clb_max, 
-# In[6]:
+sel_box = pn.WidgetBox(dataset, start_date, end_date, cmap, generate_button,
+                       pn.layout.Spacer(height=30),fd)
 
 
 ## add in the headers
