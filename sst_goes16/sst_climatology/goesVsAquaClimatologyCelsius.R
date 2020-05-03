@@ -44,7 +44,7 @@ tmp_def <- ncvar_def("tmp","deg_C",list(londim,latdim,timedim),fillvalue,dlname,
 
 var.list <- list()
 var.list[[1]] <- ncdf4::ncvar_def(name="sst", units="Celsius", missval=-999, longname = "Sea Surface Temperature Anomaly", dim=list(londim,latdim,timedim))
-loc.file <- paste0("/home/sat_ops/goesR/jpl_sst/sstClimatology/SSTanomalyGoesAqua8dayCelsius_", ymdGoes, ".nc")
+loc.file <- paste0("/home/sat_ops/goesR/jpl_sst/sstClimatology/SSTanomalyGoesAqua8dayCelsius_", str(jdayGoes), ".nc")
 #writing all we need to the output file
 loc <- ncdf4::nc_create(filename=loc.file, vars=var.list)
 ncdf4::ncvar_put(nc=loc, "sst", vals=t(as.matrix(sstanom)))
