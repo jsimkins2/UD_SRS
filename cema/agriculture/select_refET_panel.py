@@ -9,6 +9,7 @@ import xarray as xr #version 0.11.3
 import hvplot.xarray #version 0.5.2
 import hvplot.pandas #version 0.5.2
 import geoviews as gv #version 1.7.0
+from io import BytesIO
 gv.extension('bokeh')
 
 # Declare bounds of the data
