@@ -117,11 +117,19 @@ for s in list(stations.keys()):
         
         # add trendline here and plot the bias over the length of the aqua dataset here
         fig = plt.figure(figsize=(16,8))
-        plt.scatter(sst_time, (np.array(sst_vals) - np.array(buoy_vals)), color='green', s=5, label = 'SST Bias: (Sat-Buoy)')
+        scatter = plt.scatter(range(1100, len(sst_time)), (np.array(sst_vals)[1100:] - np.array(buoy_vals)[1100:]), color='green', s=5, label = 'SST Bias: (Sat-Buoy)')
+        plt.xticks = sst_time
+        coef = np.polyfit(range(1100, len(sst_time)), (np.array(sst_vals)[1100:] - np.array(buoy_vals)[1100:]),1)
+        poly1d_fn = np.poly1d(coef) 
+        # poly1d_fn is now a function which takes in x and returns an estimate for y
+
+        reg = plt.plot(range(1100, len(sst_time)), (np.array(sst_vals)[1100:] - np.array(buoy_vals)[1100:]), 'yo', range(1100, len(sst_time)), poly1d_fn(range(1100, len(sst_time))), '--k',
+                 label=str("y=" + str(round(poly1d_fn[0],2)) + "x" + " + " + str(round(poly1d_fn[1],2))))
         #plt.scatter(sst_time, wind_vals, color='black', s=5, label = 'Wind Speed (Buoy)')
-        plt.legend()
-        plt.title('Buoy ' + s + ' ' + stations[s])
-        #plt.savefig("/Users/james/Documents/buoy_val/wind_aqua/buoy" + s)
+        plt.legend((reg[0], reg[1]), ('SST Bias: (Sat-Buoy)', str("y=" + str(round(poly1d_fn[0],5)) + "x" + " + " + str(round(poly1d_fn[1],5)))))
+
+        plt.title('Buoy ' + s + ' ' + stations[s] + " 2002-Present")
+        plt.savefig("/Users/james/Documents/Delaware/buoy_val/aqua_bias_2002_" + s + ".png")
         plt.close()
 
 #statsDF.to_csv("/Users/james/Documents/buoy_val/aqua_buoyVal.csv")
