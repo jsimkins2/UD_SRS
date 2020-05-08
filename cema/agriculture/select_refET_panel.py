@@ -10,6 +10,7 @@ import hvplot.xarray #version 0.5.2
 import hvplot.pandas #version 0.5.2
 import geoviews as gv #version 1.7.0
 from io import BytesIO
+import pandas as pd
 gv.extension('bokeh')
 
 # Declare bounds of the data
@@ -98,39 +99,42 @@ def make_plot(dataset, start_date, end_date,cmap):              # clb_min, clb_m
     sDate = datetime(start_date.year, start_date.month, start_date.day)
     eDate = datetime(end_date.year, end_date.month, end_date.day)
 
-    quad_title = str(str(dataset) + "    Start Date : " +
-                    datetime.strftime(sDate + timedelta(days=-1), "%Y-%m-%d") + " - End Date : " + 
-                    datetime.strftime(eDate + timedelta(days=-1), "%Y-%m-%d"))
     if any(dataset in s for s in mean_dict.keys()):
         df = dsRefET[mean_dict[dataset]]
         opLabel = 'Avg ' + df.units 
-        df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df = df.sel(time=slice(sDate,eDate))
+        timeLabel = " Start: " + datetime.strftime(pd.to_datetime(df.time.values[0]), "%Y-%m-%d %H:%MZ") + " - End: " +  datetime.strftime(pd.to_datetime(df.time.values[-1]), "%Y-%m-%d %H:%MZ")
         df = df.mean('time')
 
     if any(dataset in s for s in sum_dict.keys()):
         df = dsRefET[sum_dict[dataset]]
         opLabel = 'Total ' + df.units
-        df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df = df.sel(time=slice(sDate,eDate))
+        timeLabel = " Start: " + datetime.strftime(pd.to_datetime(df.time.values[0]), "%Y-%m-%d %H:%MZ") + " - End: " +  datetime.strftime(pd.to_datetime(df.time.values[-1]), "%Y-%m-%d %H:%MZ")
         df = df.sum('time')
     if dataset == 'NCEP Stage IV Precip':
         df = dsPrec
         opLabel = 'Total mm'
-        df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df = df.sel(time=slice(sDate,eDate))
+        timeLabel = " Start: " + datetime.strftime(pd.to_datetime(df.time.values[0]), "%Y-%m-%d %H:%MZ") + " - End: " +  datetime.strftime(pd.to_datetime(df.time.values[-1]), "%Y-%m-%d %H:%MZ")
         df = df.sum('time')
         dwnldName = str("ncepStageIV.nc")
     if dataset == 'NCEP Stage IV Precip - DEOS RefET':
         dfref = dsRefET['refET']
-        df1 = dfref.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df1 = dfref.sel(time=slice(sDate,eDate))
         df1 = df1.sum('time')
-        df2 = dsPrec.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df2 = dsPrec.sel(time=slice(sDate,eDate))
+        timeLabel = " Start: " + datetime.strftime(pd.to_datetime(df2.time.values[0]), "%Y-%m-%d %H:%MZ") + " - End: " +  datetime.strftime(pd.to_datetime(df2.time.values[-1]), "%Y-%m-%d %H:%MZ")
         df2 = df2.sum('time')
         df = df2 - df1.values
         df['Precip - ET'] = df.Precipitation_Flux
         df = df.drop('Precipitation_Flux')
         opLabel = 'Total mm'
+
     
     x = 'longitude'
     y = 'latitude'
+    quad_title = str(str(dataset) + " " + timeLabel)
      # create the Altair chart object
     chart = df.hvplot.quadmesh(width=width, height=height, x=x, y=y, cmap=cmap_dict[cmap], 
             project=True, geo=True,title=quad_title,xlim=xlim,ylim=ylim,label=opLabel, #clim=(vmin,vmax)

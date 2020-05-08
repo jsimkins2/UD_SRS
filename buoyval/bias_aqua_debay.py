@@ -92,12 +92,12 @@ for s in list(stations.keys()):
         wind_vals = []
         
         for val in range(len(aqua_nc.values)):
-            sstTime = aqua_nc.time.values[[val]]
-            buoyTimeInd = find_nearest(buoy_nc.time.values,sstTime[0])
+            sstTime = pd.to_datetime(aqua_nc.time.values[val]) - timedelta(hours=int(np.random.randint(20, size=1)[0]))
+            buoyTimeInd = find_nearest(pd.to_datetime(buoy_nc.time.values),sstTime)
             #windTimeInd = find_nearest(wind_nc.time.values[buoyTimeInd], buoy_nc.time)
-            timediff = buoy_nc.time.values[buoyTimeInd] - sstTime[0]
-            timediff = timediff.astype('timedelta64[m]')
-            timediff = np.abs(timediff / np.timedelta64(1, 'm'))
+            timediff = pd.to_datetime(buoy_nc.time.values[buoyTimeInd]) - sstTime
+            timediff = timediff.total_seconds() / 60
+            timediff = np.abs(timediff)
             if timediff < 1440:
                 if math.isnan(aqua_nc.values[val]) == False:
                     if math.isnan(buoy_nc.values[buoyTimeInd]) == False:
@@ -116,17 +116,20 @@ for s in list(stations.keys()):
             #plt.close()
         
         # add trendline here and plot the bias over the length of the aqua dataset here
+        from scipy import stats
+        slope, intercept, r_value, p_value, std_err = stats.linregress(range(0, len(sst_time)), (np.array(sst_vals) - np.array(buoy_vals)))
+        
         fig = plt.figure(figsize=(16,8))
-        scatter = plt.scatter(range(1100, len(sst_time)), (np.array(sst_vals)[1100:] - np.array(buoy_vals)[1100:]), color='green', s=5, label = 'SST Bias: (Sat-Buoy)')
+        scatter = plt.scatter(range(0, len(sst_time)), (np.array(sst_vals) - np.array(buoy_vals)), color='green', s=5, label = 'SST Bias: (Sat-Buoy)')
         plt.xticks = sst_time
-        coef = np.polyfit(range(1100, len(sst_time)), (np.array(sst_vals)[1100:] - np.array(buoy_vals)[1100:]),1)
+        coef = np.polyfit(range(0, len(sst_time)), (np.array(sst_vals) - np.array(buoy_vals)),1)
         poly1d_fn = np.poly1d(coef) 
         # poly1d_fn is now a function which takes in x and returns an estimate for y
 
-        reg = plt.plot(range(1100, len(sst_time)), (np.array(sst_vals)[1100:] - np.array(buoy_vals)[1100:]), 'yo', range(1100, len(sst_time)), poly1d_fn(range(1100, len(sst_time))), '--k',
-                 label=str("y=" + str(round(poly1d_fn[0],2)) + "x" + " + " + str(round(poly1d_fn[1],2))))
+        reg = plt.plot(range(0, len(sst_time)), (np.array(sst_vals) - np.array(buoy_vals)), 'yo', range(0, len(sst_time)), poly1d_fn(range(0, len(sst_time))), '--k',
+                 label=str("y=" + str(round(slope,2)) + "x" + " + " + str(round(intercept,2))))
         #plt.scatter(sst_time, wind_vals, color='black', s=5, label = 'Wind Speed (Buoy)')
-        plt.legend((reg[0], reg[1]), ('SST Bias: (Sat-Buoy)', str("y=" + str(round(poly1d_fn[0],5)) + "x" + " + " + str(round(poly1d_fn[1],5)))))
+        plt.legend((reg[0], reg[1]), ('SST Bias: (Sat-Buoy)', str("y=" + str(round(slope,5)) + "x" + " + " + str(round(intercept,5)))))
 
         plt.title('Buoy ' + s + ' ' + stations[s] + " 2002-Present")
         plt.savefig("/Users/james/Documents/Delaware/buoy_val/aqua_bias_2002_" + s + ".png")

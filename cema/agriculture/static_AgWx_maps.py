@@ -24,13 +24,16 @@ import time
 import matplotlib.image as image
 from datetime import datetime, timedelta, date
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+import rioxarray
 
 # declare paths
 #shapePaths = "/Users/James/Downloads/mapLayers/"
 #colorPaths = "/Users/James/Downloads/colorramps/"
+#tiffolder = '/Users/James/Downloads/'
 # declare paths
 shapePaths = "/home/james/mapLayers/"
 colorPaths = "/home/james/colorramps/"
+tiffolder = "/home/sat_ops/deos/static_tifs"
 my_dpi = 100
 def check_crs(crs):
     """Checks if the crs represents a valid grid, projection or ESPG string.
@@ -180,28 +183,34 @@ for var in datasets:
     for db in daysback_dict.keys():
         if any(var in s for s in mean_dict.keys()):
             df = agwx_main[mean_dict[var]]
+            time_recent = pd.to_datetime(df.time.values[-1])
             opLabel = 'Avg ' + df.units 
-            df = df.sel(time=slice(nowdate - timedelta(days=daysback_dict[db]), nowdate))
+            df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.mean('time')
             dfvarname = mean_dict[var]
         if any(var in s for s in sum_dict.keys()):
             df = agwx_main[sum_dict[var]]
+            time_recent = pd.to_datetime(df.time.values[-1])
             opLabel = 'Total ' + df.units
-            df = df.sel(time=slice(nowdate - timedelta(days=daysback_dict[db]), nowdate))
+            df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.sum('time')
             dfvarname = sum_dict[var]
         if var == 'NCEP Stage IV Precip':
+            time_recent = pd.to_datetime(dsPrec.time.values[-1])
             df = dsPrec
             opLabel = 'Total mm'
-            df = df.sel(time=slice(nowdate - timedelta(days=daysback_dict[db]), nowdate))
+            df = df.sel(time=slice(time_recent - timedelta(days=(daysback_dict[db] + 1)), time_recent - timedelta(days=1)))
             df = df.sum('time')
             df = df['Precipitation_Flux']
+            #df.values = df.values * (1/0.03937007874) convert to inches when ready to 
             dfvarname = 'ncepIVprecip'
+
         if var == 'NCEP Stage IV Precip - DEOS RefET':
+            time_recent = pd.to_datetime(dsPrec.time.values[-1])
             dfref = agwx_main['refET']
-            df1 = dfref.sel(time=slice(nowdate - timedelta(days=daysback_dict[db]), nowdate))
+            df1 = dfref.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df1 = df1.sum('time')
-            df2 = dsPrec.sel(time=slice(nowdate - timedelta(days=daysback_dict[db]), nowdate))
+            df2 = dsPrec.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df2 = df2.sum('time')
             df = df2 - df1.values
             df['Precip - ET'] = df.Precipitation_Flux
@@ -209,7 +218,24 @@ for var in datasets:
             df = df['Precip - ET']
             dfvarname = 'ncepIVprecip_deosET'
             opLabel = 'Total mm'
-    
+
+        # convert to geotiff so we can clip the extents
+        df.rio.set_crs("epsg:4326")
+        df.attrs['units'] = 'Fahrenheit'
+        df.attrs['standard_name'] = 'Temperature'
+        df.rio.set_spatial_dims('longitude', 'latitude')
+        df.rio.to_raster(tiffolder + dfvarname + '.tif', overwrite=True)
+        xds = rioxarray.open_rasterio(tiffolder + dfvarname +'.tif')
+        # clip the interpolated data based on the shapefiles
+        clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, all_touched=True,drop=False)
+        cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, all_touched=False,invert=True)
+        
+        if dfvarname == 'meanTemp' or dfvarname == 'minTemp' or dfvarname == 'maxTemp' or dfvarname == 'meanDP' or dfvarname == 'meanST' or dfvarname == 'minST' or dfvarname == 'maxST':
+            cl.values[0] = ((cl.values[0] - 273.15)*(9/5)) + 32
+            opLabel = 'Avg ' + 'Temperature: Deg F'
+        
+        # create time label     
+        timeLabel = datetime.strftime(time_recent, "%m-%d-%Y %H:%MZ")
 
         fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
@@ -217,7 +243,7 @@ for var in datasets:
         for ind in range(0,len(bigdeos)):
                 ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                               facecolor='silver', edgecolor='black')
-        im=ax.pcolormesh(df['longitude'].values,df['latitude'].values,df.values,cmap='Spectral',transform=ccrs.PlateCarree(),zorder=2)
+        im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap='viridis',transform=ccrs.PlateCarree(),zorder=2)
         for ind in range(0,len(deos_boundarys)):
             ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
                               facecolor='none', edgecolor='black', zorder=3, linewidth=1.5)
@@ -227,8 +253,8 @@ for var in datasets:
         ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
         ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
         #plt.text(-76.13, 38.523, var,horizontalalignment='left',color='black',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
-        plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n       " + 
-                                     datetime.strftime(nowdate, "%m-%d-%Y")),
+        plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n " + 
+                                     timeLabel),
                                      horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
         #cbaxes = inset_axes(ax, width="3%", height="100%", pad='1.95%', loc=1) 
         cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
