@@ -21,7 +21,11 @@ def find_nearest(array, value):
 # from Maine down to florida
 stations = {'44065' : 'NY Harbor',
             '44009' : 'Delaware Bay',
-            '44091' : 'Barnegat'
+            '44091' : 'Barnegat',
+            '44025' : 'URC', 
+            '44089' : 'LLC', 
+            '44402' : 'LRC',
+            '44069' : 'ULC'
     }
 
 statsDF = pd.DataFrame(columns=list(stations.keys()), index=['Name', 'RMSE', 'MeanSquareError', 'MeanAbsoluteError', 'Rsquared', 'median_absolute_error', 'explained_variance_score', 'max_error','Bias(Sat-Buoy)', 'count'])
@@ -124,6 +128,7 @@ for s in list(stations.keys()):
         #plt.savefig("/Users/james/Documents/buoy_val/wind_goes/buoy" + s)
         #plt.close()
 statsDF.to_csv("/Users/james/Documents/Delaware/buoy_val/sarah_buoyVal.csv")
+
 
 
 

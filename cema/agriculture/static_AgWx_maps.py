@@ -33,7 +33,7 @@ import rioxarray
 # declare paths
 shapePaths = "/home/james/mapLayers/"
 colorPaths = "/home/james/colorramps/"
-tiffolder = "/home/sat_ops/deos/static_tifs"
+tiffolder = "/home/sat_ops/deos/static_tifs/"
 my_dpi = 100
 def check_crs(crs):
     """Checks if the crs represents a valid grid, projection or ESPG string.
@@ -224,11 +224,11 @@ for var in datasets:
         df.attrs['units'] = 'Fahrenheit'
         df.attrs['standard_name'] = 'Temperature'
         df.rio.set_spatial_dims('longitude', 'latitude')
-        df.rio.to_raster(tiffolder + dfvarname + '.tif', overwrite=True)
-        xds = rioxarray.open_rasterio(tiffolder + dfvarname +'.tif')
+        df.rio.to_raster(tiffolder + dfvarname  + str(daysback_dict[db]) + '.tif', overwrite=True)
+        cl = rioxarray.open_rasterio(tiffolder + dfvarname + str(daysback_dict[db]) +'.tif')
         # clip the interpolated data based on the shapefiles
-        clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, all_touched=True,drop=False)
-        cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, all_touched=False,invert=True)
+        #clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, all_touched=True,drop=False)
+        #cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, all_touched=False,invert=True)
         
         if dfvarname == 'meanTemp' or dfvarname == 'minTemp' or dfvarname == 'maxTemp' or dfvarname == 'meanDP' or dfvarname == 'meanST' or dfvarname == 'minST' or dfvarname == 'maxST':
             cl.values[0] = ((cl.values[0] - 273.15)*(9/5)) + 32
@@ -250,8 +250,17 @@ for var in datasets:
         for ind in range(0,len(inland_bays)):
             ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
                               facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
-        ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
         ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([bigdeos['geometry'][120]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([bigdeos['geometry'][74]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([bigdeos['geometry'][75]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([state_outline['geometry'][117]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([state_outline['geometry'][103]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+
+
+
+
         #plt.text(-76.13, 38.523, var,horizontalalignment='left',color='black',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
         plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n " + 
                                      timeLabel),
