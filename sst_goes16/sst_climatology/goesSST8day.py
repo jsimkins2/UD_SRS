@@ -46,6 +46,6 @@ for d in daterange:
         outpath = "/home/sat_ops/goesR/jpl_sst/sstClimatology/"
         goes_nc.to_netcdf(path=outpath + 'GOES16_SST_8day.nc')
         os.system("Rscript /home/sat_ops/goesR/github/UD_SRS/sst_goes16/sst_climatology/goesVsAquaClimatologyCelsius.R")
-        os.system("Rscript /home/sat_ops/goesR/github/UD_SRS/sst_goes16/sst_climatology/goesVsAquaClimatologyCelsius.R")
+        os.system("Rscript /home/sat_ops/goesR/github/UD_SRS/sst_goes16/sst_climatology/goesVsAquaClimatologyFahrenheit.R")
         os.system("rm /home/sat_ops/goesR/jpl_sst/sstClimatology/GOES16_SST_8day.nc")
 
