@@ -22,7 +22,7 @@ import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
 import pandas as pd
 
-start_date = date(2018, 1, 1)
+start_date = date(2018, 1, 9)
 end_date = datetime.utcnow()
 daterange = pd.date_range(start_date, end_date)
 
