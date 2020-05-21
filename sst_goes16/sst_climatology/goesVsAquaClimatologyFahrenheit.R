@@ -4,7 +4,10 @@ library(maptools)
 
 d <- nc_open("/home/sat_ops/goesR/jpl_sst/sstClimatology/GOES16_SST_8day.nc")
 jdayGoes = format(as.POSIXct(d$dim$time$vals,origin = "1970-01-01",tz = "GMT"),format="%j")
-if (!file.exists(paste0("/data/aquaGoesSST/F/SSTanomalyGoesAqua8dayFahrenheit", jdayGoes, ".nc"))){
+ymdGoes = format(as.POSIXct(d$dim$time$vals,origin = "1970-01-01",tz = "GMT"),format="%Y%m%d")
+
+if (!file.exists(paste0("/data/aquaGoesSST/F/", substr(ymdGoes, 1, 4), "/SSTanomalyGoesAqua8dayFahrenheit", ymdGoes, ".nc"))){
+  print(ymdGoes)
   sst <- ncvar_get(d, "sst")
   lon <- ncvar_get(d, "longitude")
   lat <- ncvar_get(d, "latitude")
@@ -46,7 +49,7 @@ if (!file.exists(paste0("/data/aquaGoesSST/F/SSTanomalyGoesAqua8dayFahrenheit", 
   
   var.list <- list()
   var.list[[1]] <- ncdf4::ncvar_def(name="sst", units="Fahrenheit", missval=-999, longname = "Sea Surface Temperature Anomaly", dim=list(londim,latdim,timedim))
-  loc.file <- paste0("/home/sat_ops/goesR/jpl_sst/sstClimatology/SSTanomalyGoesAqua8dayFahrenheit", jdayGoes, ".nc")
+  loc.file <- paste0("/data/aquaGoesSST/F/", substr(ymdGoes, 1, 4), "/SSTanomalyGoesAqua8dayFahrenheit", ymdGoes, ".nc")
   #writing all we need to the output file
   loc <- ncdf4::nc_create(filename=loc.file, vars=var.list)
   ncdf4::ncvar_put(nc=loc, "sst", vals=t(as.matrix(sstanom)))
