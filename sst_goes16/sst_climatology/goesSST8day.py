@@ -37,7 +37,6 @@ for d in daterange:
     newtimestamp = goes_nc.time.values[-1]
     newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
     
-    if os.path.isfile("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(dataset_name)) == False
     if os.path.isfile("/data/aquaGoesSST/C/" + str(time.strftime('%Y', time.localtime(newtimestamp))) + "/SSTanomalyGoesAqua8dayCelsius" + str(time.strftime('%Y%m%d', time.localtime(newtimestamp))) + ".nc") == False:
         goes_nc = goes_nc.mean('time')
         print(str(time.strftime('%Y%m%d', time.localtime(newtimestamp))))
