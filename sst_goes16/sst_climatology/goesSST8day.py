@@ -11,7 +11,6 @@ import cartopy.io.img_tiles as cimgt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from netCDF4 import Dataset, num2date
 from xarray.backends import NetCDF4DataStore
-from metpy.plots import colortables
 from matplotlib import patheffects
 import xarray as xr
 from netCDF4 import Dataset
@@ -22,7 +21,7 @@ import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
 import pandas as pd
 
-start_date = date(2018, 1, 9)
+start_date = datetime.utcnow() - timedelta(days=10)
 end_date = datetime.utcnow()
 daterange = pd.date_range(start_date, end_date)
 
