@@ -74,7 +74,7 @@ def plot_velocity(radar, dataset, imgdir):
     min_lat = 36.69588851928711 #lats['data'].min() + 2
     max_lat = 40.95521545410156 #lats['data'].max() - 2
     max_lon = -72.63585662841797 #lons['data'].max() - 2.5
-    display = pyart.graph.RadarMapDisplayCartopy(radar)
+    display = pyart.graph.RadarMapDisplay(radar)
     lat0 = display.loc[0]
     lon0 = display.loc[1]
     
@@ -183,7 +183,7 @@ def plot_reflectivity(radar, dataset, imgdir):
     min_lat = 36.69588851928711 #lats['data'].min() + 2
     max_lat = 40.95521545410156 #lats['data'].max() - 2
     max_lon = -72.63585662841797 #lons['data'].max() - 2.5
-    display = pyart.graph.RadarMapDisplayCartopy(radar)
+    display = pyart.graph.RadarMapDisplay(radar)
     lat0 = display.loc[0]
     lon0 = display.loc[1]
     
@@ -351,3 +351,4 @@ if os.path.isfile(workdir + 'ref' + site + '/' + str(dataset) + ".png") == False
     imgdir = workdir + 'vel' + site + '/'
     plot_velocity(radar=radar, dataset=dataset, imgdir=imgdir)
     create_gif(workdir=workdir, imgdir=imgdir, gifname="kdox_velocity.gif")
+
