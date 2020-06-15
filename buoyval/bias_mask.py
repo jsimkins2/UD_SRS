@@ -31,14 +31,24 @@ def distance_matrix(x0, y0, x1, y1):
 
     return np.hypot(d0, d1)
     
+stations = {'44065' : 'NY Harbor',
+            '44009' : 'Delaware Bay',
+            '44091' : 'Barnegat',
+            '44025' : 'URC', 
+            '44089' : 'LLC', 
+            '44402' : 'LRC',
+            '44069' : 'ULC'
+    }
 
-NYharbias = 0.397106319832402 #40.369 -73.703 91, 183
-DBayBias =  0.351385446175637 #38.457 -74.702 196, 128
-BarnBias = 0.065860630407911 #39.778 -73.769 123, 180
+NYharbias = 0.2090 #40.369 -73.703 91, 183
+DBayBias =  0.3461 #38.457 -74.702 196, 128
+BarnBias = -.0198 #39.778 -73.769 123, 180
+LLC = .1502
+URC = .2884
 
 lons = np.array([-73.703, -74.702, -73.769, -76.98615, -72.00014, -72.00014, -76.98615])
 lats = np.array([40.369, 38.457, 39.778, 37.01693, 41.99443, 37.01693, 41.99443])
-temp = np.array([0.397106319832402, 0.351385446175637, 0.065860630407911, 0.237124829, 0.370874587, 0.237124829, 0.370874587])
+temp = np.array([NYharbias, DBayBias, BarnBias, LLC, URC, LLC, URC])
 bounds = [-76.98615, -72.00014, 37.01693, 41.99443]
 
 x = np.linspace(bounds[1], bounds[0], 278)
@@ -128,6 +138,7 @@ da.attrs['standard_name'] = 'Temperature'
 da.rio.set_spatial_dims('lon', 'lat')
 da.rio.to_raster('Downloads/cubic_sarah.tif', overwrite=True)
 da.to_netcdf('Downloads/cubic_sarah.nc')
+
 
 
 

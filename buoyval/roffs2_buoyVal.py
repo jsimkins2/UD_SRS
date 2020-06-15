@@ -57,11 +57,14 @@ for s in list(stations.keys()):
     buoy_nc = buoy_nc['sea_surface_temperature']
     buoy_nc = buoy_nc.where(buoy_nc > 2, drop=True) # 2 degrees celsius
     buoy_nc.values = buoy_nc.values + 273.15
+    # resample to daily resolution 
+
     # grab goes 16 data at the same location and throw it into dataframe
     
     lat_s = buoy_nc.latitude.values[0]
     lon_s = buoy_nc.longitude.values[0]
-
+    buoy_nc = buoy_nc.resample(time="1D").mean()
+    
     goes_nc = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/ROFFS2SST.nc')
     goes_nc = goes_nc.drop('sst')
     goes_nc = goes_nc.sel(time = slice('2018-01-01', '2020-04-14'))
@@ -86,13 +89,13 @@ for s in list(stations.keys()):
             timediff = buoy_nc.time.values[buoyTimeInd] - sstTime[0]
             timediff = timediff.astype('timedelta64[m]')
             timediff = np.abs(timediff / np.timedelta64(1, 'm'))
-            if timediff < 60:
+            if timediff < 3500:
                 if math.isnan(goes_nc.values[val]) == False:
                     if math.isnan(buoy_nc.values[buoyTimeInd]) == False:
                         sst_time.append(goes_nc.time.values[val])
                         buoy_time.append(buoy_nc.time.values[buoyTimeInd])
                         sst_vals.append(goes_nc.values[val])
-                        buoy_vals.append(buoy_nc.values[buoyTimeInd][0][0])
+                        buoy_vals.append(buoy_nc.values[buoyTimeInd])
                         #wind_vals.append(wind_nc.values[windTimeInd][0][0])
         
         if len(buoy_vals) > 1:
@@ -121,7 +124,10 @@ for s in list(stations.keys()):
         #plt.title('Buoy ' + s + ' ' + stations[s])
         #plt.savefig("/Users/james/Documents/buoy_val/wind_goes/buoy" + s)
         #plt.close()
-statsDF.to_csv("/Users/james/Documents/Delaware/buoy_val/roffs2_fore_buoyval.csv")
+statsDF.to_csv("/Users/james/Documents/Delaware/buoy_val/roffs2_dailyfore_buoyval.csv")
+
+
+
 
 
 

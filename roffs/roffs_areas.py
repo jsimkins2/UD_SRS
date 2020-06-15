@@ -1,7 +1,7 @@
 # prepare goes16 sst data for dineof
 import xarray as xr
 import numpy as np
-import metpy
+#import metpy
 from datetime import datetime, timedelta
 import pandas as pd
 
@@ -23,7 +23,7 @@ areas = {'area1': area1,
 nowday = datetime.utcnow()
 daysback = [7]#,14,21] #must keep in brackets to python recognizes it as a list
 
-for a in range(1,6):
+for a in range(2,3):
     for d in range(0,len(daysback)):
         #print(a)
         area = areas['area' + str(a)]
@@ -33,24 +33,26 @@ for a in range(1,6):
 
         # grab sst data from the last d days and use DQF == 0 data
         print(d)
-        goes_nc = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst_daily.nc")
-        goes_nc = goes_nc.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), time=slice(datetime.strftime(nowday - timedelta(days=daysback[d] + addOffset), '%Y-%m-%d %H:%M:%S'), datetime.strftime(nowday - timedelta(days=dayOffset), '%Y-%m-%d %H:%M:%S')))
+        goes_main = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
+        goes_nc = goes_main.sel(latitude=slice(area[1],area[0]), longitude=slice(area[2], area[3]), time=slice(datetime.strftime(nowday - timedelta(days=daysback[d]), '%Y-%m-%d %H:%M'), datetime.strftime(nowday, '%Y-%m-%d %H:%M')))
         # save multiple 1 week intervals
         #dayOffset = daysback[d] + 1
         #addOffset = 1
 
         # COMMENTING OUT BELOW BECAUSE THIS STEP IS ALREADY BEING DONE IN 1DAY
-        #for t in range(len(goes_nc.time.values)):
-            #x = goes_nc['sst'][t]
-            #goes_nc['sst'][t] = x.where(goes_nc['DQF'][t] == 0)
-            #x = goes_nc['DQF'][t]
-            #goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
+        for t in range(len(goes_nc.time.values)):
+            x = goes_nc['sea_surface_temperature'][t]
+            goes_nc['sea_surface_temperature'][t] = x.where(goes_nc['quality_level'][t] == 5)
+            x = goes_nc['quality_level'][t]
+            goes_nc['quality_level'][t] = x.where(goes_nc['quality_level'][t] == 0)
 
-        landmask = goes_nc['DQF'][0]
-        landmask = landmask.rename('landmask')
-        landmask = landmask.where(landmask.values == 3, 1)
-        landmask = landmask.where(landmask.values == 1, 0)
-        goes_nc = goes_nc.drop(['DQF'])
+        #landmask = goes_nc['DQF'][0]
+        #landmask = landmask.rename('landmask')
+        #landmask = landmask.where(landmask.values == 3, 1)
+        #landmask = landmask.where(landmask.values == 1, 0)
+        goes_nc = goes_nc.drop(['quality_level'])
+        goes_SST = goes_nc["sea_surface_temperature"]
+        goes_SST.values = goes_SST.values - goes_nc['sses_bias'].values
 
         # Clean out files that are missing too much data
         '''
@@ -74,15 +76,15 @@ for a in range(1,6):
         '''
 
         # Add a forecast day
-        #forecast_nc = goes_nc.isel(time=[-1])
-        #forecast_nc.time.values = forecast_nc.time.values.astype('datetime64[s]') + (3600)
-        #forecast_nc['sst'] = forecast_nc['sst'].where(forecast_nc['sst'] < 2)
-        #goes_nc= xr.concat([goes_nc, forecast_nc], dim='time')
+        forecast_nc = goes_SST.isel(time=[-1])
+        forecast_nc = forecast_nc.assign_coords(time=forecast_nc['time'].values.astype('datetime64[s]') + (3600))
+        forecast_nc = forecast_nc.where(forecast_nc < 0)
+        goes_SST= xr.concat([goes_SST, forecast_nc], dim='time')
         
         # paths
-        outpath = "/home/james/roffs/"
+        outpath = "/Users/james/Downloads/"
         #landmask.to_netcdf(path=outpath + 'landmask_roffs_area' + str(a) + '.nc', format='NETCDF3_CLASSIC')
-        goes_nc.to_netcdf(path=outpath + 'roffs_' +  'area' + str(a) + '_' + str(daysback[d]) + "day"  + '.nc', format='NETCDF3_CLASSIC')
+        goes_SST.to_netcdf(path=outpath + 'roffs_' +  'area' + str(a) + '_' + str(daysback[d]) + "day"  + '.nc', format='NETCDF3_CLASSIC')
         '''
         if daysback[d] == 7:
             outpath = '/home/sat_ops/goesR/data/sst/roffs/area' + str(a) + '/'
