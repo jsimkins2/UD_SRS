@@ -274,8 +274,8 @@ for var in datasets:
 # do the same for Heat Index which must be calculated
 daysback_dict = dict(zip(['3 Months', '1 Month', '1 Week', '1 Day'], [90, 30, 7, 1]))
 for db in daysback_dict.keys():
-    TM = agwx_main['maxTemp']
-    df = agwx_main['maxTemp']
+    TM = agwx_main['meanTemp']
+    df = agwx_main['meanTemp']
     time_recent = pd.to_datetime(TM.time.values[-1])
     TM = TM.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
     df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
@@ -283,7 +283,7 @@ for db in daysback_dict.keys():
     df.values = ((df.values - 273.15)*(9/5)) + 32
     TM.values = TM.where(TM.values < 112)
     df.values = df.where(df.values < 112)
-    RH = agwx_main['maxRH']
+    RH = agwx_main['meanRH']
     RH = RH.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
     RH.values = RH.where(RH.values < 101)
     # Heat Index formula grabbed from https://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
