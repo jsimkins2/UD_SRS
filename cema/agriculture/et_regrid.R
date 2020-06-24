@@ -18,17 +18,17 @@ outPathNC = "/data/DEOS/agriculture/"
 # Set variable & units dataframe
 var.df = data.frame(names = c('meanTemp', 'maxTemp', 'minTemp', 'HDD', 'CDD', 'meanWS', 'dailyprecip', 'meanDP','energyDens',
                       'refET', 'GDD', 'meanRH', 'maxRH', 'minRH', 'meanST', 'maxST', 'minST', 'meanVWC', 'maxVWC', 'minVWC',
-                    'meanSolar', 'meanWD', 'dailyGust', 'dailyMinWC'),
+                    'meanSolar', 'meanWD', 'dailyGust', 'dailyMinWC', 'maxHI'),
                     units = c('Kelvin', 'Kelvin', 'Kelvin', ' ', ' ', 'm.s-1', 'mm', 'Kelvin', 'J.m-2',
                                  'mm.day-1', ' ', '%', '%', '%', 'Kelvin', 'Kelvin', 'Kelvin', ' ', ' ', ' ', 'J.m-2',
-                                 'Rad', 'm.s-1', 'Kelvin'),
+                                 'Rad', 'm.s-1', 'Kelvin', 'Kelvin'),
                     longname = c("Mean Air Temperature", "Max Air Temperature", "Min Air Temperature", "Heating Degree Day",
                                  "Cooling Degree Day", "Mean Wind Speed", "Daily Aggregated Precipitation Total", "Mean Dew Point",
                                  "Energy Density", "Reference Evapotranspiration", "Growing Degree Day", "Mean Relative Humidity", 
                                  "Max Relative Humidity", "Min Relative Humidity", "Mean Soil Temperature", "Max Soil Temperature",
                                  "Min Soil Temperature", "Mean Volumetric Water Content", "Max Volumetric Water Content",
                                  "Min Volumetric Water Content", "Mean Solar Energy", "Mean Wind Direction", "Daily Wind Gust",
-                                 "Daily Min Wind Chill"))
+                                 "Daily Min Wind Chill", "Daily Max Heat Index"))
 
 ####################################################################
 ############ Raster Operations #################
