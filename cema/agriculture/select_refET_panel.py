@@ -54,10 +54,10 @@ mean_dict = dict(zip(['Mean Temperature', 'Max Temperature', 'Min Temperature', 
                       'Mean Relative Humidity', 'Max Relative Humidity', 'Min Relative Humidity', 
                       'Mean Soil Temperature', 'Max Soil Temperature', 'Min Soil Temperature',
                       'Mean Volumetric Water Content','Max Volumetric Water Content', 'Min Volumetric Water Content',
-                      'Mean Solar', 'Mean Wind Direction', 'Wind Gust', 'Min Wind Chill'],
+                      'Mean Solar', 'Mean Wind Direction', 'Wind Gust', 'Min Wind Chill',  'Daily Max HI'],
                      ['meanTemp', 'maxTemp', 'minTemp', 'meanWS','meanDP','meanRH', 'maxRH', 'minRH',
                       'meanST', 'maxST', 'minST','meanVWC', 'maxVWC', 'minVWC','meanSolar', 'meanWD',
-                      'dailyGust', 'dailyMinWC']))
+                      'dailyGust', 'dailyMinWC', 'maxHI']))
 
 datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + ['NCEP Stage IV Precip', 'NCEP Stage IV Precip - DEOS RefET']
 dataset = pn.widgets.Select(name='Dataset', options=datasets, value=datasets[10])
