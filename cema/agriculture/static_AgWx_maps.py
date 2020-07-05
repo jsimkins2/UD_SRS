@@ -35,6 +35,13 @@ shapePaths = "/home/james/mapLayers/"
 colorPaths = "/home/james/colorramps/"
 tiffolder = "/home/sat_ops/deos/static_tifs/"
 my_dpi = 100
+
+# define own colorbar
+startcolor = '#8B4513'
+midcolor = '#FFFFFF'
+endcolor = '#008000'
+own_cmap1 = mpl.colors.LinearSegmentedColormap.from_list( 'own2', [startcolor, midcolor, endcolor] )
+
 def check_crs(crs):
     """Checks if the crs represents a valid grid, projection or ESPG string.
     Examples
@@ -72,16 +79,11 @@ def proj_to_cartopy(proj):
     -------
     a cartopy.crs.Projection object
     """
-
     import cartopy.crs as ccrs
-
     proj = check_crs(proj)
-
     #if proj.is_latlong():
         #return ccrs.PlateCarree()
-
     srs = proj.srs
-
     km_proj = {'lon_0': 'central_longitude',
                'lat_0': 'central_latitude',
                'x_0': 'false_easting',
@@ -123,18 +125,15 @@ def proj_to_cartopy(proj):
             kw_globe[km_globe[k]] = v
         if k in km_std:
             kw_std[km_std[k]] = v
-
     globe = None
     if kw_globe:
         globe = ccrs.Globe(**kw_globe)
     if kw_std:
         kw_proj['standard_parallels'] = (kw_std['lat_1'], kw_std['lat_2'])
-
     # mercatoooor
     if cl.__name__ == 'Mercator':
         kw_proj.pop('false_easting', None)
         kw_proj.pop('false_northing', None)
-
     return cl(globe=globe, **kw_proj)
 
 # read in deos special shapefiles
@@ -165,17 +164,16 @@ dsPrec = dsPrec.rename(name_dict= {'lat' : 'latitude'})
 dsPrec = dsPrec.rename(name_dict= {'lon' : 'longitude'})
 dsPrec = dsPrec.drop('crs')
 
-sum_dict = dict(zip(['Heating Degree Days', 'Cooling Degree Days','DEOS Precip',  'Energy Density', 
-                     'Reference Evapotranspiration', 'Growing Degree Days'],
-                    ['HDD', 'CDD',  'dailyprecip', 'energyDens','refET', 'GDD']))
-mean_dict = dict(zip(['Mean Temperature', 'Max Temperature', 'Min Temperature', 'Mean Wind Speed', 'Mean Dew Point',
+sum_dict = dict(zip(['Heating Degree Days', 'Cooling Degree Days','DEOS Precip',  'Energy Density', 'Growing Degree Days'],
+                    ['HDD', 'CDD',  'dailyprecip', 'energyDens', 'GDD']))
+mean_dict = dict(zip(['Mean Temperature', 'Maxa Temperature', 'Mina Temperature', 'Mean Wind Speed', 'Mean Dew Point',
                       'Mean Relative Humidity', 'Max Relative Humidity', 'Min Relative Humidity', 
-                      'Mean Soil Temperature', 'Max Soil Temperature', 'Min Soil Temperature',
+                      'Mean Soil Temperature', 'Maxa Soil Temperature', 'Mina Soil Temperature',
                       'Mean Volumetric Water Content','Max Volumetric Water Content', 'Min Volumetric Water Content',
-                      'Mean Solar', 'Mean Wind Direction', 'Wind Gust', 'Min Wind Chill'],
+                      'Mean Solar', 'Mean Wind Direction', 'Winda Gust', 'Mina Wind Chill', 'Dailya Max HI'],
                      ['meanTemp', 'maxTemp', 'minTemp', 'meanWS','meanDP','meanRH', 'maxRH', 'minRH',
                       'meanST', 'maxST', 'minST','meanVWC', 'maxVWC', 'minVWC','meanSolar', 'meanWD',
-                      'dailyGust', 'dailyMinWC']))
+                      'dailyGust', 'dailyMinWC', 'maxHI']))
 
 max_dict = dict(zip(['Max Temperature','Max Soil Temperature', 'Wind Gust', 'Daily Max HI'],
                      ['maxTemp','maxST','dailyGust', 'maxHI']))
@@ -184,17 +182,21 @@ min_dict = dict(zip(['Min Temperature', 'Min Soil Temperature','Min Wind Chill']
                      ['minTemp', 'minST','dailyMinWC']))
                      
 daysback_dict = dict(zip(['3 Months', '1 Month', '1 Week', '1 Day'], [90, 30, 7, 1]))
-datasets = list(sum_dict.keys()) + list(mean_dict.keys()) 
+datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + list(max_dict.keys()) + list(min_dict.keys())
+
 nowdate=datetime.utcnow()
 for var in datasets:
+    print(var)
     for db in daysback_dict.keys():
         if any(var in s for s in mean_dict.keys()):
             df = agwx_main[mean_dict[var]]
+            dfvarname = "average_" + mean_dict[var]
             time_recent = pd.to_datetime(df.time.values[-1])
             opLabel = 'Avg ' + df.units 
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.mean('time')
-            dfvarname = "average_" + mean_dict[var]
+            cmap = 'coolwarm'
+            
         if any(var in s for s in sum_dict.keys()):
             df = agwx_main[sum_dict[var]]
             time_recent = pd.to_datetime(df.time.values[-1])
@@ -202,6 +204,8 @@ for var in datasets:
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.sum('time')
             dfvarname = "total_" + sum_dict[var]
+            cmap = 'Spectral'
+            
         if any(var in s for s in max_dict.keys()):
             df = agwx_main[max_dict[var]]
             time_recent = pd.to_datetime(df.time.values[-1])
@@ -209,6 +213,11 @@ for var in datasets:
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.max('time')
             dfvarname = "maximum_" + max_dict[var]
+            if max_dict[var] == 'maxHI':
+                dfvarname = "maximum_HeatIndex"
+                print("hey we're at heat index right now so....")
+            cmap = 'coolwarm'
+            
         if any(var in s for s in min_dict.keys()):
             df = agwx_main[min_dict[var]]
             time_recent = pd.to_datetime(df.time.values[-1])
@@ -216,30 +225,30 @@ for var in datasets:
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.min('time')
             dfvarname = "minimum_" + min_dict[var]
-        # convert to geotiff so we can clip the extents
+            cmap = 'coolwarm'
+            
+            # convert to geotiff so we can clip the extents
         df.rio.set_crs("epsg:4326")
         df.attrs['units'] = 'Fahrenheit'
         df.attrs['standard_name'] = 'Temperature'
         df.rio.set_spatial_dims('longitude', 'latitude')
         df.rio.to_raster(tiffolder + dfvarname  + str(daysback_dict[db]) + '.tif', overwrite=True)
         cl = rioxarray.open_rasterio(tiffolder + dfvarname + str(daysback_dict[db]) +'.tif')
-        # clip the interpolated data based on the shapefiles
-        #clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, all_touched=True,drop=False)
-        #cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, all_touched=False,invert=True)
-        if 'Temp' in dfvarname or 'ST' in dfvarname or 'DP' in dfvarname:
+
+        if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname:
             cl.values[0] = ((cl.values[0] - 273.15)*(9/5)) + 32
             opLabel = dfvarname.split("_")[0] + ' Deg F'
-        
+                
         # create time label     
         timeLabel = datetime.strftime(time_recent, "%m-%d-%Y %H:%MZ")
-
+        
         fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
         ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
         for ind in range(0,len(bigdeos)):
                 ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                               facecolor='silver', edgecolor='black')
-        im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap='viridis',transform=ccrs.PlateCarree(),zorder=2)
+        im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,transform=ccrs.PlateCarree(),zorder=2)
         for ind in range(0,len(deos_boundarys)):
             ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
                               facecolor='none', edgecolor='black', zorder=3, linewidth=1.5)
@@ -253,7 +262,7 @@ for var in datasets:
         ax.add_geometries([bigdeos['geometry'][75]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
         ax.add_geometries([state_outline['geometry'][117]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
         ax.add_geometries([state_outline['geometry'][103]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
-
+        
         #plt.text(-76.13, 38.523, var,horizontalalignment='left',color='black',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
         plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n " + 
                                      timeLabel),
@@ -269,6 +278,7 @@ for var in datasets:
 
 datasets = ['Reference Evapotranspiration', 'NCEP Stage IV Precip', 'NCEP Stage IV Precip - DEOS RefET']
 daysback_dict = dict(zip(['18 Months', '12 Months', '6 Months', '3 Months', '1 Month', '1 Week', '1 Day'], [540, 360, 180, 90, 30, 7, 1]))
+cmap = own_cmap1
 for var in datasets:
     for db in daysback_dict.keys():
         if var == 'Reference Evapotranspiration':
@@ -320,7 +330,7 @@ for var in datasets:
         for ind in range(0,len(bigdeos)):
                 ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                               facecolor='silver', edgecolor='black')
-        im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap='viridis',transform=ccrs.PlateCarree(),zorder=2)
+        im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,transform=ccrs.PlateCarree(),zorder=2)
         for ind in range(0,len(deos_boundarys)):
             ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
                               facecolor='none', edgecolor='black', zorder=3, linewidth=1.5)
