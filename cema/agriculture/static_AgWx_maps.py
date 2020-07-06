@@ -180,8 +180,10 @@ max_dict = dict(zip(['Max Temperature','Max Soil Temperature', 'Wind Gust', 'Dai
 
 min_dict = dict(zip(['Min Temperature', 'Min Soil Temperature','Min Wind Chill'],
                      ['minTemp', 'minST','dailyMinWC']))
-                     
-daysback_dict = dict(zip(['3 Months', '1 Month', '1 Week', '1 Day'], [90, 30, 7, 1]))
+
+nowtime = datetime.utcnow()
+ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
+daysback_dict = dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [np.int(np.abs(ytd.days)), 90, 30, 7, 1]))
 datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + list(max_dict.keys()) + list(min_dict.keys())
 
 nowdate=datetime.utcnow()
@@ -262,22 +264,27 @@ for var in datasets:
         ax.add_geometries([bigdeos['geometry'][75]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
         ax.add_geometries([state_outline['geometry'][117]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
         ax.add_geometries([state_outline['geometry'][103]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
-        
-        #plt.text(-76.13, 38.523, var,horizontalalignment='left',color='black',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
-        plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n " + 
-                                     timeLabel),
-                                     horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
-        #cbaxes = inset_axes(ax, width="3%", height="100%", pad='1.95%', loc=1) 
-        cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
-        im1 = image.imread(shapePaths + "deos_logo.png")
-        plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
-        plt.savefig("/var/www/html/imagery/AgWx/weather/" + dfvarname + "_" + str(daysback_dict[db]) + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
+
+        if db == 'YTD':
+            plt.text(-76.11, 38.475, str('Year To Date'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
+            im1 = image.imread(shapePaths + "deos_logo.png")
+            plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
+            plt.savefig("/var/www/html/imagery/AgWx/weather/" + dfvarname + "_YTD.png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
+        else:
+            plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n " + 
+                             timeLabel),
+                             horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
+            im1 = image.imread(shapePaths + "deos_logo.png")
+            plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
+            plt.savefig("/var/www/html/imagery/AgWx/weather/" + dfvarname + "_" + str(daysback_dict[db]) + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
         plt.close()
 
 
 
 datasets = ['Reference Evapotranspiration', 'NCEP Stage IV Precip', 'NCEP Stage IV Precip - DEOS RefET']
-daysback_dict = dict(zip(['18 Months', '12 Months', '6 Months', '3 Months', '1 Month', '1 Week', '1 Day'], [540, 360, 180, 90, 30, 7, 1]))
+daysback_dict = dict(zip(['18 Months', '12 Months', 'YTD', '6 Months', '3 Months', '1 Month', '1 Week', '1 Day'], [540, 360,np.int(np.abs(ytd.days)), 180, 90, 30, 7, 1]))
 cmap = own_cmap1
 for var in datasets:
     for db in daysback_dict.keys():
@@ -345,14 +352,20 @@ for var in datasets:
         ax.add_geometries([state_outline['geometry'][117]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
         ax.add_geometries([state_outline['geometry'][103]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
 
-        #plt.text(-76.13, 38.523, var,horizontalalignment='left',color='black',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
-        plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n " + 
-                                     timeLabel),
-                                     horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
-        #cbaxes = inset_axes(ax, width="3%", height="100%", pad='1.95%', loc=1) 
-        cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
-        im1 = image.imread(shapePaths + "deos_logo.png")
-        plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
-        plt.savefig("/var/www/html/imagery/AgWx/water_quantity/" + dfvarname + "_" + str(daysback_dict[db]) + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
+        if db == 'YTD':
+            plt.text(-76.11, 38.475, str("Year To Date"),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
+            im1 = image.imread(shapePaths + "deos_logo.png")
+            plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
+            plt.savefig("/var/www/html/imagery/AgWx/water_quantity/" + dfvarname + "_YTD.png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
+        else:
+            plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n " + 
+                                         timeLabel),
+                                         horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
+            im1 = image.imread(shapePaths + "deos_logo.png")
+            plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
+            plt.savefig("/var/www/html/imagery/AgWx/water_quantity/" + dfvarname + "_" + str(daysback_dict[db]) + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
+
         plt.close()
 
