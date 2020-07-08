@@ -41,13 +41,8 @@ def leap_year(year, calendar='standard'):
     return leap
 
 def get_dpm(time, calendar='standard'):
-    """
-    return a array of days per month corresponding to the months provided in `months`
-    """
     month_length = np.zeros(len(time), dtype=np.int)
-
     cal_days = dpm[calendar]
-
     for i, (month, year) in enumerate(zip(time.month, time.year)):
         month_length[i] = cal_days[month]
         if leap_year(year, calendar=calendar) and month == 2:
@@ -72,18 +67,26 @@ dsPrec = dsPrec.rename(name_dict= {'lat' : 'latitude'})
 dsPrec = dsPrec.rename(name_dict= {'lon' : 'longitude'})
 dsPrec = dsPrec.drop('crs')
 
-da = agwx_main.groupby("time.dayofyear").mean("time")
+da = agwx_main.groupby("time.month").mean("time")
+
+
+ds = xr.open_dataset("Downloads/doy_climatology.nc")
 
 
 
 
+#http://xarray.pydata.org/en/stable/examples/monthly-means.html
 
-ds = xr.tutorial.open_dataset('rasm').load()
-month_length = xr.DataArray(get_dpm(ds.time.to_index(), calendar='noleap'),coords=[ds.time], name='day')
+# Make a DataArray with the number of days in each month, size = len(time)
+month_length = xr.DataArray(get_dpm(ds.time.to_index(), calendar='noleap'),
+                            coords=[ds.time], name='month_length')
 
 # Calculate the weights by grouping by 'time.season'.
 # Conversion to float type ('astype(float)') only necessary for Python 2.x
-weights = month_length.groupby('time.day') / month_length.astype(float).groupby('time.season').sum()
-ds_weighted = agwx_main.groupby('time.day').sum(dim='time')
+weights = month_length.groupby('time.season') / month_length.astype(float).groupby('time.season').sum()
 
+# Test that the sum of the weights for each season is 1.0
+np.testing.assert_allclose(weights.groupby('time.season').sum().values, np.ones(4))
 
+# Calculate the weighted average
+ds_weighted = (ds * weights).groupby('time.season').sum(dim='time')

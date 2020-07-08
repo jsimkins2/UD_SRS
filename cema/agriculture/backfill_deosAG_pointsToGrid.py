@@ -91,7 +91,7 @@ fancyDict = dict(zip(list(nameDict.values()), ['Kelvin', 'Kelvin', 'Kelvin', ' '
 
 # create a dictionary for months
 monthDict = dict(zip([1,2,3,4,5,6,7,8,9,10,11,12], ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']))
-yearList = [2014,2015,2016,2017,2018,2019,2020]
+yearList = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020]
 monthList = [1,2,3,4,5,6,7,8,9,10,11,12]
 
 for yr in yearList:

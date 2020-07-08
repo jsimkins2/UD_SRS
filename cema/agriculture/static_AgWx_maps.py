@@ -206,7 +206,10 @@ for var in datasets:
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.sum('time')
             dfvarname = "total_" + sum_dict[var]
-            cmap = 'Spectral'
+            if var == 'Cooling Degree Days':
+                cmap = 'Spectral'
+            else:
+                cmap = 'Spectral_r'
             
         if any(var in s for s in max_dict.keys()):
             df = agwx_main[max_dict[var]]
@@ -266,7 +269,7 @@ for var in datasets:
         ax.add_geometries([state_outline['geometry'][103]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
 
         if db == 'YTD':
-            plt.text(-76.11, 38.475, str('Year To Date'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            plt.text(-76.11, 38.475, str(var + "\n  " + 'Year To Date'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
             cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
             im1 = image.imread(shapePaths + "deos_logo.png")
             plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
@@ -353,7 +356,7 @@ for var in datasets:
         ax.add_geometries([state_outline['geometry'][103]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
 
         if db == 'YTD':
-            plt.text(-76.11, 38.475, str("Year To Date"),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            plt.text(-76.11, 38.475, str(var + "\n  " + 'Year To Date'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
             cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
             im1 = image.imread(shapePaths + "deos_logo.png")
             plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
