@@ -286,9 +286,9 @@ for var in datasets:
 
 
 
-datasets = ['Reference Evapotranspiration', 'NCEP Stage IV Precip', 'NCEP Stage IV Precip - DEOS RefET']
+datasets = ['Reference Evapotranspiration', 'dailyprecip', 'NCEP Stage IV Precip', 'NCEP Stage IV Precip - DEOS RefET']
 daysback_dict = dict(zip(['18 Months', '12 Months', 'YTD', '6 Months', '3 Months', '1 Month', '1 Week', '1 Day'], [540, 360,np.int(np.abs(ytd.days)), 180, 90, 30, 7, 1]))
-cmap = own_cmap1
+cmap = 'BrBG'
 for var in datasets:
     for db in daysback_dict.keys():
         if var == 'Reference Evapotranspiration':
@@ -298,6 +298,14 @@ for var in datasets:
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.sum('time')
             dfvarname = "total_refET"
+        
+        if var =='dailyprecip':
+            df = agwx_main['dailyprecip']
+            time_recent = pd.to_datetime(df.time.values[-1])
+            opLabel = 'Total ' + df.units
+            df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
+            df = df.sum('time')
+            dfvarname = "DEOSprecip"
             
         if var == 'NCEP Stage IV Precip':
             time_recent = pd.to_datetime(dsPrec.time.values[-1])

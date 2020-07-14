@@ -12,45 +12,10 @@ from datetime import datetime, timedelta, date
 from netCDF4 import num2date
 import matplotlib.pyplot as plt
 
-
-dpm = {'noleap': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-       '365_day': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-       'standard': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-       'gregorian': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-       'proleptic_gregorian': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-       'all_leap': [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-       '366_day': [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-       '360_day': [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]}
-       
-# declare functions here 
-def leap_year(year, calendar='standard'):
-    """Determine if year is a leap year"""
-    leap = False
-    if ((calendar in ['standard', 'gregorian',
-        'proleptic_gregorian', 'julian']) and
-        (year % 4 == 0)):
-        leap = True
-        if ((calendar == 'proleptic_gregorian') and
-            (year % 100 == 0) and
-            (year % 400 != 0)):
-            leap = False
-        elif ((calendar in ['standard', 'gregorian']) and
-                 (year % 100 == 0) and (year % 400 != 0) and
-                 (year < 1583)):
-            leap = False
-    return leap
-
-def get_dpm(time, calendar='standard'):
-    month_length = np.zeros(len(time), dtype=np.int)
-    cal_days = dpm[calendar]
-    for i, (month, year) in enumerate(zip(time.month, time.year)):
-        month_length[i] = cal_days[month]
-        if leap_year(year, calendar=calendar) and month == 2:
-            month_length[i] += 1
-    return month_length
     
 # load in the datasets 
 bounds=(-76.2,38.3,-74.85, 40.3)
+
 # open agwx main dataset
 agwx_main = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/DEOSAG.nc")
 agwx_main = agwx_main.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(bounds[0],bounds[2]))
@@ -59,7 +24,7 @@ agwx_main = agwx_main.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(
 dsPrec = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/NCEPIVQC.nc")
 dsPrec = dsPrec.sel(lat=slice(bounds[1], bounds[3]), 
                     lon=slice(bounds[0],bounds[2]), 
-                    time=slice(datetime.strptime("2014-01-01", "%Y-%m-%d"),
+                    time=slice(datetime.strptime("2010-01-01", "%Y-%m-%d"),
                               date.today()))
 
 dsPrec = dsPrec.reindex(lat=list(reversed(dsPrec.lat)))
@@ -67,26 +32,15 @@ dsPrec = dsPrec.rename(name_dict= {'lat' : 'latitude'})
 dsPrec = dsPrec.rename(name_dict= {'lon' : 'longitude'})
 dsPrec = dsPrec.drop('crs')
 
-da = agwx_main.groupby("time.month").mean("time")
+# calculate 
+agwx_doy = agwx_main.groupby("time.dayofyear").mean("time")
+prec_doy = dsPrec.groupby("time.dayofyear").mean("time")
+
+# add precipitation flux to the entire dataset
+agwx_doy['NCEPstageIVPrecip']=(['dayofyear', 'latitude', 'longitude'],  prec_doy['Precipitation_Flux'])
+
+agwx_doy.to_netcdf("/data/DEOS/doy_climatology/deos_doy_climatology.nc")
 
 
-ds = xr.open_dataset("Downloads/doy_climatology.nc")
 
 
-
-
-#http://xarray.pydata.org/en/stable/examples/monthly-means.html
-
-# Make a DataArray with the number of days in each month, size = len(time)
-month_length = xr.DataArray(get_dpm(ds.time.to_index(), calendar='noleap'),
-                            coords=[ds.time], name='month_length')
-
-# Calculate the weights by grouping by 'time.season'.
-# Conversion to float type ('astype(float)') only necessary for Python 2.x
-weights = month_length.groupby('time.season') / month_length.astype(float).groupby('time.season').sum()
-
-# Test that the sum of the weights for each season is 1.0
-np.testing.assert_allclose(weights.groupby('time.season').sum().values, np.ones(4))
-
-# Calculate the weighted average
-ds_weighted = (ds * weights).groupby('time.season').sum(dim='time')

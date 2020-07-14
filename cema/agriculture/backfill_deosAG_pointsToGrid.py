@@ -17,13 +17,10 @@ outPathNC = "/data/DEOS/agriculture/"
 #################################################################
 def linear_rbf(x, y, z, xi, yi):
     dist = distance_matrix(x,y, xi,yi)
-
     # Mutual pariwise distances between observations
     internal_dist = distance_matrix(x,y, x,y)
-
     # Now solve for the weights such that mistfit at the observations is minimized
     weights = np.linalg.solve(internal_dist, z)
-
     # Multiply the weights for each interpolated point by the distances
     zi =  np.dot(dist.T, weights)
     return zi
@@ -67,16 +64,19 @@ station_dict = {}
 for s in list(loc_deos.columns):
     station_dict[s] = loc_deos[s]['station_id']
 
+refET_station_dict = station_dict
 bad_sites = ['DNEM', 'DFHM','DWBD', 'DWWK', 'DSCR', 'DBUK1', 'DWCH', 'DTDF', 'DHOC', 'DCLY', 'DTLY', 'DCHI', 'DBKB', 'DWCC',
              'DPPN', 'DMTC', 'DMCB', 'DSJR', 'DFRE', 'DSND', 'DVIO', 'DADV', 'DPAR', 'DBBB', 'DSBY', 'DDAG', 'DGUM', 'DELN',
-             'DMIL', 'DJCR', 'DPMH', 'DLEW', 'DNAS', 'DRBH', 'DIRL', 'DLNK', 'DSLB', 'DCPH']
+             'DMIL', 'DJCR', 'DPMH', 'DLEW', 'DNAS', 'DRHB', 'DIRL', 'DLNK', 'DSLB', 'DCPH']
 
 for bad in bad_sites:
     try:
-        del station_dict[bad]
+        del refET_station_dict[bad]
     except:
         pass
 rev_station_dict = dict(zip(station_dict.values(),station_dict.keys()))
+rev_refET_station_dict = dict(zip(refET_station_dict.values(),refET_station_dict.keys()))
+
 nameDict = dict(zip(['Mean Daily Temp.','Max Daily Temp.','Min Daily Temp.','Heating Degree Days','Cooling Degree Days',
                      'Mean Wind Speed','Gage Precipitation (Daily)', 'Mean Daily Dew Point', 'Energy Density',
                      'Reference Evapotrans.', 'Growing Degree Days', 'Daily Avg RH', 'Daily Max RH', 'Daily Min RH',
@@ -103,73 +103,203 @@ for yr in yearList:
             
             if os.path.isfile(outPathNC + "/" + str(nowtime.year) + "/" + str("DEOS_agri_" + "{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day) + ".nc")) == False:
                 for var in nameDict:
-                    # begin file loop to check if it exists 
-                    lats=list()
-                    lons=list()
-                    varData = list()
-                    for key in rev_station_dict:
-                        stat_path = "http://128.175.28.202/deos_json/daily_summary/" + rev_station_dict[key] + "_" + monthDict[nowtime.month] + "-" + str(nowtime.year) + ".json"
-                        #print(stat_path)
-                        try:
-                            agJson = pd.read_json(stat_path)
-                            # use this for when we are real-time et.append(int(float(et_data[rev_station_dict[key]][str(str(nowtime.year) + "-" + str("{0:0=2d}".format(nowtime.month)) + "-" + str("{0:0=2d}".format(nowtime.day)))]['Reference Evapotrans.']['Value'])))
-                            varData.append(round(float(agJson[rev_station_dict[key]][daytime][var]['Value']),4))
-                            lats.append(loc_deos[rev_station_dict[key]]['latitude'])
-                            lons.append(loc_deos[rev_station_dict[key]]['longitude'])
-                        except:
-                            pass
-                    
-                    if len(varData) != 0:
-                        # add in four corners to expand the interpolated grid
-                        lons = lons + list([-76.65,-76.65, -74.28,  -74.68])
-                        lats = lats + list([38.0, 40.9, 38.0, 40.6])
-                        try:
-                            t1 = float(deos_data[date_deos][2321][var])
-                        except:
-                            t1 = np.nanmean(varData)
+                    if var != 'Reference Evapotrans.':
+                        # begin file loop to check if it exists 
+                        lats=list()
+                        lons=list()
+                        varData = list()
+                        workKey = list()
+                        for key in rev_station_dict:
+                            stat_path = "http://128.175.28.202/deos_json/daily_summary/" + rev_station_dict[key] + "_" + monthDict[nowtime.month] + "-" + str(nowtime.year) + ".json"
+                            #print(stat_path)
+                            try:
+                                agJson = pd.read_json(stat_path)
+                                # use this for when we are real-time et.append(int(float(et_data[rev_station_dict[key]][str(str(nowtime.year) + "-" + str("{0:0=2d}".format(nowtime.month)) + "-" + str("{0:0=2d}".format(nowtime.day)))]['Reference Evapotrans.']['Value'])))
+                                varData.append(round(float(agJson[rev_station_dict[key]][daytime][var]['Value']),4))
+                                lats.append(loc_deos[rev_station_dict[key]]['latitude'])
+                                lons.append(loc_deos[rev_station_dict[key]]['longitude'])
+                                workKey.append(str(key))
+                            except:
+                                pass
                         
-                        try:
-                            t2 = float(deos_data[date_deos][2980][var])
-                        except:
-                            t2 = np.nanmean(varData)
-                        
-                        try:
-                            t3 = float(deos_data[date_deos][2304][var])
-                        except:
-                            t3 = np.nanmean(varData)
-                        
-                        try:
-                            t4 = float(deos_data[date_deos][2983][var])
-                        except:
-                            t4 = np.nanmean(varData)
-                        
-                        varData = varData + list([t1,t2,t3,t4])
-                        
-                        lons=np.array(lons)
-                        lats=np.array(lats)
-                        varData = np.array(varData)
-                        varData = varData.round(2)
-                        
-                        x = np.linspace(min(lons), max(lons), 750)
-                        y = np.linspace(min(lats), max(lats), 750)
-                        xi,yi = np.meshgrid(x,y)
-                        # interpolate
-                        #zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
-                        # try the idw interpolation scheme
-                        xi, yi = xi.flatten(), yi.flatten()
-                        
-                        # Calculate IDW
-                        zi = linear_rbf(lons,lats,varData,xi,yi)
-                        zi=zi.reshape((len(x), len(y)))
-                        
-                        da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
-                        da.rio.set_crs("epsg:4326",inplace=True)
-                        da.rio.set_spatial_dims('lon', 'lat', inplace=True)
-                        da.rio.to_raster(temPath + nameDict[var] + "_temp.tif", overwrite=True)
+                        if len(varData) != 0:
+                            # add in four corners to expand the interpolated grid
+                            #lons = lons + list([-77.5,-77.5, -73.5,  -73.5])
+                            #lats = lats + list([37, 41, 37, 41])
+                            #-76.5, -74.2, 38.1, 40.8
+                            lons = lons + list([-76.8,-76.8, -73.8,  -73.8])
+                            lats = lats + list([37.5, 40.8, 37.5, 40.8])
+                            try:
+                                t1 = varData[workKey.index('2321')]
+                            except:
+                                try:
+                                    t1 = varData[workKey.index('2461')]
+                                except:
+                                    try:
+                                        t1 = varData[workKey.index('2312')]
+                                    except:
+                                        t1 = np.nanmean(varData)
+                            
+                            try:
+                                t2 = varData[workKey.index('2999')]
+                            except:
+                                try:
+                                    t2 = varData[workKey.index('2980')]
+                                except:
+                                    try:
+                                        t2 = varData[workKey.index('2981')]
+                                    except:
+                                        t2 = np.nanmean(varData)
+                            
+                            try:
+                                t3 = varData[workKey.index('2748')]
+                            except:
+                                try:
+                                    t3 = varData[workKey.index('2304')]
+                                except:
+                                    try:
+                                        t3 = varData[workKey.index('2747')]
+                                    except:
+                                        t3 = np.nanmean(varData)
+                            
+                            try:
+                                t4 = varData[workKey.index('2983')]
+                            except:
+                                try:
+                                    t4 = varData[workKey.index('2979')]
+                                except:
+                                    try:
+                                        t4 = varData[workKey.index('2984')]
+                                    except:
+                                        t4 = np.nanmean(varData)
+                            
+                            varData = varData + list([t1,t2,t3,t4])
+                            
+                            lons=np.array(lons)
+                            lats=np.array(lats)
+                            varData = np.array(varData)
 
-                    # now that all variables have been interpolated as a spatial dataset, send to R so we can regrid and save as netCDF4
+                            
+                            x = np.linspace(min(lons), max(lons), 750)
+                            y = np.linspace(min(lats), max(lats), 750)
+                            xi,yi = np.meshgrid(x,y)
+                            # interpolate
+                            #zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
+                            # try the idw interpolation scheme
+                            xi, yi = xi.flatten(), yi.flatten()
+                            
+                            # Calculate IDW
+                            zi = linear_rbf(lons,lats,varData,xi,yi)
+                            zi=zi.reshape((len(x), len(y)))
+                            zi = zi.round(2)
+                            zi[zi > np.max(varData)] = np.max(varData)
+                            zi[zi < np.min(varData)] = np.min(varData)
+                            
+                            da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
+                            da.rio.set_crs("epsg:4326",inplace=True)
+                            da.rio.set_spatial_dims('lon', 'lat', inplace=True)
+                            da.rio.to_raster(temPath + nameDict[var] + "_temp.tif", overwrite=True)
+                            dtime = str("{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day))
+                                        # now that all variables have been interpolated as a spatial dataset, send to R so we can regrid and save as netCDF4
+                        else:
+                            print("no data is present")
                     else:
-                        print("no data is present")
+                        lats=list()
+                        lons=list()
+                        varData = list()
+                        workKey = list()
+                        for key in rev_station_dict:
+                            stat_path = "http://128.175.28.202/deos_json/daily_summary/" + rev_station_dict[key] + "_" + monthDict[nowtime.month] + "-" + str(nowtime.year) + ".json"
+                            #print(stat_path)
+                            try:
+                                agJson = pd.read_json(stat_path)
+                                # use this for when we are real-time et.append(int(float(et_data[rev_station_dict[key]][str(str(nowtime.year) + "-" + str("{0:0=2d}".format(nowtime.month)) + "-" + str("{0:0=2d}".format(nowtime.day)))]['Reference Evapotrans.']['Value'])))
+                                varData.append(round(float(agJson[rev_station_dict[key]][daytime][var]['Value']),4))
+                                lats.append(loc_deos[rev_station_dict[key]]['latitude'])
+                                lons.append(loc_deos[rev_station_dict[key]]['longitude'])
+                                workKey.append(str(key))
+                            except:
+                                pass
+                        
+                        if len(varData) != 0:
+                            # add in four corners to expand the interpolated grid
+                            #(-76.5, -74.2, 38.1, 40.8)
+                            lons = lons + list([-76.8,-76.8, -73.8,  -73.8])
+                            lats = lats + list([37.5, 40.8, 37.5, 40.8])
+                            try:
+                                t1 = varData[workKey.index('2321')]
+                            except:
+                                try:
+                                    t1 = varData[workKey.index('2461')]
+                                except:
+                                    try:
+                                        t1 = varData[workKey.index('2312')]
+                                    except:
+                                        t1 = np.nanmean(varData)
+                            
+                            try:
+                                t2 = varData[workKey.index('2999')]
+                            except:
+                                try:
+                                    t2 = varData[workKey.index('2980')]
+                                except:
+                                    try:
+                                        t2 = varData[workKey.index('2981')]
+                                    except:
+                                        t2 = np.nanmean(varData)
+                            
+                            try:
+                                t3 = varData[workKey.index('2748')]
+                            except:
+                                try:
+                                    t3 = varData[workKey.index('2304')]
+                                except:
+                                    try:
+                                        t3 = varData[workKey.index('2747')]
+                                    except:
+                                        t3 = np.nanmean(varData)
+                            
+                            try:
+                                t4 = varData[workKey.index('2983')]
+                            except:
+                                try:
+                                    t4 = varData[workKey.index('2979')]
+                                except:
+                                    try:
+                                        t4 = varData[workKey.index('2984')]
+                                    except:
+                                        t4 = np.nanmean(varData)
+                            
+                            varData = varData + list([t1,t2,t3,t4])
+                            
+                            lons=np.array(lons)
+                            lats=np.array(lats)
+                            varData = np.array(varData)
+                            
+                            x = np.linspace(min(lons), max(lons), 750)
+                            y = np.linspace(min(lats), max(lats), 750)
+                            xi,yi = np.meshgrid(x,y)
+                            # interpolate
+                            #zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
+                            # try the idw interpolation scheme
+                            xi, yi = xi.flatten(), yi.flatten()
+                            
+                            # Calculate IDW
+                            zi = linear_rbf(lons,lats,varData,xi,yi)
+                            zi=zi.reshape((len(x), len(y)))
+                            zi = zi.round(2)
+                            zi[zi > np.max(varData)] = np.max(varData)
+                            zi[zi < np.min(varData)] = np.min(varData)
+                            
+                            da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
+                            da.rio.set_crs("epsg:4326",inplace=True)
+                            da.rio.set_spatial_dims('lon', 'lat', inplace=True)
+                            da.rio.to_raster(temPath + nameDict[var] + "_temp.tif", overwrite=True)
+                            dtime = str("{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day))
+                    
+                        # now that all variables have been interpolated as a spatial dataset, send to R so we can regrid and save as netCDF4
+                        else:
+                            print("no data is present")
                 # once all the variables have processed, call et_regrid.R to rasterize them and place them into 1 nc file
                 dtime = str("{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day))
                 print(dtime)
