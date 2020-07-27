@@ -42,5 +42,5 @@ agwx_doy['NCEPstageIVPrecip']=(['dayofyear', 'latitude', 'longitude'],  prec_doy
 agwx_doy.to_netcdf("/data/DEOS/doy_climatology/deos_doy_climatology.nc")
 
 
-
+ncc = xr.open_dataset('')
 
