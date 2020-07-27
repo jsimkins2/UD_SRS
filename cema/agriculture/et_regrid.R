@@ -1,6 +1,11 @@
 # this script is designed to process a ncep stage IV file for it's shape / size and resample a ref et value to this size
 library(raster)
 library(ncdf4)
+options(warn=-1)
+zz <- file("messages.Rout", open = "wt")
+# Divert messages to that file
+sink(zz, type = "message")
+message("not gonna show up in console")
 
 ####################################################################
 ############ Housekeeping #################

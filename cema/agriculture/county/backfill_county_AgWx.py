@@ -27,31 +27,11 @@ import time
 from datetime import datetime, timedelta
 
 # declare paths
-shapePaths = "/Users/james/Downloads/mapLayers/"
+shapePaths = "/home/james/mapLayers/"
 colorPaths = "/home/james/colorramps/"
+raster_path = "/home/sat_ops/deos/temp/"
 my_dpi = 100
 ## define custom functions
-def remove_nan_observations(x, y, z):
-    r"""Remove all x, y, and z where z is nan.
-    Will not destroy original values.
-    Parameters
-    ----------
-    x: array_like
-        x coordinate
-    y: array_like
-        y coordinate
-    z: array_like
-        observation value
-    Returns
-    -------
-    x, y, z
-        List of coordinate observation pairs without
-        nan valued observations.
-    """
-    x_ = x[~np.isnan(z)]
-    y_ = y[~np.isnan(z)]
-    z_ = z[~np.isnan(z)]
-    return x_, y_, z_
 def check_crs(crs):
     """Checks if the crs represents a valid grid, projection or ESPG string.
     Examples
@@ -145,58 +125,6 @@ def proj_to_cartopy(proj):
         kw_proj.pop('false_easting', None)
         kw_proj.pop('false_northing', None)
     return cl(globe=globe, **kw_proj)
-def make_cmap(colors, position=None, bit=False):
-    '''
-    make_cmap takes a list of tuples which contain RGB values. The RGB
-    values may either be in 8-bit [0 to 255] (in which bit must be set to
-    True when called) or arithmetic [0 to 1] (default). make_cmap returns
-    a cmap with equally spaced colors.
-    Arrange your tuples so that the first color is the lowest value for the
-    colorbar and the last is the highest.
-    position contains values from 0 to 1 to dictate the location of each color.
-    '''
-    import matplotlib as mpl
-    import numpy as np
-    bit_rgb = np.linspace(0,1,256)
-    if position == None:
-        position = np.linspace(0,1,len(colors))
-    else:
-        if len(position) != len(colors):
-            sys.exit("position length must be the same as colors")
-        elif position[0] != 0 or position[-1] != 1:
-            sys.exit("position must start with 0 and end with 1")
-    if bit:
-        for i in range(len(colors)):
-            colors[i] = (bit_rgb[colors[i][0]],
-                         bit_rgb[colors[i][1]],
-                         bit_rgb[colors[i][2]])
-    cdict = {'red':[], 'green':[], 'blue':[]}
-    for pos, color in zip(position, colors):
-        cdict['red'].append((pos, color[0], color[0]))
-        cdict['green'].append((pos, color[1], color[1]))
-        cdict['blue'].append((pos, color[2], color[2]))
-    cmap = mpl.colors.LinearSegmentedColormap('my_colormap',cdict,256*4)
-    return cmap
-def linear_rbf(x, y, z, xi, yi):
-    dist = distance_matrix(x,y, xi,yi)
-    # Mutual pariwise distances between observations
-    internal_dist = distance_matrix(x,y, x,y)
-    # Now solve for the weights such that mistfit at the observations is minimized
-    weights = np.linalg.solve(internal_dist, z)
-    # Multiply the weights for each interpolated point by the distances
-    zi =  np.dot(dist.T, weights)
-    return zi
-
-def distance_matrix(x0, y0, x1, y1):
-    obs = np.vstack((x0, y0)).T
-    interp = np.vstack((x1, y1)).T
-    # Make a distance matrix between pairwise observations
-    # Note: from <http://stackoverflow.com/questions/1871536>
-    # (Yay for ufuncs!)
-    d0 = np.subtract.outer(obs[:,0], interp[:,0])
-    d1 = np.subtract.outer(obs[:,1], interp[:,1])
-    return np.hypot(d0, d1)
-
 
 # read in deos special shapefiles
 deos_boundarys = gpd.read_file(shapePaths + 'deoscounties.shp')
@@ -224,25 +152,25 @@ sussex_ds = xr.Dataset({"time": agwx_main['time'].values})
 # each geotiff would need to be a lone time slice...going to look into geopandas update
 for co in range(0, len(deos_boundarys["NAME"])):
     county_outline = deos_boundarys.loc[[co], 'geometry']
-
+    print(co)
     for var in agwx_main.data_vars:
         var_list = []
+        print(var)
         for t in range(0,len(agwx_main.time.values)):
             da = xr.DataArray(agwx_main[var][t].values,dims=['latitude', 'longitude'],coords={'longitude': agwx_main.longitude.values, 'latitude' :agwx_main.latitude.values})
             da.rio.set_crs("epsg:4326")
             da.attrs['units'] = 'Fahrenheit'
             da.attrs['standard_name'] = 'Temperature'
             da.rio.set_spatial_dims('longitude', 'latitude')
-            da.rio.to_raster('/Users/james/Downloads/' + var + '.tif', overwrite=True)
-        
-            xds = rioxarray.open_rasterio('/Users/james/Downloads/' + var +'.tif')
+            da.rio.to_raster(raster_path + var + str(co) + str(t) + '.tif', overwrite=True)
+            xds = rioxarray.open_rasterio(raster_path + var + str(co) + str(t) + '.tif')
             # clip the interpolated data based on the shapefiles
             clipped = xds.rio.clip(county_outline.geometry.apply(mapping), xds.rio.crs, drop=True)
             cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, invert=True)
-            ds_county = cl.mean("x")
-            ds_county = ds_county.mean("y")
-            var_list.append(ds_county.values[0])
-        
+            ds_county = cl.mean()
+            var_list.append(round(ds_county.values.tolist(),2))
+            # if we don't remove it, it won't overwrite properly
+            os.system("/bin/rm " + raster_path + var + str(co) + str(t) + '.tif')
         if co == 0:
             chester_ds[var] = (['time'], var_list)
         if co == 1:
@@ -253,16 +181,16 @@ for co in range(0, len(deos_boundarys["NAME"])):
             sussex_ds[var] = (['time'], var_list)
 
     if co == 0:
-        chester_ds.to_netcdf("")
+        chester_ds.to_netcdf("/data/DEOS/chester/chester_agwx.nc")
         print('finished chester county')
     if co == 1:
-        ncc_ds.to_netcdf("")
+        ncc_ds.to_netcdf("/data/DEOS/ncc/ncc_agwx.nc")
         print('finished new castle county')
     if co == 2:
-        kent_ds.to_netcdf("")
+        kent_ds.to_netcdf("/data/DEOS/kent/kent_agwx.nc")
         print('finished kent county')
     if co == 3:
-        sussex_ds.to_netcdf("")
+        sussex_ds.to_netcdf("/data/DEOS/sussex/sussex_agwx.nc")
         print('finished sussex county')
 
 

@@ -64,7 +64,10 @@ station_dict = {}
 for s in list(loc_deos.columns):
     station_dict[s] = loc_deos[s]['station_id']
 
-refET_station_dict = station_dict
+refET_station_dict = {}
+for s in list(loc_deos.columns):
+    refET_station_dict[s] = loc_deos[s]['station_id']
+
 bad_sites = ['DNEM', 'DFHM','DWBD', 'DWWK', 'DSCR', 'DBUK1', 'DWCH', 'DTDF', 'DHOC', 'DCLY', 'DTLY', 'DCHI', 'DBKB', 'DWCC',
              'DPPN', 'DMTC', 'DMCB', 'DSJR', 'DFRE', 'DSND', 'DVIO', 'DADV', 'DPAR', 'DBBB', 'DSBY', 'DDAG', 'DGUM', 'DELN',
              'DMIL', 'DJCR', 'DPMH', 'DLEW', 'DNAS', 'DRHB', 'DIRL', 'DLNK', 'DSLB', 'DCPH']
@@ -95,8 +98,8 @@ daysback = range(1,5)
 for dy in daysback:
     nowtime = datetime.utcnow() - timedelta(days=dy)
     daytime = str("{:04d}".format(nowtime.year) + "-" + "{:02d}".format(nowtime.month) + "-" + "{:02d}".format(nowtime.day))
-    
     if os.path.isfile(outPathNC + "/" + str(nowtime.year) + "/" + str("DEOS_agri_" + "{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day) + ".nc")) == False:
+        print(nowtime)
         for var in nameDict:
             if var != 'Reference Evapotrans.':
                 # begin file loop to check if it exists 
@@ -116,11 +119,10 @@ for dy in daysback:
                         workKey.append(str(key))
                     except:
                         pass
-                
                 if len(varData) != 0:
                     # add in four corners to expand the interpolated grid
-                    lons = lons + list([-76.8,-76.8, -73.8,  -73.8])
-                    lats = lats + list([37.5, 40.8, 37.5, 40.8])
+                    lons = lons + list([-76.6,-76.6,-74.1, -74.1])
+                    lats = lats + list([38, 40.9, 38, 40.9])
                     try:
                         t1 = varData[workKey.index('2321')]
                     except:
@@ -167,6 +169,21 @@ for dy in daysback:
                     
                     varData = varData + list([t1,t2,t3,t4])
                     
+                    # add in additional points for bounding box 
+                    lons = lons + list([-76.6,-76.6,-76.6, -76.6, -74.9, -74.9, -74.9, -74.9, -75])
+                    lats = lats + list([38.5, 39 ,39.5, 40, 38.5, 39, 39.5, 40, 41])
+                    v1 = np.linspace(t1,t2, 6)[1]
+                    v2 = np.linspace(t1,t2, 6)[2]
+                    v3 = np.linspace(t1,t2, 6)[3]
+                    v4= np.linspace(t1,t2, 6)[4]
+                    v5 = np.linspace(t3,t4, 6)[1]
+                    v6 = np.linspace(t3,t4, 6)[2]
+                    v7 = np.linspace(t3,t4, 6)[3]
+                    v8 = np.linspace(t3,t4, 6)[4]
+                    v9 = t4
+                    
+                    varData = varData + list([v1, v2, v3, v4, v5, v6, v7, v8, v9])
+
                     lons=np.array(lons)
                     lats=np.array(lats)
                     varData = np.array(varData)
@@ -183,8 +200,8 @@ for dy in daysback:
                     zi = linear_rbf(lons,lats,varData,xi,yi)
                     zi=zi.reshape((len(x), len(y)))
                     zi = zi.round(2)
-                    zi[zi > np.max(varData)] = np.max(varData)
-                    zi[zi < np.min(varData)] = np.min(varData)
+                    zi[zi > (np.max(varData) + np.std(varData))] = np.max(varData) + np.std(varData)
+                    zi[zi < (np.min(varData) - np.std(varData))] = np.min(varData) - np.std(varData)
                     da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
                     da.rio.set_crs("epsg:4326",inplace=True)
                     da.rio.set_spatial_dims('lon', 'lat', inplace=True)
@@ -198,23 +215,23 @@ for dy in daysback:
                 lons=list()
                 varData = list()
                 workKey = list()
-                for key in rev_station_dict:
-                    stat_path = "http://128.175.28.202/deos_json/daily_summary/" + rev_station_dict[key] + "_" + monthDict[nowtime.month] + "-" + str(nowtime.year) + ".json"
+                for key in rev_refET_station_dict:
+                    stat_path = "http://128.175.28.202/deos_json/daily_summary/" + rev_refET_station_dict[key] + "_" + monthDict[nowtime.month] + "-" + str(nowtime.year) + ".json"
                     #print(stat_path)
                     try:
                         agJson = pd.read_json(stat_path)
                         # use this for when we are real-time et.append(int(float(et_data[rev_station_dict[key]][str(str(nowtime.year) + "-" + str("{0:0=2d}".format(nowtime.month)) + "-" + str("{0:0=2d}".format(nowtime.day)))]['Reference Evapotrans.']['Value'])))
-                        varData.append(round(float(agJson[rev_station_dict[key]][daytime][var]['Value']),4))
-                        lats.append(loc_deos[rev_station_dict[key]]['latitude'])
-                        lons.append(loc_deos[rev_station_dict[key]]['longitude'])
+                        varData.append(round(float(agJson[rev_refET_station_dict[key]][daytime][var]['Value']),4))
+                        lats.append(loc_deos[rev_refET_station_dict[key]]['latitude'])
+                        lons.append(loc_deos[rev_refET_station_dict[key]]['longitude'])
                         workKey.append(str(key))
                     except:
                         pass
                 
                 if len(varData) != 0:
                     # add in four corners to expand the interpolated grid
-                    lons = lons + list([-76.8,-76.8, -73.8,  -73.8])
-                    lats = lats + list([37.5, 40.8, 37.5, 40.8])
+                    lons = lons + list([-76.6,-76.6,-74.1, -74.1])
+                    lats = lats + list([38, 40.9, 38, 40.9])
                     try:
                         t1 = varData[workKey.index('2321')]
                     except:
@@ -261,6 +278,21 @@ for dy in daysback:
                     
                     varData = varData + list([t1,t2,t3,t4])
                     
+                    # add in additional points for bounding box 
+                    lons = lons + list([-76.6,-76.6,-76.6, -76.6, -74.9, -74.9, -74.9, -74.9, -75])
+                    lats = lats + list([38.5, 39 ,39.5, 40, 38.5, 39, 39.5, 40, 41])
+                    v1 = np.linspace(t1,t2, 6)[1]
+                    v2 = np.linspace(t1,t2, 6)[2]
+                    v3 = np.linspace(t1,t2, 6)[3]
+                    v4= np.linspace(t1,t2, 6)[4]
+                    v5 = np.linspace(t3,t4, 6)[1]
+                    v6 = np.linspace(t3,t4, 6)[2]
+                    v7 = np.linspace(t3,t4, 6)[3]
+                    v8 = np.linspace(t3,t4, 6)[4]
+                    v9 = t4
+                    
+                    varData = varData + list([v1, v2, v3, v4, v5, v6, v7, v8, v9])
+
                     lons=np.array(lons)
                     lats=np.array(lats)
                     varData = np.array(varData)
@@ -278,8 +310,8 @@ for dy in daysback:
                     zi = linear_rbf(lons,lats,varData,xi,yi)
                     zi=zi.reshape((len(x), len(y)))
                     zi = zi.round(2)
-                    zi[zi > np.max(varData)] = np.max(varData)
-                    zi[zi < np.min(varData)] = np.min(varData)
+                    zi[zi > (np.max(varData) + np.std(varData))] = np.max(varData) + np.std(varData)
+                    zi[zi < (np.min(varData) - np.std(varData))] = np.min(varData) - np.std(varData)
                     
                     da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
                     da.rio.set_crs("epsg:4326",inplace=True)

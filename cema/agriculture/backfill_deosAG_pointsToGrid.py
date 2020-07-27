@@ -49,7 +49,7 @@ own_cmap1 = mpl.colors.LinearSegmentedColormap.from_list( 'own2', [startcolor, m
 #################################################################
 
 # grab data from json files
-deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data2.json")
+deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data.json")
 loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
 # deos_data['2020-02-06 18:30:00'][2302]
 # index is the station nunumbers 
@@ -64,7 +64,10 @@ station_dict = {}
 for s in list(loc_deos.columns):
     station_dict[s] = loc_deos[s]['station_id']
 
-refET_station_dict = station_dict
+refET_station_dict = {}
+for s in list(loc_deos.columns):
+    refET_station_dict[s] = loc_deos[s]['station_id']
+
 bad_sites = ['DNEM', 'DFHM','DWBD', 'DWWK', 'DSCR', 'DBUK1', 'DWCH', 'DTDF', 'DHOC', 'DCLY', 'DTLY', 'DCHI', 'DBKB', 'DWCC',
              'DPPN', 'DMTC', 'DMCB', 'DSJR', 'DFRE', 'DSND', 'DVIO', 'DADV', 'DPAR', 'DBBB', 'DSBY', 'DDAG', 'DGUM', 'DELN',
              'DMIL', 'DJCR', 'DPMH', 'DLEW', 'DNAS', 'DRHB', 'DIRL', 'DLNK', 'DSLB', 'DCPH']
@@ -74,6 +77,7 @@ for bad in bad_sites:
         del refET_station_dict[bad]
     except:
         pass
+
 rev_station_dict = dict(zip(station_dict.values(),station_dict.keys()))
 rev_refET_station_dict = dict(zip(refET_station_dict.values(),refET_station_dict.keys()))
 
@@ -91,8 +95,8 @@ fancyDict = dict(zip(list(nameDict.values()), ['Kelvin', 'Kelvin', 'Kelvin', ' '
 
 # create a dictionary for months
 monthDict = dict(zip([1,2,3,4,5,6,7,8,9,10,11,12], ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']))
-yearList = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020]
-monthList = [1,2,3,4,5,6,7,8,9,10,11,12]
+yearList = [2020]#[2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020]
+monthList = [7]#[1,2,3,4,5,6,7,8,9,10,11,12]
 
 for yr in yearList:
     for mn in monthList:
@@ -127,8 +131,8 @@ for yr in yearList:
                             #lons = lons + list([-77.5,-77.5, -73.5,  -73.5])
                             #lats = lats + list([37, 41, 37, 41])
                             #-76.5, -74.2, 38.1, 40.8
-                            lons = lons + list([-76.8,-76.8, -73.8,  -73.8])
-                            lats = lats + list([37.5, 40.8, 37.5, 40.8])
+                            lons = lons + list([-76.6,-76.6,-74.1, -74.1])
+                            lats = lats + list([38, 40.9, 38, 40.9])
                             try:
                                 t1 = varData[workKey.index('2321')]
                             except:
@@ -174,6 +178,21 @@ for yr in yearList:
                                         t4 = np.nanmean(varData)
                             
                             varData = varData + list([t1,t2,t3,t4])
+                            
+                            # add in additional points for bounding box 
+                            lons = lons + list([-76.6,-76.6,-76.6, -76.6, -74.9, -74.9, -74.9, -74.9, -75])
+                            lats = lats + list([38.5, 39 ,39.5, 40, 38.5, 39, 39.5, 40, 41])
+                            v1 = np.linspace(t1,t2, 6)[1]
+                            v2 = np.linspace(t1,t2, 6)[2]
+                            v3 = np.linspace(t1,t2, 6)[3]
+                            v4= np.linspace(t1,t2, 6)[4]
+                            v5 = np.linspace(t3,t4, 6)[1]
+                            v6 = np.linspace(t3,t4, 6)[2]
+                            v7 = np.linspace(t3,t4, 6)[3]
+                            v8 = np.linspace(t3,t4, 6)[4]
+                            v9 = t4
+                            
+                            varData = varData + list([v1, v2, v3, v4, v5, v6, v7, v8, v9])
                             
                             lons=np.array(lons)
                             lats=np.array(lats)
@@ -192,8 +211,8 @@ for yr in yearList:
                             zi = linear_rbf(lons,lats,varData,xi,yi)
                             zi=zi.reshape((len(x), len(y)))
                             zi = zi.round(2)
-                            zi[zi > np.max(varData)] = np.max(varData)
-                            zi[zi < np.min(varData)] = np.min(varData)
+                            zi[zi > (np.max(varData) + np.std(varData))] = np.max(varData) + np.std(varData)
+                            zi[zi < (np.min(varData) - np.std(varData))] = np.min(varData) - np.std(varData)
                             
                             da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
                             da.rio.set_crs("epsg:4326",inplace=True)
@@ -202,21 +221,21 @@ for yr in yearList:
                             dtime = str("{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day))
                                         # now that all variables have been interpolated as a spatial dataset, send to R so we can regrid and save as netCDF4
                         else:
-                            print("no data is present")
+                            asdf = "asdf"
                     else:
                         lats=list()
                         lons=list()
                         varData = list()
                         workKey = list()
-                        for key in rev_station_dict:
-                            stat_path = "http://128.175.28.202/deos_json/daily_summary/" + rev_station_dict[key] + "_" + monthDict[nowtime.month] + "-" + str(nowtime.year) + ".json"
+                        for key in rev_refET_station_dict:
+                            stat_path = "http://128.175.28.202/deos_json/daily_summary/" + rev_refET_station_dict[key] + "_" + monthDict[nowtime.month] + "-" + str(nowtime.year) + ".json"
                             #print(stat_path)
                             try:
                                 agJson = pd.read_json(stat_path)
                                 # use this for when we are real-time et.append(int(float(et_data[rev_station_dict[key]][str(str(nowtime.year) + "-" + str("{0:0=2d}".format(nowtime.month)) + "-" + str("{0:0=2d}".format(nowtime.day)))]['Reference Evapotrans.']['Value'])))
-                                varData.append(round(float(agJson[rev_station_dict[key]][daytime][var]['Value']),4))
-                                lats.append(loc_deos[rev_station_dict[key]]['latitude'])
-                                lons.append(loc_deos[rev_station_dict[key]]['longitude'])
+                                varData.append(round(float(agJson[rev_refET_station_dict[key]][daytime][var]['Value']),4))
+                                lats.append(loc_deos[rev_refET_station_dict[key]]['latitude'])
+                                lons.append(loc_deos[rev_refET_station_dict[key]]['longitude'])
                                 workKey.append(str(key))
                             except:
                                 pass
@@ -224,8 +243,8 @@ for yr in yearList:
                         if len(varData) != 0:
                             # add in four corners to expand the interpolated grid
                             #(-76.5, -74.2, 38.1, 40.8)
-                            lons = lons + list([-76.8,-76.8, -73.8,  -73.8])
-                            lats = lats + list([37.5, 40.8, 37.5, 40.8])
+                            lons = lons + list([-76.6,-76.6,-74.1, -74.1])
+                            lats = lats + list([38, 40.9, 38, 40.9])
                             try:
                                 t1 = varData[workKey.index('2321')]
                             except:
@@ -272,6 +291,21 @@ for yr in yearList:
                             
                             varData = varData + list([t1,t2,t3,t4])
                             
+                            # add in additional points for bounding box 
+                            lons = lons + list([-76.6,-76.6,-76.6, -76.6, -73.1, -73.1, -73.1, -73.1, -75])
+                            lats = lats + list([38.5, 39 ,39.5, 40, 38.5, 39, 39.5, 40, 41])
+                            v1 = np.linspace(t1,t2, 6)[1]
+                            v2 = np.linspace(t1,t2, 6)[2]
+                            v3 = np.linspace(t1,t2, 6)[3]
+                            v4= np.linspace(t1,t2, 6)[4]
+                            v5 = np.linspace(t3,t4, 6)[1]
+                            v6 = np.linspace(t3,t4, 6)[2]
+                            v7 = np.linspace(t3,t4, 6)[3]
+                            v8 = np.linspace(t3,t4, 6)[4]
+                            v9 = t4
+                            
+                            varData = varData + list([v1, v2, v3, v4, v5, v6, v7, v8, v9])
+                            
                             lons=np.array(lons)
                             lats=np.array(lats)
                             varData = np.array(varData)
@@ -288,8 +322,8 @@ for yr in yearList:
                             zi = linear_rbf(lons,lats,varData,xi,yi)
                             zi=zi.reshape((len(x), len(y)))
                             zi = zi.round(2)
-                            zi[zi > np.max(varData)] = np.max(varData)
-                            zi[zi < np.min(varData)] = np.min(varData)
+                            zi[zi > (np.max(varData) + np.std(varData))] = np.max(varData) + np.std(varData)
+                            zi[zi < (np.min(varData) - np.std(varData))] = np.min(varData) - np.std(varData)
                             
                             da = xr.DataArray(zi,dims=['lat', 'lon'],coords={'lon': x, 'lat' :y})
                             da.rio.set_crs("epsg:4326",inplace=True)
@@ -299,7 +333,7 @@ for yr in yearList:
                     
                         # now that all variables have been interpolated as a spatial dataset, send to R so we can regrid and save as netCDF4
                         else:
-                            print("no data is present")
+                            asdf = "asdf"
                 # once all the variables have processed, call et_regrid.R to rasterize them and place them into 1 nc file
                 dtime = str("{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day))
                 print(dtime)

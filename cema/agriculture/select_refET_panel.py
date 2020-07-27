@@ -14,7 +14,7 @@ import pandas as pd
 gv.extension('bokeh')
 
 # Declare bounds of the data
-bounds=(-76.2,38.3,-74.85, 40.3)
+bounds=(-76.2,38.4,-75, 40.25)
 
 # read in the refET dataset
 dsRefET = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/DEOSAG.nc")
