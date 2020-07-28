@@ -38,23 +38,28 @@ prec_doy = dsPrec.groupby("time.dayofyear").mean("time")
 
 # add precipitation flux to the entire dataset
 agwx_doy['NCEPstageIVPrecip']=(['dayofyear', 'latitude', 'longitude'],  prec_doy['Precipitation_Flux'])
+agwx_doy['dayofyear'] = agwx_doy.dayofyear.astype('float32')
 
 agwx_doy.to_netcdf("/data/DEOS/doy_climatology/deos_doy_climatology.nc")
 
-# open up the agwx datasets
+# open up the county agwx datasets
 chester_agwx = xr.open_dataset("/data/DEOS/chester/chester_agwx.nc")
 chester_doy = chester_agwx.groupby("time.dayofyear").mean("time")
+chester_doy['dayofyear'] = chester_doy.dayofyear.astype('float32')
 chester_doy.to_netcdf("/data/DEOS/county_climatology/chester/chester_agwx_climatology.nc", mode='w')
 
 ncc_agwx = xr.open_dataset("/data/DEOS/ncc/ncc_agwx.nc")
 ncc_doy = ncc_agwx.groupby("time.dayofyear").mean("time")
+ncc_doy['dayofyear'] = ncc_doy.dayofyear.astype('float32')
 ncc_doy.to_netcdf("/data/DEOS/county_climatology/ncc/ncc_agwx_climatology.nc", mode='w')
 
 kent_agwx = xr.open_dataset("/data/DEOS/kent/kent_agwx.nc")
 kent_doy = kent_agwx.groupby("time.dayofyear").mean("time")
+kent_doy['dayofyear'] = kent_doy.dayofyear.astype('float32')
 kent_doy.to_netcdf("/data/DEOS/county_climatology/kent/kent_agwx_climatology.nc", mode='w')
 
 sussex_agwx = xr.open_dataset("/data/DEOS/sussex/sussex_agwx.nc")
 sussex_doy = sussex_agwx.groupby("time.dayofyear").mean("time")
+sussex_doy['dayofyear'] = sussex_doy.dayofyear.astype('float32')
 sussex_doy.to_netcdf("/data/DEOS/county_climatology/sussex/sussex_agwx_climatology.nc", mode='w')
 

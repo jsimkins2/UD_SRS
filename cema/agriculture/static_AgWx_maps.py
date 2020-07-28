@@ -18,6 +18,8 @@ from shapely.geometry import box, mapping
 import matplotlib.colors as clr
 from matplotlib.colors import BoundaryNorm
 import matplotlib as mpl
+import matplotlib.dates as mdates
+import matplotlib.cbook as cbook
 import pandas as pd
 import matplotlib.patheffects as path_effects
 import time
@@ -185,7 +187,7 @@ nowtime = datetime.utcnow()
 ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
 daysback_dict = dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [np.int(np.abs(ytd.days)), 90, 30, 7, 1]))
 datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + list(max_dict.keys()) + list(min_dict.keys())
-
+'''
 nowdate=datetime.utcnow()
 for var in datasets:
     print(var)
@@ -379,4 +381,148 @@ for var in datasets:
             plt.savefig("/var/www/html/imagery/AgWx/water_quantity/" + dfvarname + "_" + str(daysback_dict[db]) + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
 
         plt.close()
+        
+'''
+# now create the departure maps 
+# load in the datasets
+
+climo = xr.open_dataset("/data/DEOS/doy_climatology/deos_doy_climatology.nc")
+nowtime = datetime.utcnow()
+ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
+daysback_dict = dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [np.int(np.abs(ytd.days)), 90, 30, 7, 1]))
+datasets = list(sum_dict.keys()) + list(mean_dict.keys()) #+ list(max_dict.keys()) + list(min_dict.keys())
+
+nowdate=datetime.utcnow()
+for var in datasets:
+    print(var)
+    for db in daysback_dict.keys():
+        if any(var in s for s in mean_dict.keys()):
+            df = agwx_main[mean_dict[var]]
+            dfvarname = "average_difference_" + mean_dict[var]
+            time_recent = pd.to_datetime(df.time.values[-1])
+            opLabel = 'Difference from Normal (' + df.units + ')'
+            df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
+            df = df.mean('time')
+            cf = climo[mean_dict[var]]
+            cf_min = (time_recent.timetuple().tm_yday - daysback_dict[db]) if (time_recent.timetuple().tm_yday - daysback_dict[db]) > 0 else 0
+            cf = cf.isel(dayofyear=slice(cf_min, time_recent.timetuple().tm_yday))
+            cf = cf.mean('dayofyear')
+            df = df - cf
+            cmap = 'coolwarm'
+            
+        if any(var in s for s in sum_dict.keys()):
+            df = agwx_main[sum_dict[var]]
+            time_recent = pd.to_datetime(df.time.values[-1])
+            opLabel = 'Difference from Normal (' + df.units + ')'
+            df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
+            df = df.sum('time')
+            dfvarname = "total_difference_" + sum_dict[var]
+            if var == 'Cooling Degree Days':
+                cmap = 'Spectral'
+            if var == 'DEOS Precip':
+                cmap = 'BrBG'
+            else:
+                cmap = 'Spectral_r'
+            cf = climo[sum_dict[var]]
+            cf_min = (time_recent.timetuple().tm_yday - daysback_dict[db]) if (time_recent.timetuple().tm_yday - daysback_dict[db]) > 0 else 0
+            cf = cf.isel(dayofyear=slice(cf_min, time_recent.timetuple().tm_yday))
+            cf = cf.sum('dayofyear')
+            df = df - cf
+            
+            # convert to geotiff so we can clip the extents
+        df.rio.set_crs("epsg:4326")
+        df.attrs['units'] = 'Fahrenheit'
+        df.attrs['standard_name'] = 'Temperature'
+        df.rio.set_spatial_dims('longitude', 'latitude')
+        df.rio.to_raster(tiffolder + dfvarname  + str(daysback_dict[db]) + '.tif', overwrite=True)
+        cl = rioxarray.open_rasterio(tiffolder + dfvarname + str(daysback_dict[db]) +'.tif')
+
+        if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname:
+            cl.values[0] = ((cl.values[0])*(9/5))
+            opLabel = dfvarname.split("_")[0] + ' Deg F'
+                
+        # create time label     
+        timeLabel = datetime.strftime(time_recent, "%m-%d-%Y %H:%MZ")
+        
+        fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
+        ax = fig.add_subplot(111, projection=ccrs.Mercator())
+        ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
+        for ind in range(0,len(bigdeos)):
+                ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
+                              facecolor='silver', edgecolor='black')
+        im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,transform=ccrs.PlateCarree(),zorder=2)
+        for ind in range(0,len(deos_boundarys)):
+            ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
+                              facecolor='none', edgecolor='black', zorder=3, linewidth=1.5)
+        for ind in range(0,len(inland_bays)):
+            ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
+                              facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([bigdeos['geometry'][120]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([bigdeos['geometry'][74]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([bigdeos['geometry'][75]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([state_outline['geometry'][117]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+        ax.add_geometries([state_outline['geometry'][103]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
+
+        if db == 'YTD':
+            plt.text(-76.11, 38.475, str(var + "\n  " + 'Year To Date Difference'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
+            im1 = image.imread(shapePaths + "deos_logo.png")
+            plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
+            plt.savefig("/var/www/html/imagery/AgWx/departures/" + dfvarname + "_YTD.png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
+        else:
+            plt.text(-76.11, 38.475, str(var + "\n  " + db + " Difference from\n " + 
+                             timeLabel),
+                             horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
+            im1 = image.imread(shapePaths + "deos_logo.png")
+            plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
+            plt.savefig("/var/www/html/imagery/AgWx/departures/" + dfvarname + "_" + str(daysback_dict[db]) + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
+        plt.close()
+
+# cumulative county maps
+# open up the county agwx datasets
+# list of dataframes
+countydf = ['chester_agwx.nc', 'ncc_agwx.nc', 'kentc_agwx.nc', 'sussex_agwx.nc']
+doydf = ['chester_agwx_climatology.nc', 'ncc_agwx_climatology.nc', 'kent_agwx_climatology.nc', 'sussex_agwx_climatology.nc']
+
+nowtime = datetime.utcnow()
+ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
+daysback_dict = dict(zip(['YTD'], [np.int(np.abs(ytd.days))]))#dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [np.int(np.abs(ytd.days)), 90, 30, 7, 1]))
+
+# Precipitation Map
+nowdate=datetime.utcnow()
+for db in daysback_dict.keys():
+    for co in range(0,len(countydf)):
+        df = xr.open_dataset('http://thredds.demac.udel.edu/thredds/dodsC/' + countydf[co])['dailyprecip']
+        time_recent = pd.to_datetime(df.time.values[-1])
+        df = df.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
+        cf = xr.open_dataset('http://thredds.demac.udel.edu/thredds/dodsC/' + doydf[co])['dailyprecip']
+        cf = cf.isel(dayofyear=slice(0, 366))
+        ncep = xr.open_dataset('http://thredds.demac.udel.edu/thredds/dodsC/' + countydf[co])['NCEPstageIVPrecip']
+        ncep.values = ncep.values
+        ncep = ncep.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
+        ncepClim = xr.open_dataset('http://thredds.demac.udel.edu/thredds/dodsC/' + doydf[co])['NCEPstageIVPrecip']
+        ncepClim.values = ncepClim.values
+        ncepClim = ncepClim.isel(dayofyear=slice(0, 366))
+        
+        xdate = range(datetime.strptime("2020-01-01", "%Y-%m-%d"), datetime.strptime("2020-12-31", "%Y-%m-%d"))
+        datelist = pd.date_range("2020-01-01", "2020-12-31").tolist()
+        fig, ax = plt.subplots()
+        ax.plot(ncepClim.dayofyear.values, np.cumsum(ncepClim.values))
+        ax.set_xlim([datetime.date(2020, 1, 1), datetime.date(2020, 12, 31)])
+        
+        #Set X range here:
+        left = date(2020, 1, 1)  #Makes it easy to quickly change the range
+        right = date(2020, 12, 31)
+        fig = plt.figure(figsize=(12,8))
+        #Create scatter plot of Postitive Cases
+        plt.plot(datelist, np.cumsum(ncepClim.values), c="blue",  label="Total Positive Tested")
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b')) #Allows me to format the date into months & days
+        plt.gca().xaxis.set_tick_params(rotation = 0)  #puts the x-axis labels on an angle
+        plt.gca().set_xbound(left, right)  #changes the range of the x-axis
+        
+        plt.show()
+            
 
