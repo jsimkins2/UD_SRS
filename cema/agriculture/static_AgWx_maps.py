@@ -202,6 +202,14 @@ for var in datasets:
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.mean('time')
             cmap = 'coolwarm'
+            if var[3] == 'a':
+                var_plot_name = var[0:3] + var[4:]
+            if var[4] == 'a':
+                var_plot_name = var[0:4] + var[5:]
+            if var[5] == 'a':
+                var_plot_name = var[0:5] + var[6:]
+            else:
+                var_plot_name = var
             
         if any(var in s for s in sum_dict.keys()):
             df = agwx_main[sum_dict[var]]
@@ -210,6 +218,7 @@ for var in datasets:
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.sum('time')
             dfvarname = "total_" + sum_dict[var]
+            var_plot_name = var
             if var == 'Cooling Degree Days':
                 cmap = 'Spectral'
             else:
@@ -222,6 +231,7 @@ for var in datasets:
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.max('time')
             dfvarname = "maximum_" + max_dict[var]
+            var_plot_name = var
             if max_dict[var] == 'maxHI':
                 dfvarname = "maximum_HeatIndex"
                 print("hey we're at heat index right now so....")
@@ -234,8 +244,8 @@ for var in datasets:
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.min('time')
             dfvarname = "minimum_" + min_dict[var]
+            var_plot_name = var
             cmap = 'coolwarm'
-            
             # convert to geotiff so we can clip the extents
         df.rio.set_crs("epsg:4326")
         df.attrs['units'] = 'Fahrenheit'
@@ -273,13 +283,13 @@ for var in datasets:
         ax.add_geometries([state_outline['geometry'][103]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
 
         if db == 'YTD':
-            plt.text(-76.11, 38.475, str(var + "\n  " + 'Year To Date'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            plt.text(-76.11, 38.475, str(var_plot_name + "\n" + 'Year To Date'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
             cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
             im1 = image.imread(shapePaths + "deos_logo.png")
             plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
             plt.savefig("/var/www/html/imagery/AgWx/weather/" + dfvarname + "_YTD.png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
         else:
-            plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n " + 
+            plt.text(-76.11, 38.475, str(var_plot_name + "\n" + db + " back from\n" + 
                              timeLabel),
                              horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
             cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
@@ -368,13 +378,13 @@ for var in datasets:
         ax.add_geometries([state_outline['geometry'][103]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
 
         if db == 'YTD':
-            plt.text(-76.11, 38.475, str(var + "\n  " + 'Year To Date'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            plt.text(-76.11, 38.475, str(var + "\n" + 'Year To Date'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
             cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
             im1 = image.imread(shapePaths + "deos_logo.png")
             plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
             plt.savefig("/var/www/html/imagery/AgWx/water_quantity/" + dfvarname + "_YTD.png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
         else:
-            plt.text(-76.11, 38.475, str(var + "\n  " + db + " back from\n " + 
+            plt.text(-76.11, 38.475, str(var + "\n" + db + " back from\n" + 
                                          timeLabel),
                                          horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
             cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
@@ -392,7 +402,7 @@ climo = xr.open_dataset("/data/DEOS/doy_climatology/deos_doy_climatology.nc")
 nowtime = datetime.utcnow()
 ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
 daysback_dict = dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [np.int(np.abs(ytd.days)), 90, 30, 7, 1]))
-datasets = list(sum_dict.keys()) + list(mean_dict.keys()) #+ list(max_dict.keys()) + list(min_dict.keys())
+datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + ['Reference Evapotranspiration', 'NCEP Stage IV Precip']
 
 nowdate=datetime.utcnow()
 for var in datasets:
@@ -400,7 +410,7 @@ for var in datasets:
     for db in daysback_dict.keys():
         if any(var in s for s in mean_dict.keys()):
             df = agwx_main[mean_dict[var]]
-            dfvarname = "average_difference_" + mean_dict[var]
+            dfvarname = "Average_Difference_" + mean_dict[var]
             time_recent = pd.to_datetime(df.time.values[-1])
             opLabel = 'Difference from Normal (' + df.units + ')'
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
@@ -411,7 +421,14 @@ for var in datasets:
             cf = cf.mean('dayofyear')
             df = df - cf
             cmap = 'coolwarm'
-            
+            if var[3] == 'a':
+                var_plot_name = var[0:3] + var[4:]
+            if var[4] == 'a':
+                var_plot_name = var[0:4] + var[5:]
+            if var[5] == 'a':
+                var_plot_name = var[0:5] + var[6:]
+            else:
+                var_plot_name = var
         if any(var in s for s in sum_dict.keys()):
             df = agwx_main[sum_dict[var]]
             time_recent = pd.to_datetime(df.time.values[-1])
@@ -419,19 +436,54 @@ for var in datasets:
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.sum('time')
             dfvarname = "total_difference_" + sum_dict[var]
-            if var == 'Cooling Degree Days':
-                cmap = 'Spectral'
-            if var == 'DEOS Precip':
-                cmap = 'BrBG'
-            else:
-                cmap = 'Spectral_r'
             cf = climo[sum_dict[var]]
             cf_min = (time_recent.timetuple().tm_yday - daysback_dict[db]) if (time_recent.timetuple().tm_yday - daysback_dict[db]) > 0 else 0
             cf = cf.isel(dayofyear=slice(cf_min, time_recent.timetuple().tm_yday))
             cf = cf.sum('dayofyear')
             df = df - cf
+            var_plot_name = var
+            if var == 'Cooling Degree Days':
+                cmap = 'Spectral'
+            if var == 'DEOS Precip':
+                cmap = 'BrBG'
+                df.values = df.values * (0.03937007874)
+                dfvarname = "total_difference_DEOSPrecip"
+                opLabel = 'Difference from Normal (inches)'
+            else:
+                cmap = 'Spectral_r'
+
+        if var == 'Reference Evapotranspiration':
+            df = agwx_main['refET']
+            time_recent = pd.to_datetime(df.time.values[-1])
+            opLabel = 'Difference from Normal (' + df.units + ')'
+            df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
+            df = df.sum('time')
+            cf = climo['refET']
+            cf_min = (time_recent.timetuple().tm_yday - daysback_dict[db]) if (time_recent.timetuple().tm_yday - daysback_dict[db]) > 0 else 0
+            cf = cf.isel(dayofyear=slice(cf_min, time_recent.timetuple().tm_yday))
+            cf = cf.sum('dayofyear')
+            df = df - cf
+            dfvarname = "total_difference_refET"
+            var_plot_name = var
             
-            # convert to geotiff so we can clip the extents
+        if var == 'NCEP Stage IV Precip':
+            time_recent = pd.to_datetime(dsPrec.time.values[-1])
+            df = dsPrec
+            opLabel = 'Difference from Normal (inches)'
+            df = df.sel(time=slice(time_recent - timedelta(days=(daysback_dict[db] + 1)), time_recent - timedelta(days=1)))
+            df = df.sum('time')
+            df = df['Precipitation_Flux']
+            #df.values = df.values * (1/0.03937007874) convert to inches when ready to
+            cf = climo['NCEPstageIVPrecip']
+            cf_min = (time_recent.timetuple().tm_yday - daysback_dict[db]) if (time_recent.timetuple().tm_yday - daysback_dict[db]) > 0 else 0
+            cf = cf.isel(dayofyear=slice(cf_min, time_recent.timetuple().tm_yday))
+            cf = cf.sum('dayofyear')
+            df = df - cf.values
+            df.values = df.values * (0.03937007874)
+            dfvarname = 'total_difference_ncepIVprecip'
+            var_plot_name = var
+            
+        # convert to geotiff so we can clip the extents
         df.rio.set_crs("epsg:4326")
         df.attrs['units'] = 'Fahrenheit'
         df.attrs['standard_name'] = 'Temperature'
@@ -439,20 +491,28 @@ for var in datasets:
         df.rio.to_raster(tiffolder + dfvarname  + str(daysback_dict[db]) + '.tif', overwrite=True)
         cl = rioxarray.open_rasterio(tiffolder + dfvarname + str(daysback_dict[db]) +'.tif')
 
-        if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname:
+        if 'Temp' in dfvarname or 'ST' in dfvarname or 'maxHI' in dfvarname or 'DP' in dfvarname:
             cl.values[0] = ((cl.values[0])*(9/5))
-            opLabel = dfvarname.split("_")[0] + ' Deg F'
+            opLabel = dfvarname.split("_")[0] + ' difference (Deg F)'
                 
         # create time label     
         timeLabel = datetime.strftime(time_recent, "%m-%d-%Y %H:%MZ")
-        
+        tem_vmin = cl.min()
+        tem_vmax = cl.max()
+        if abs(tem_vmin) >= abs(tem_vmax):
+            vmin = tem_vmin
+            vmax = (-1)*tem_vmin
+        if abs(tem_vmax) > abs(tem_vmin):
+            vmax = tem_vmax
+            vmin = (-1)*tem_vmax
         fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
         ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
         for ind in range(0,len(bigdeos)):
                 ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                               facecolor='silver', edgecolor='black')
-        im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,transform=ccrs.PlateCarree(),zorder=2)
+        im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,transform=ccrs.PlateCarree(),zorder=2,
+                         vmin=vmin, vmax=vmax)
         for ind in range(0,len(deos_boundarys)):
             ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
                               facecolor='none', edgecolor='black', zorder=3, linewidth=1.5)
@@ -468,13 +528,13 @@ for var in datasets:
         ax.add_geometries([state_outline['geometry'][103]], oldproj, facecolor='silver', edgecolor='black',zorder=3, linewidth=1.5)
 
         if db == 'YTD':
-            plt.text(-76.11, 38.475, str(var + "\n  " + 'Year To Date Difference'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
+            plt.text(-76.11, 38.475, str(var_plot_name + "\n" + 'Year To Date\n' + 'Difference'),horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
             cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
             im1 = image.imread(shapePaths + "deos_logo.png")
             plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
             plt.savefig("/var/www/html/imagery/AgWx/departures/" + dfvarname + "_YTD.png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
         else:
-            plt.text(-76.11, 38.475, str(var + "\n  " + db + " Difference from\n " + 
+            plt.text(-76.11, 38.475, str(var_plot_name + "\n" + db + " Difference\n" + 
                              timeLabel),
                              horizontalalignment='left',color='black',weight='bold',size=5.2,zorder=30,transform=ccrs.PlateCarree())
             cb = fig.colorbar(im, shrink=.7, pad=.02, label=opLabel)
