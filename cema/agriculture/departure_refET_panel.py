@@ -101,11 +101,11 @@ width=800
 height=1000
 
 # load in the shapefiles
-deos = shpreader.Reader("/Users/James/Downloads/cb_2018_us_state_500k/" + 'cb_2018_us_state_500kclipped.shp')
+deos = shpreader.Reader("/home/james/agriculture/shapefolder/cb_2018_us_state_500k/" + 'cb_2018_us_state_500kclipped.shp')
 coastline = gv.Shape.from_records(deos.records())
 shp = gv.Polygons(coastline).opts('Polygons', line_color='black',fill_color=None)
 
-deos = shpreader.Reader("/Users/James/Downloads/mapLayers/" + 'deoscounties.shp')
+deos = shpreader.Reader("/home/james/agriculture/shapefolder/mapLayers/" + 'deoscounties.shp')
 coastline = gv.Shape.from_records(deos.records())
 shp1 = gv.Polygons(coastline).opts('Polygons', line_color='black',fill_color=None)
 
@@ -192,7 +192,7 @@ title1       = '<div style="font-size:50px">CEMA Agriculture Dashboard</div>'
 instruction = '<div style="font-size:25px">Select a dataset, set your parameters, and click plot</div>'
 oggm_logo   = '<a href="http://cema.udel.edu/"><img src="https://lh3.googleusercontent.com/proxy/WDIKz3hvsUgUMPZJpPgUfaznp5BiT-04YPlehRy2BV2HHYCw9xWRH5RwRD3MVCPmcXp6Ouq-8axaYra-KjwjAidNZ4LC" width=170></a>'
 pn_logo     = '<a href="https://panel.pyviz.org"><img src="http://panel.pyviz.org/_static/logo_stacked.png" width=140></a>'
-cema_logo = '/Users/james/Downloads/cema2logo.png'
+cema_logo = '/home/james/agriculture/shapefolder/cema2logo.png'
 
 header = pn.Row(pn.panel(cema_logo, width=170),  pn.layout.Spacer(width=10), 
                 pn.Column(pn.Pane(title1, width=1000), pn.Pane(instruction, width=1000)))
@@ -330,8 +330,7 @@ title2       = '<div style="font-size:50px">CEMA Agricultural Departure Dashboar
 instruction2 = '<div style="font-size:25px">Select a dataset, set your parameters, and click plot</div>'
 oggm_logo   = '<a href="http://cema.udel.edu/"><img src="https://lh3.googleusercontent.com/proxy/WDIKz3hvsUgUMPZJpPgUfaznp5BiT-04YPlehRy2BV2HHYCw9xWRH5RwRD3MVCPmcXp6Ouq-8axaYra-KjwjAidNZ4LC" width=170></a>'
 pn_logo     = '<a href="https://panel.pyviz.org"><img src="http://panel.pyviz.org/_static/logo_stacked.png" width=140></a>'
-cema_logo = '/Users/james/Downloads/cema2logo.png'
-
+cema_logo = '/home/james/agriculture/shapefolder/cema2logo.png'
 header2 = pn.Row(pn.panel(cema_logo, width=170),  pn.layout.Spacer(width=10), 
                 pn.Column(pn.Pane(title2, width=1000), pn.Pane(instruction2, width=1000)))
 
@@ -415,6 +414,7 @@ def make_plot3(dataset3, start_year, end_year, county):              # clb_min, 
         df3.values = df3.values.cumsum()
         cf3 = clim_df[sum_dict[dataset3]]
         cf3 = cf3.sel(time=slice(sDate,eDate))
+        cf3.values = cf3.values.cumsum()
         climLabel = "Climatology - Cum. Sum (mm)"
     if dataset3 == 'NCEP Stage IV Precip':
         df3 = county_df['NCEPstageIVPrecip']
@@ -428,7 +428,7 @@ def make_plot3(dataset3, start_year, end_year, county):              # clb_min, 
         climLabel = "Climatology - Cum. Sum (mm)"
      
      # create the Altair chart object
-    chart3 = cf3.hvplot(height=500, width=800, x="time", y=yval, label = climLabel, title=quad_title, legend = 'top_left') * df3.hvplot(x="time",
+    chart3 = cf3.hvplot(height=800, width=1200, x="time", y=yval, label = climLabel, title=quad_title, legend = 'top_left') * df3.hvplot(x="time",
                         y=yval, label = regLabel, legend = 'top_left')
     return chart3, df3
 
@@ -463,8 +463,7 @@ title3       = '<div style="font-size:50px">CEMA County Averaged Agriculture Das
 instruction3 = '<div style="font-size:25px">Select a dataset, set your parameters, and click plot</div>'
 oggm_logo   = '<a href="http://cema.udel.edu/"><img src="https://lh3.googleusercontent.com/proxy/WDIKz3hvsUgUMPZJpPgUfaznp5BiT-04YPlehRy2BV2HHYCw9xWRH5RwRD3MVCPmcXp6Ouq-8axaYra-KjwjAidNZ4LC" width=170></a>'
 pn_logo     = '<a href="https://panel.pyviz.org"><img src="http://panel.pyviz.org/_static/logo_stacked.png" width=140></a>'
-cema_logo = '/Users/james/Downloads/cema2logo.png'
-
+cema_logo = '/home/james/agriculture/shapefolder/cema2logo.png'
 header3 = pn.Row(pn.panel(cema_logo, width=170),  pn.layout.Spacer(width=10), 
                 pn.Column(pn.Pane(title3, width=1000), pn.Pane(instruction3, width=1000)))
 
