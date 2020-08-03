@@ -574,8 +574,6 @@ for db in daysback_dict.keys():
         left = date(2020, 1, 1)  #Makes it easy to quickly change the range
         right = date(2020, 12, 31)
         datelist = pd.date_range("2020-01-01", "2020-12-31").tolist()
-
-
         fig = plt.figure(figsize=(12,8))
         # Create subplot of 
         plt.subplot(2, 1, 1)

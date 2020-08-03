@@ -257,7 +257,7 @@ def make_plot2(dataset2, start_date, end_date,cmap2):              # clb_min, cl
 
     if any(dataset2 in s for s in sum_dict.keys()):
         df = dsRefET[sum_dict[dataset2]]
-        opLabel = "Total Diff. (" + df2.units + ")"
+        opLabel = "Total Diff. (" + df.units + ")"
         df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
         df = df.sum('time')
         cf = redim_climo[sum_dict[dataset2]]
@@ -406,16 +406,20 @@ def make_plot3(dataset3, start_year, end_year, county):              # clb_min, 
         cf3 = clim_df[mean_dict[dataset3]]
         cf3 = cf3.sel(time=slice(sDate,eDate))
         climLabel = "Climatology"
+        
     if any(dataset3 in s for s in sum_dict.keys()):
+        sDate = datetime(start_year,1, 1)
+        eDate = datetime(end_year, 12, 31)        
         df3 = county_df[sum_dict[dataset3]]
         yval = sum_dict[dataset3]
         regLabel = "Observed - Cum. Sum (" + df3.units + ")"
         df3 = df3.sel(time=slice(sDate,eDate))
-        df3.values = df3.values.cumsum()
+        df3 = df3.cumsum(skipna=True)
         cf3 = clim_df[sum_dict[dataset3]]
         cf3 = cf3.sel(time=slice(sDate,eDate))
         cf3.values = cf3.values.cumsum()
         climLabel = "Climatology - Cum. Sum (mm)"
+        
     if dataset3 == 'NCEP Stage IV Precip':
         df3 = county_df['NCEPstageIVPrecip']
         yval = 'NCEPstageIVPrecip'
@@ -428,8 +432,8 @@ def make_plot3(dataset3, start_year, end_year, county):              # clb_min, 
         climLabel = "Climatology - Cum. Sum (mm)"
      
      # create the Altair chart object
-    chart3 = cf3.hvplot(height=800, width=1200, x="time", y=yval, label = climLabel, title=quad_title, legend = 'top_left') * df3.hvplot(x="time",
-                        y=yval, label = regLabel, legend = 'top_left')
+    chart3 = cf3.hvplot(height=800, width=1200, x="time", y=yval, label = climLabel, title=quad_title, legend = 'left') * df3.hvplot(x="time",
+                        y=yval, label = regLabel, legend = 'left')
     return chart3, df3
 
 
