@@ -95,8 +95,8 @@ fancyDict = dict(zip(list(nameDict.values()), ['Kelvin', 'Kelvin', 'Kelvin', ' '
 
 # create a dictionary for months
 monthDict = dict(zip([1,2,3,4,5,6,7,8,9,10,11,12], ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']))
-yearList = [2020]#[2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020]
-monthList = [7]#[1,2,3,4,5,6,7,8,9,10,11,12]
+yearList = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020]
+monthList = [1,2,3,4,5,6,7,8,9,10,11,12]
 
 for yr in yearList:
     for mn in monthList:
@@ -104,7 +104,6 @@ for yr in yearList:
         for dy in dayList:
             nowtime = datetime.strptime(str("{:04d}".format(yr) + "-" + "{:02d}".format(mn) + "-" + "{:02d}".format(dy)), "%Y-%m-%d")
             daytime = str("{:04d}".format(nowtime.year) + "-" + "{:02d}".format(nowtime.month) + "-" + "{:02d}".format(nowtime.day))
-            
             if os.path.isfile(outPathNC + "/" + str(nowtime.year) + "/" + str("DEOS_agri_" + "{:04d}".format(nowtime.year) + "{:02d}".format(nowtime.month) + "{:02d}".format(nowtime.day) + ".nc")) == False:
                 for var in nameDict:
                     if var != 'Reference Evapotrans.':
@@ -124,8 +123,15 @@ for yr in yearList:
                                 lons.append(loc_deos[rev_station_dict[key]]['longitude'])
                                 workKey.append(str(key))
                             except:
-                                pass
-                        
+                                try:
+                                    agJson = pd.read_json(stat_path)
+                                    # use this for when we are real-time et.append(int(float(et_data[rev_station_dict[key]][str(str(nowtime.year) + "-" + str("{0:0=2d}".format(nowtime.month)) + "-" + str("{0:0=2d}".format(nowtime.day)))]['Reference Evapotrans.']['Value'])))
+                                    varData.append(round(float(agJson[rev_station_dict[key]][str(daytime + ' 00:00:00')][var]['Value']),4))
+                                    lats.append(loc_deos[rev_station_dict[key]]['latitude'])
+                                    lons.append(loc_deos[rev_station_dict[key]]['longitude'])
+                                    workKey.append(str(key))
+                                except:
+                                    pass
                         if len(varData) != 0:
                             # add in four corners to expand the interpolated grid
                             #lons = lons + list([-77.5,-77.5, -73.5,  -73.5])

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import geopandas as gpd
 import rioxarray
 import xarray as xr
@@ -47,6 +47,10 @@ own_cmap1 = mpl.colors.LinearSegmentedColormap.from_list( 'own2', [startcolor, m
 #################################################################
 # begin script
 #################################################################
+# remove the last 3 days of data - this protects against the scenario where we run before all data is placed in DEOS jsons previously
+rm_dates = pd.date_range(date.today() - timedelta(days=3), date.today() - timedelta(days=1))
+for rd in rm_dates:
+    os.system("/bin/rm " + outPathNC + str(rd.year) + "/" + str("DEOS_agri_" + "{:04d}".format(rd.year) + "{:02d}".format(rd.month) + "{:02d}".format(rd.day) + ".nc"))
 
 # grab data from json files
 deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data2.json")
@@ -118,7 +122,15 @@ for dy in daysback:
                         lons.append(loc_deos[rev_station_dict[key]]['longitude'])
                         workKey.append(str(key))
                     except:
-                        pass
+                        try:
+                            agJson = pd.read_json(stat_path)
+                            # use this for when we are real-time et.append(int(float(et_data[rev_station_dict[key]][str(str(nowtime.year) + "-" + str("{0:0=2d}".format(nowtime.month)) + "-" + str("{0:0=2d}".format(nowtime.day)))]['Reference Evapotrans.']['Value'])))
+                            varData.append(round(float(agJson[rev_station_dict[key]][str(daytime + ' 00:00:00')][var]['Value']),4))
+                            lats.append(loc_deos[rev_station_dict[key]]['latitude'])
+                            lons.append(loc_deos[rev_station_dict[key]]['longitude'])
+                            workKey.append(str(key))
+                        except:
+                            pass
                 if len(varData) != 0:
                     # add in four corners to expand the interpolated grid
                     lons = lons + list([-76.6,-76.6,-74.1, -74.1])
