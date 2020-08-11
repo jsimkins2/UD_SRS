@@ -31,16 +31,15 @@ mpl.rcParams["contour.negative_linestyle"] = 'solid'
 
 # load our area, in this case area 2
 area = [36.5, 40, -75.25, -72.0]
-area = [26.5, 29.5, -91.0, -86.5]
 extArea = [area[2], area[3], area[0], area[1]]
 
 # load SST
 today = datetime.utcnow() - timedelta(days=7)
 goes_thredds = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/GOESR_SST_DAILY.nc")
-goes_thredds = goes_thredds.sel(latitude=slice(area[0],area[1]), longitude=slice(area[2], area[3]), time=datetime.strftime(today, '%Y-%m-%d'))
+goes_thredds = goes_thredds.sel(latitude=slice(area[1],area[0]), longitude=slice(area[2], area[3]), time=datetime.strftime(today, '%Y-%m-%d'))
 sst = goes_thredds.metpy.parse_cf('sst')[-1]
-sst = sst.where(sst.values > 200)
-sst = sst - 273.15
+sst = sst.where(sst.values > 0)
+#sst = sst - 273.15
 sst = sst*(9/5) + 32
 sstproj = sst.metpy.cartopy_crs
 
@@ -67,7 +66,7 @@ for i in range(ocolor.shape[0]):
                 ocolor[i,j] = 2 #bg
 
 # load bathymetry data
-bath = xr.open_dataset("Downloads/bath.nc")
+bath = xr.open_dataset("Documents/Delaware/bath.nc")
 bath=bath.sel(lat=slice(area[0],area[1]), lon=slice(area[2], area[3]))
 bath = bath.metpy.parse_cf('Band1')
 bathproj = ccrs.PlateCarree()
@@ -78,7 +77,7 @@ import matplotlib.ticker as mticker
 fig = plt.figure(figsize=[17,14], dpi=120)
 ax1 = fig.add_subplot(1,1,1, projection=ccrs.Mercator())
 ax1.set_extent((extArea),crs=ccrs.PlateCarree())
-im1 = ax1.pcolormesh(sst['longitude'], sst['latitude'], sst, transform=sstproj, cmap='rainbow', vmin=70, vmax=90)
+im1 = ax1.pcolormesh(sst['longitude'], sst['latitude'], sst, transform=sstproj, cmap='rainbow')
 gl = ax1.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                   linewidth=1, color='black', alpha=1, linestyle='--')
 gl.xformatter = LONGITUDE_FORMATTER
@@ -125,3 +124,6 @@ for (i,j), z in np.ndenumerate(r486):
                         val = 'BLUE \nGREEN'
                 ax1.text(r862['lon'].values[j],r862['lat'].values[i],val, ha='center', va='center', size=10, 
                 transform=viirsproj,weight='bold',color='black',rotation=30,**hfont)
+
+
+

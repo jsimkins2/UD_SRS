@@ -33,7 +33,7 @@ bounds=(-76.2,38.3,-74.85, 40.3)
 dsRefET = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/DEOSAG.nc")
 dsRefET = dsRefET.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(bounds[0],bounds[2]))
 
-climo = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/deos_doy_climatology.nc")
+climo = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/deos_doy_climatology.nc")
 climo = climo.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(bounds[0],bounds[2]))
 
 
@@ -359,17 +359,17 @@ def make_plot3(dataset3, start_year, end_year, county):              # clb_min, 
     quad_title = str(county + " " + str(dataset3) + " (" + str(start_year) + " to " +  str(end_year) + ") vs. Climatology")
 
     if county == 'Chester County':
-        county_df = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/chester_agwx.nc")
-        clim_df = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/chester_agwx_climatology.nc")
+        county_df = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/chester_agwx.nc")
+        clim_df = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/chester_agwx_climatology.nc")
     if county == 'New Castle County':
-        county_df = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/ncc_agwx.nc")
-        clim_df = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/ncc_agwx_climatology.nc")
+        county_df = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/ncc_agwx.nc")
+        clim_df = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/ncc_agwx_climatology.nc")
     if county == "Kent County":
-        county_df = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/kentc_agwx.nc")
-        clim_df = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/kent_agwx_climatology.nc")
+        county_df = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/kentc_agwx.nc")
+        clim_df = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/kent_agwx_climatology.nc")
     if county == "Sussex County":
-        county_df = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/sussex_agwx.nc")
-        clim_df = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/sussex_agwx_climatology.nc")
+        county_df = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/sussex_agwx.nc")
+        clim_df = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/sussex_agwx_climatology.nc")
     
     # special clauses for climatology file which has a dayofyear index instead of time
     if sDate.timetuple().tm_year == eDate.timetuple().tm_year:
@@ -406,6 +406,9 @@ def make_plot3(dataset3, start_year, end_year, county):              # clb_min, 
         cf3 = clim_df[mean_dict[dataset3]]
         cf3 = cf3.sel(time=slice(sDate,eDate))
         climLabel = "Climatology"
+        # create the Altair chart object
+        chart3 = cf3.hvplot(height=800, width=1200, x="time", y=yval, label = climLabel, grid=True, title=quad_title, legend = 'left', line_width=3, color='midnightblue')  * df3.hvplot(x="time",
+                        y=yval, label = regLabel, legend = 'left', line_width=3, color='seagreen')
         
     if any(dataset3 in s for s in sum_dict.keys()):
         sDate = datetime(start_year,1, 1)
@@ -414,26 +417,33 @@ def make_plot3(dataset3, start_year, end_year, county):              # clb_min, 
         yval = sum_dict[dataset3]
         regLabel = "Observed - Cum. Sum (" + df3.units + ")"
         df3 = df3.sel(time=slice(sDate,eDate))
-        df3 = df3.cumsum(skipna=True)
+        ddf3 = df3.sel(time=slice(sDate,eDate))
+        ddf3 = ddf3.cumsum(skipna=True)
         cf3 = clim_df[sum_dict[dataset3]]
         cf3 = cf3.sel(time=slice(sDate,eDate))
-        cf3.values = cf3.values.cumsum()
+        ccf3 = cf3.sel(time=slice(sDate,eDate))
+        ccf3.values = ccf3.values.cumsum()
         climLabel = "Climatology - Cum. Sum (mm)"
+        chart3 = ccf3.hvplot(height=800, width=1200, x="time", y=yval, label = climLabel, title=quad_title, grid=True,legend = 'left', line_width=3, color='midnightblue')  * ddf3.hvplot(x="time",
+                        y=yval, label = regLabel, legend = 'left', line_width=3, color='seagreen') * cf3.hvplot(x="time", y=yval, label= "Climatology (mm/day)", line_width=2, color='midnightblue') * df3.hvplot(x="time",
+                        y=yval, label = "Obsereved (mm/day)", line_width=2, color='seagreen')
         
     if dataset3 == 'NCEP Stage IV Precip':
         df3 = county_df['NCEPstageIVPrecip']
         yval = 'NCEPstageIVPrecip'
         regLabel = "Observed - Cum. Sum (mm)"
         df3 = df3.sel(time=slice(sDate,eDate))
-        df3.values = df3.values.cumsum()
+        ddf3 = df3.sel(time=slice(sDate,eDate))
+        ddf3.values = ddf3.values.cumsum()
         cf3 = clim_df['NCEPstageIVPrecip']
         cf3 = cf3.sel(time=slice(sDate,eDate))
-        cf3.values = cf3.values.cumsum()
+        ccf3 = cf3.sel(time=slice(sDate,eDate))
+        ccf3.values = ccf3.values.cumsum()
         climLabel = "Climatology - Cum. Sum (mm)"
+        chart3 = ccf3.hvplot(height=800, width=1200, x="time", y=yval, label = climLabel, title=quad_title, grid=True,legend = 'left', line_width=3, color='midnightblue')  * ddf3.hvplot(x="time",
+                        y=yval, label = regLabel, legend = 'left', line_width=3, color='seagreen') * cf3.hvplot(x="time", y=yval, label= "Climatology (mm/day)", line_width=2, color='midnightblue') * df3.hvplot(x="time",
+                        y=yval, label = "Obsereved (mm/day)", line_width=2, color='seagreen')
      
-     # create the Altair chart object
-    chart3 = cf3.hvplot(height=800, width=1200, x="time", y=yval, label = climLabel, title=quad_title, legend = 'left') * df3.hvplot(x="time",
-                        y=yval, label = regLabel, legend = 'left')
     return chart3, df3
 
 

@@ -158,10 +158,10 @@ dsPrec = dsPrec.rename(name_dict= {'lon' : 'longitude'})
 dsPrec = dsPrec.drop('crs')
 
 # load in the county files
-chester_agwx = xr.open_dataset("/data/DEOS/chester/chester_agwx.nc")
-ncc_agwx = xr.open_dataset("/data/DEOS/ncc/ncc_agwx.nc")
-kent_agwx = xr.open_dataset("/data/DEOS/kent/kent_agwx.nc")
-sussex_agwx = xr.open_dataset("/data/DEOS/sussex/sussex_agwx.nc")
+chester_agwx = xr.open_dataset("/data/DEOS/chester/chester_agwx.nc").sel(time=slice("2010-01-01", pd.to_datetime(datetime.utcnow() - timedelta(days=1))))
+ncc_agwx = xr.open_dataset("/data/DEOS/ncc/ncc_agwx.nc").sel(time=slice("2010-01-01", pd.to_datetime(datetime.utcnow() - timedelta(days=1))))
+kent_agwx = xr.open_dataset("/data/DEOS/kent/kent_agwx.nc").sel(time=slice("2010-01-01", pd.to_datetime(datetime.utcnow() - timedelta(days=1))))
+sussex_agwx = xr.open_dataset("/data/DEOS/sussex/sussex_agwx.nc").sel(time=slice("2010-01-01", pd.to_datetime(datetime.utcnow() - timedelta(days=1))))
 
 # now slice the agwx_main dataset based on the last time slice of chester_agwx
 agwx_main = agwx_main.sel(time=slice(pd.to_datetime(chester_agwx.time.values[-1]) + timedelta(days=1), pd.to_datetime(agwx_main.time.values[-1])))
@@ -241,18 +241,26 @@ if agwx_main.time.values[-1] != chester_agwx.time.values[-1]:
     
     
     combined = xr.concat([chester_agwx,chester_ds], dim='time')
+    combined = combined.assign_coords(time=("time", combined['time'].values.astype('int64')//1e9))
+    combined['time'].attrs['units'] = 'seconds since 1970-01-01'
     combined.to_netcdf("/data/DEOS/chester/chester_agwx_updated.nc", mode='w')
     print('finished chester county')
     
     combined = xr.concat([ncc_agwx,ncc_ds], dim='time')
+    combined = combined.assign_coords(time=("time", combined['time'].values.astype('int64')//1e9))
+    combined['time'].attrs['units'] = 'seconds since 1970-01-01'
     combined.to_netcdf("/data/DEOS/ncc/ncc_agwx_updated.nc", mode='w')
     print('finished new castle county')
     
     combined = xr.concat([kent_agwx,kent_ds], dim='time')
+    combined = combined.assign_coords(time=("time", combined['time'].values.astype('int64')//1e9))
+    combined['time'].attrs['units'] = 'seconds since 1970-01-01'
     combined.to_netcdf("/data/DEOS/kent/kent_agwx_updated.nc", mode='w')
     print('finished kent county')
     
     combined = xr.concat([sussex_agwx,sussex_ds], dim='time')
+    combined = combined.assign_coords(time=("time", combined['time'].values.astype('int64')//1e9))
+    combined['time'].attrs['units'] = 'seconds since 1970-01-01'
     combined.to_netcdf("/data/DEOS/sussex/sussex_agwx_updated.nc", mode='w')
     print('finished sussex county')
     
@@ -267,3 +275,18 @@ if agwx_main.time.values[-1] != chester_agwx.time.values[-1]:
     os.system("/bin/mv /data/DEOS/kent/kent_agwx_updated.nc /data/DEOS/kent/kent_agwx.nc")
     os.system("/bin/mv /data/DEOS/sussex/sussex_agwx_updated.nc /data/DEOS/sussex/sussex_agwx.nc")
 
+
+# convert the time values to
+'''
+chester_agwx = chester_agwx.assign_coords(time=("time", chester_agwx['time'].values.astype('int64')//1e9))
+chester_agwx['time'].attrs['units'] = 'seconds since 1970-01-01'
+
+ncc_agwx = ncc_agwx.assign_coords(time=("time", ncc_agwx['time'].values.astype('int64')//1e9))
+ncc_agwx['time'].attrs['units'] = 'days since 1970-01-01'
+
+kent_agwx = kent_agwx.assign_coords(time=("time", kent_agwx['time'].values.astype('int64')//1e9))
+kent_agwx['time'].attrs['units'] = 'days since 1970-01-01'
+
+sussex_agwx = sussex_agwx.assign_coords(time=("time", sussex_agwx['time'].values.astype('int64')//1e9))
+sussex_agwx['time'].attrs['units'] = 'days since 1970-01-01'
+'''

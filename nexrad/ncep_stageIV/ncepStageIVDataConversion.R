@@ -9,21 +9,22 @@ system(paste0("/usr/bin/rm ",paste0(datadir,'notNetcdf/*')))
 system(paste0("/usr/bin/rm ",paste0(datadir,'unprojected/*')))
 for (d in seq(utc14, utcnow, by="hour")){
   dateTime = as.POSIXct.numeric(d,tz='UTC',origin='1970-01-01 00:00:00')
-  temFile = paste0("ST4.", year(dateTime),sprintf("%02i", month(dateTime)), sprintf("%02i", day(dateTime)), sprintf("%02i", hour(dateTime)), '.01h.gz')
+  temFile = paste0("st4_conus.", year(dateTime),sprintf("%02i", month(dateTime)), sprintf("%02i", day(dateTime)), sprintf("%02i", hour(dateTime)), '.01h.grb2')
 
   system(paste0("/usr/bin/wget -P /home/james/ncep_stageIV/zipped/ https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod/pcpanl.",year(dateTime),sprintf("%02i", month(dateTime)), sprintf("%02i", day(dateTime)),"/",temFile))
-  system(paste0("/usr/bin/gunzip ",datadir,'zipped/', temFile))
-  temFile=substr(temFile, 0, nchar(temFile)-3)
   system(paste0("/usr/bin/mv ",datadir,'zipped/',temFile, " ", datadir,'notNetcdf/'))
   system(paste0("/usr/local/bin/gdal_translate ",datadir,"notNetcdf/",temFile, " ",datadir,'unprojected/', temFile, ".nc -of netcdf"))
-  if (file.exists(paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",temFile, "r.nc"))){
-    system(paste0("/usr/bin/rm ",paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",temFile, "r.nc")))
+  # add these because gdal can't overwrite
+
+  ncTemFile = paste0("ST4.", substr(temFile,11, 20), ".01h")
+  if (file.exists(paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",ncTemFile, "r.nc"))){
+    system(paste0("/usr/bin/rm ",paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",ncTemFile, "r.nc")))
   }
-  system(paste0("/usr/local/bin/gdalwarp ",datadir,'unprojected/', temFile,".nc /data/ncep_stageIV/indiv/",year(dateTime),"/",temFile, "r.nc -of netcdf -t_srs epsg:4326"))
+  system(paste0("/usr/local/bin/gdalwarp ",datadir,'unprojected/', temFile,".nc /data/ncep_stageIV/indiv/",year(dateTime),"/",ncTemFile, "r.nc -of netcdf -t_srs epsg:4326"))
   
-  f=paste0(temFile,".nc")
+  f=paste0(ncTemFile,".nc")
   timeVal = as.POSIXct(ymd_h(substr(f,5,14)))
-  loc = nc_open(paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",temFile, "r.nc"),write = TRUE)
+  loc = nc_open(paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",ncTemFile, "r.nc"),write = TRUE)
   prec = ncvar_get(nc=loc, varid="Band1")
   timedim = ncdim_def("time", "seconds since 1970-01-01",as.numeric(timeVal))
   londim = loc$dim$lon
@@ -33,11 +34,11 @@ for (d in seq(utc14, utcnow, by="hour")){
   ncdf4::ncvar_add(nc=loc, v=prec_def)
   nc_close(loc)
   
-  loc = nc_open(paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",temFile, "r.nc"),write = TRUE)
+  loc = nc_open(paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",ncTemFile, "r.nc"),write = TRUE)
   ncvar_put(nc=loc,varid="Precipitation_Flux", vals=prec)
   nc_close(loc)
   
-  system(paste0("/usr/bin/ncks -x -v Band1 ",paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",temFile, "r.nc")," ",paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",temFile, "r.nc"), " -O"))
+  system(paste0("/usr/bin/ncks -x -v Band1 ",paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",ncTemFile, "r.nc")," ",paste0("/data/ncep_stageIV/indiv/",year(dateTime),"/",ncTemFile, "r.nc"), " -O"))
 }
 
 

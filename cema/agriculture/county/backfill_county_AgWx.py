@@ -24,7 +24,7 @@ import pandas as pd
 import matplotlib.patheffects as path_effects
 import matplotlib.image as image
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 # declare paths
 shapePaths = "/home/james/mapLayers/"
@@ -143,6 +143,16 @@ bounds=(-76.2,38.3,-74.85, 40.3)
 agwx_main = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/DEOSAG.nc")
 agwx_main = agwx_main.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(bounds[0],bounds[2]))
 
+dsPrec = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/NCEPIVQC.nc")
+dsPrec = dsPrec.sel(lat=slice(bounds[1], bounds[3]), 
+                    lon=slice(bounds[0],bounds[2]), 
+                    time=slice(datetime.strptime("2010-01-01", "%Y-%m-%d"),
+                              date.today()))
+dsPrec = dsPrec.reindex(lat=list(reversed(dsPrec.lat)))
+dsPrec = dsPrec.rename(name_dict= {'lat' : 'latitude'})
+dsPrec = dsPrec.rename(name_dict= {'lon' : 'longitude'})
+dsPrec = dsPrec.drop('crs')
+
 # create county data frames
 chester_ds = xr.Dataset({"time": agwx_main['time'].values})
 ncc_ds = xr.Dataset({"time": agwx_main['time'].values})
@@ -179,18 +189,74 @@ for co in range(0, len(deos_boundarys["NAME"])):
             kent_ds[var] = (['time'], var_list)
         if co == 3:
             sussex_ds[var] = (['time'], var_list)
-
+for co in range(0, len(deos_boundarys["NAME"])):
+    county_outline = deos_boundarys.loc[[co], 'geometry']
+    var = 'Precipitation_Flux'
+    var_list = []
+    for t in range(0,len(agwx_main.time.values)):
+        da = xr.DataArray(dsPrec.Precipitation_Flux.sel(time = agwx_main.time.values[t], method = 'nearest').values,dims=['latitude', 'longitude'],coords={'longitude': agwx_main.longitude.values, 'latitude' :agwx_main.latitude.values})
+        da.rio.set_crs("epsg:4326")
+        da.attrs['units'] = 'Fahrenheit'
+        da.attrs['standard_name'] = 'Temperature'
+        da.rio.set_spatial_dims('longitude', 'latitude')
+        da.rio.to_raster(raster_path + var + str(co) + str(t) + '.tif', overwrite=True)
+        xds = rioxarray.open_rasterio(raster_path + var + str(co) + str(t) + '.tif')
+        # clip the interpolated data based on the shapefiles
+        clipped = xds.rio.clip(county_outline.geometry.apply(mapping), xds.rio.crs, drop=True)
+        cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, invert=True)
+        ds_county = cl.mean()
+        var_list.append(round(ds_county.values.tolist(),2))
+        # if we don't remove it, it won't overwrite properly
+        os.system("/bin/rm " + raster_path + var + str(co) + str(t) + '.tif')
     if co == 0:
-        chester_ds.to_netcdf("/data/DEOS/chester/chester_agwx.nc")
-        print('finished chester county')
+        chester_ds['NCEPstageIVPrecip'] = (['time'], var_list)
+        chester_ds['NCEPstageIVPrecip'].attrs['units'] = dsPrec[var].attrs['units']
+        chester_ds['NCEPstageIVPrecip'].attrs['long_name'] = dsPrec[var].attrs['long_name']
     if co == 1:
-        ncc_ds.to_netcdf("/data/DEOS/ncc/ncc_agwx.nc")
-        print('finished new castle county')
+        ncc_ds['NCEPstageIVPrecip'] = (['time'], var_list)
+        ncc_ds['NCEPstageIVPrecip'].attrs['units'] = dsPrec[var].attrs['units']
+        ncc_ds['NCEPstageIVPrecip'].attrs['long_name'] = dsPrec[var].attrs['long_name']
     if co == 2:
-        kent_ds.to_netcdf("/data/DEOS/kent/kent_agwx.nc")
-        print('finished kent county')
+        kent_ds['NCEPstageIVPrecip'] = (['time'], var_list)
+        kent_ds['NCEPstageIVPrecip'].attrs['units'] = dsPrec[var].attrs['units']
+        kent_ds['NCEPstageIVPrecip'].attrs['long_name'] = dsPrec[var].attrs['long_name']
     if co == 3:
-        sussex_ds.to_netcdf("/data/DEOS/sussex/sussex_agwx.nc")
-        print('finished sussex county')
+        sussex_ds['NCEPstageIVPrecip'] = (['time'], var_list)
+        sussex_ds['NCEPstageIVPrecip'].attrs['units'] = dsPrec[var].attrs['units']
+        sussex_ds['NCEPstageIVPrecip'].attrs['long_name'] = dsPrec[var].attrs['long_name']
 
+
+for var in chester_ds.variables:
+    if var != 'time':
+        if var != 'NCEPstageIVPrecip' :
+            chester_ds[var].attrs['units'] = agwx_main[var].attrs['units']
+            ncc_ds[var].attrs['units'] = agwx_main[var].attrs['units']
+            kent_ds[var].attrs['units'] = agwx_main[var].attrs['units']
+            sussex_ds[var].attrs['units'] = agwx_main[var].attrs['units']
+            chester_ds[var].attrs['long_name'] = agwx_main[var].attrs['long_name']
+            ncc_ds[var].attrs['long_name'] = agwx_main[var].attrs['long_name']
+            kent_ds[var].attrs['long_name'] = agwx_main[var].attrs['long_name']
+            sussex_ds[var].attrs['long_name'] = agwx_main[var].attrs['long_name']
+
+chester_ds.to_netcdf("/data/DEOS/chester/chester_agwx_updated.nc", mode='w')
+print('finished chester county')
+
+ncc_ds.to_netcdf("/data/DEOS/ncc/ncc_agwx_updated.nc", mode='w')
+print('finished new castle county')
+
+kent_ds.to_netcdf("/data/DEOS/kent/kent_agwx_updated.nc", mode='w')
+print('finished kent county')
+
+sussex_ds.to_netcdf("/data/DEOS/sussex/sussex_agwx_updated.nc", mode='w')
+print('finished sussex county')
+
+chester_agwx.close()
+ncc_agwx.close()
+kent_agwx.close()
+sussex_agwx.close()
+
+os.system("/bin/mv /data/DEOS/chester/chester_agwx_updated.nc /data/DEOS/chester/chester_agwx.nc")
+os.system("/bin/mv /data/DEOS/ncc/ncc_agwx_updated.nc /data/DEOS/ncc/ncc_agwx.nc")
+os.system("/bin/mv /data/DEOS/kent/kent_agwx_updated.nc /data/DEOS/kent/kent_agwx.nc")
+os.system("/bin/mv /data/DEOS/sussex/sussex_agwx_updated.nc /data/DEOS/sussex/sussex_agwx.nc")
 

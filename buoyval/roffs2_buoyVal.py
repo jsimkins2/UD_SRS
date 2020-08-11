@@ -19,15 +19,15 @@ def find_nearest(array, value):
     return idx
     
 # from Maine down to florida
-stations = {'44066' : 'Texas Tower',
-            '44009' : 'Delaware Bay',
-            '44089' : 'Wallops Island'}
+stations = {#'44066' : 'Texas Tower',
+            '44009' : 'Delaware Bay'}#,
+            #'44089' : 'Wallops Island'}
 
 statsDF = pd.DataFrame(columns=list(stations.keys()), index=['Name', 'RMSE', 'MeanSquareError', 'MeanAbsoluteError', 'Rsquared', 'median_absolute_error', 'explained_variance_score', 'max_error','Bias(Sat-Buoy)', 'count'])
 
 
 # grab the buoy data and throw it into temporary data frame
-years_aqua = np.arange(2017,2021,1)
+years_aqua = np.arange(2019,2020,1)
 # grab the buoy data and throw it into temporary data frame
 for s in list(stations.keys()):
     print(s)
@@ -52,7 +52,7 @@ for s in list(stations.keys()):
             datasets.append(ds)
     
     combined = xr.concat(datasets, dim='time')
-    buoy_nc = combined.sel(time = slice('2018-01-01', '2020-04-14'))
+    buoy_nc = combined.sel(time = slice('2019-06-01', '2019-10-01'))
     #wind_nc = buoy_nc['wind_spd']
     buoy_nc = buoy_nc['sea_surface_temperature']
     buoy_nc = buoy_nc.where(buoy_nc > 2, drop=True) # 2 degrees celsius
@@ -67,7 +67,7 @@ for s in list(stations.keys()):
     
     goes_nc = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/ROFFS2SST.nc')
     goes_nc = goes_nc.drop('sst')
-    goes_nc = goes_nc.sel(time = slice('2018-01-01', '2020-04-14'))
+    goes_nc = goes_nc.sel(time = slice('2019-06-01', '2019-10-01'))
     goes_nc = goes_nc.sel(latitude=lat_s, longitude=lon_s, method='nearest')
     goes_nc = ((goes_nc-32)*(5/9))+(273.15)
     goes_nc = goes_nc.metpy.parse_cf("forecasted_sst")
@@ -114,7 +114,7 @@ for s in list(stations.keys()):
             plt.scatter(sst_time, buoy_vals, color='blue', s=5, label = 'Buoy Value')
             plt.legend()
             plt.title('Buoy ' + s + ' ' + stations[s])
-            plt.savefig("/Users/james/Documents/Delaware/buoy_val/roffs2_fore_images/buoy" + s)
+            plt.savefig("/Users/james/Documents/Delaware/buoy_val/roffs2_fore_images/summer_buoy" + s)
             plt.close()
         
         #fig = plt.figure(figsize=(16,8))
@@ -124,7 +124,7 @@ for s in list(stations.keys()):
         #plt.title('Buoy ' + s + ' ' + stations[s])
         #plt.savefig("/Users/james/Documents/buoy_val/wind_goes/buoy" + s)
         #plt.close()
-statsDF.to_csv("/Users/james/Documents/Delaware/buoy_val/roffs2_dailyfore_buoyval.csv")
+statsDF.to_csv("/Users/james/Documents/Delaware/buoy_val/summer_roffs2_dailyfore_buoyval.csv")
 
 
 
