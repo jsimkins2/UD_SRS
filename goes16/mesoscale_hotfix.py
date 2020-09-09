@@ -9,7 +9,9 @@ from matplotlib.patches import Rectangle
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import matplotlib.image as image
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap # Linear interpolation for color maps
-
+from matplotlib.axes import Axes
+from cartopy.mpl.geoaxes import GeoAxes
+GeoAxes._pcolormesh_patched = Axes.pcolormesh
 from siphon.catalog import TDSCatalog
 import urllib
 from netCDF4 import Dataset, num2date
@@ -58,14 +60,12 @@ if len(m1list) > 0:
     fnamelist = [m1name]
     list2 = ['MCMIPM2']
     m2list = [i for i in file_names if any(b in i for b in list2)]
-    
     if len(m2list) > 0:
         m2name = sorted(m2list)[-1:][0]
         fnamelist = [m1name, m2name]
 else:
     list2 = ['MCMIPM2']
     m2list = [i for i in file_names if any(b in i for b in list2)]
-    
     if len(m2list) > 0:
         m2name = sorted(m2list)[-1:][0]
         fnamelist = [m2name]
@@ -80,9 +80,9 @@ for i in range(0,len(fnamelist)):
     newproj = ccrs.Mercator()
     ##### Need to do this by band because I don't think the mcmipc exists on thredds
     # Load the RGB arrays
-    R = Cnight.variables['CMI_C02'][:].data
-    G = Cnight.variables['CMI_C03'][:].data
-    B = Cnight.variables['CMI_C01'][:].data
+    R = Cnight.variables['CMI_C02'][:]
+    G = Cnight.variables['CMI_C03'][:]
+    B = Cnight.variables['CMI_C01'][:]
     
     # Turn empty values into nans
     R[R==-1] = np.nan
@@ -109,7 +109,7 @@ for i in range(0,len(fnamelist)):
     G_true = np.minimum(G_true, 1)
     
     # Grab the IR / Apply range limits for clean IR channel/Normalize the channel between a range/invert colors/lessen the brightness
-    cleanIR = Cnight.variables['CMI_C13'][:].data
+    cleanIR = Cnight.variables['CMI_C13'][:]
     cleanIR[cleanIR==-1] = np.nan
     b13 = cleanIR
     cleanIR = np.maximum(cleanIR, 90)
