@@ -193,7 +193,6 @@ datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + list(max_dict.keys()
 
 nowdate=datetime.utcnow()
 for var in datasets:
-    print(var)
     for db in daysback_dict.keys():
         if any(var in s for s in mean_dict.keys()):
             df = agwx_main[mean_dict[var]]
@@ -205,9 +204,9 @@ for var in datasets:
             cmap = 'coolwarm'
             if var[3] == 'a':
                 var_plot_name = var[0:3] + var[4:]
-            if var[4] == 'a':
+            elif var[4] == 'a':
                 var_plot_name = var[0:4] + var[5:]
-            if var[5] == 'a':
+            elif var[5] == 'a':
                 var_plot_name = var[0:5] + var[6:]
             else:
                 var_plot_name = var
@@ -235,7 +234,6 @@ for var in datasets:
             var_plot_name = var
             if max_dict[var] == 'maxHI':
                 dfvarname = "maximum_HeatIndex"
-                print("hey we're at heat index right now so....")
             cmap = 'coolwarm'
             
         if any(var in s for s in min_dict.keys()):
@@ -255,10 +253,20 @@ for var in datasets:
         df.rio.to_raster(tiffolder + dfvarname  + str(daysback_dict[db]) + '.tif', overwrite=True)
         cl = rioxarray.open_rasterio(tiffolder + dfvarname + str(daysback_dict[db]) +'.tif')
 
-        if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname:
+        if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname or 'HI' in dfvarname:
             cl.values[0] = ((cl.values[0] - 273.15)*(9/5)) + 32
-            opLabel = dfvarname.split("_")[0] + ' Deg F'
-                
+            opLabel = dfvarname.split("_")[0] + ' (Deg F)'
+        
+        if 'Gust' in dfvarname or 'WS' in dfvarname:
+            cl.values[0] = cl.values[0] * 2.23694
+            opLabel = dfvarname.split("_")[0] + ' (mph)'
+        
+        if 'precip' in dfvarname:
+            cl.values[0] = cl.values[0] * 0.0393701
+            opLabel = 'Total (inches)'
+            
+        if 'HeatIndex' in dfvarname or 'HI' in dfvarname:
+            cl.values[0][cl.values[0] < 80] = np.nan
         # create time label     
         timeLabel = datetime.strftime(time_recent, "%m-%d-%Y %H:%MZ")
         
@@ -356,7 +364,11 @@ for var in datasets:
 
         # create time label     
         timeLabel = datetime.strftime(time_recent, "%m-%d-%Y %H:%MZ")
-
+        
+        # convert to inches
+        cl.values[0] = cl.values[0] * 0.0393701
+        opLabel = 'Total (inches)'
+        
         fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
         ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
@@ -398,7 +410,6 @@ for var in datasets:
 
 # now create the departure maps 
 # load in the datasets
-
 climo = xr.open_dataset("/data/DEOS/doy_climatology/deos_doy_climatology.nc")
 nowtime = datetime.utcnow()
 ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
@@ -407,7 +418,6 @@ datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + ['Reference Evapotra
 
 nowdate=datetime.utcnow()
 for var in datasets:
-    print(var)
     for db in daysback_dict.keys():
         if any(var in s for s in mean_dict.keys()):
             df = agwx_main[mean_dict[var]]
@@ -416,20 +426,26 @@ for var in datasets:
             opLabel = 'Difference from Normal (' + df.units + ')'
             df = df.sel(time=slice(time_recent - timedelta(days=daysback_dict[db]), time_recent))
             df = df.mean('time')
+            if 'HeatIndex' in dfvarname or 'HI' in dfvarname:
+                df = df.where(df > 299.817)
             cf = climo[mean_dict[var]]
             cf_min = (time_recent.timetuple().tm_yday - daysback_dict[db]) if (time_recent.timetuple().tm_yday - daysback_dict[db]) > 0 else 0
             cf = cf.isel(dayofyear=slice(cf_min, time_recent.timetuple().tm_yday))
             cf = cf.mean('dayofyear')
+            if 'HeatIndex' in dfvarname or 'HI' in dfvarname:
+                cf = cf.where(cf > 299.817)
             df = df - cf
             cmap = 'coolwarm'
             if var[3] == 'a':
                 var_plot_name = var[0:3] + var[4:]
-            if var[4] == 'a':
+            elif var[4] == 'a':
                 var_plot_name = var[0:4] + var[5:]
-            if var[5] == 'a':
+            elif var[5] == 'a':
                 var_plot_name = var[0:5] + var[6:]
             else:
                 var_plot_name = var
+            
+
         if any(var in s for s in sum_dict.keys()):
             df = agwx_main[sum_dict[var]]
             time_recent = pd.to_datetime(df.time.values[-1])
@@ -483,6 +499,7 @@ for var in datasets:
             df.values = df.values * (0.03937007874)
             dfvarname = 'total_difference_ncepIVprecip'
             var_plot_name = var
+            cmap = 'BrBG'
             
         # convert to geotiff so we can clip the extents
         df.rio.set_crs("epsg:4326")
@@ -492,10 +509,14 @@ for var in datasets:
         df.rio.to_raster(tiffolder + dfvarname  + str(daysback_dict[db]) + '.tif', overwrite=True)
         cl = rioxarray.open_rasterio(tiffolder + dfvarname + str(daysback_dict[db]) +'.tif')
 
-        if 'Temp' in dfvarname or 'ST' in dfvarname or 'maxHI' in dfvarname or 'DP' in dfvarname:
-            cl.values[0] = ((cl.values[0])*(9/5))
-            opLabel = dfvarname.split("_")[0] + ' difference (Deg F)'
-                
+        if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname or 'HI' in dfvarname:
+            cl.values[0] = ((cl.values[0] - 273.15)*(9/5))
+            opLabel = 'Difference (Deg F)'
+        
+        if 'Gust' in dfvarname or 'Speed' in dfvarname:
+            cl.values[0] = cl.values[0] * 2.23694
+            opLabel = 'Difference (mph)'
+    
         # create time label     
         timeLabel = datetime.strftime(time_recent, "%m-%d-%Y %H:%MZ")
         tem_vmin = cl.min()
@@ -506,6 +527,7 @@ for var in datasets:
         if abs(tem_vmax) > abs(tem_vmin):
             vmax = tem_vmax
             vmin = (-1)*tem_vmax
+
         fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
         ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
