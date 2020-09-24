@@ -6,8 +6,8 @@
 library(ncdf4)
 
 yearsSeq = seq(2008,2019)
-homedir = '/data/ncep_stageIV/'
-baseFile = nc_open('/data/ncep_stageIV/2019/ST4.2019091913.01hr.nc')
+homedir = '/data/ncep_stageIV/quality/'
+baseFile = nc_open('/data/ncep_stageIV/quality/2020/ST4.2020091112.24hr.nc')
 baseLat = baseFile$dim$lat$vals
 baseLon = baseFile$dim$lon$vals
 for (y in yearsSeq){
