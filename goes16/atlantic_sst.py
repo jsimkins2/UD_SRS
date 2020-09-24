@@ -122,7 +122,7 @@ cb1.outline.set_visible(False) # Remove the colorbar outline
 cb1.ax.tick_params(width = 0) # Remove the colorbar ticks 
 cb1.ax.xaxis.set_tick_params(pad=-16) # Put the colobar labels inside the colorbar
 gl = ax.gridlines(crs=proj, linewidth=0.5, color='black', alpha=0.5, linestyle='--', draw_labels=True)
-gl.xlabels_top = False
+gl.xlabels_bottom = False
 gl.ylabels_left = False
 ax.set_title("")
 ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
