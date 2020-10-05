@@ -171,20 +171,20 @@ dsPrec = dsPrec.drop('crs')
 
 sum_dict = dict(zip(['Heating Degree Days', 'Cooling Degree Days','DEOS Precip',  'Energy Density', 'Growing Degree Days'],
                     ['HDD', 'CDD',  'dailyprecip', 'energyDens', 'GDD']))
-mean_dict = dict(zip(['Mean Temperature', 'Maxa Temperature', 'Mina Temperature', 'Mean Wind Speed', 'Mean Dew Point',
+mean_dict = dict(zip(['Mean Temperature', 'Maxa Temperature', 'Mina Temperature', 'Mean Wind Speed', 'Meana Dew Point',
                       'Mean Relative Humidity', 'Max Relative Humidity', 'Min Relative Humidity', 
-                      'Mean Soil Temperature', 'Maxa Soil Temperature', 'Mina Soil Temperature',
+                      'Meana Soil Temperature', 'Maxa Soil Temperature', 'Mina Soil Temperature',
                       'Mean Volumetric Water Content','Max Volumetric Water Content', 'Min Volumetric Water Content',
                       'Mean Solar', 'Mean Wind Direction', 'Winda Gust', 'Mina Wind Chill', 'Dailya Max HI'],
                      ['meanTemp', 'maxTemp', 'minTemp', 'meanWS','meanDP','meanRH', 'maxRH', 'minRH',
                       'meanST', 'maxST', 'minST','meanVWC', 'maxVWC', 'minVWC','meanSolar', 'meanWD',
                       'dailyGust', 'dailyMinWC', 'maxHI']))
 
-max_dict = dict(zip(['Max Temperature','Max Soil Temperature', 'Wind Gust', 'Daily Max HI'],
-                     ['maxTemp','maxST','dailyGust', 'maxHI']))
+max_dict = dict(zip(['Max Temperature','Max Soil Temperature', 'Wind Gust', 'Daily Max HI', 'MeanH Dew Point'],
+                     ['maxTemp','maxST','dailyGust', 'maxHI', 'meanDP']))
 
-min_dict = dict(zip(['Min Temperature', 'Min Soil Temperature','Min Wind Chill'],
-                     ['minTemp', 'minST','dailyMinWC']))
+min_dict = dict(zip(['Min Temperature', 'Min Soil Temperature','Min Wind Chill', 'MeanL Dew Point'],
+                     ['minTemp', 'minST','dailyMinWC', 'meanDP']))
 
 nowtime = datetime.utcnow()
 ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
@@ -211,6 +211,9 @@ for var in datasets:
             else:
                 var_plot_name = var
             
+            if var.split(' ')[1] == 'Volumetric':
+                cmap = 'BrBG'
+            
         if any(var in s for s in sum_dict.keys()):
             df = agwx_main[sum_dict[var]]
             time_recent = pd.to_datetime(df.time.values[-1])
@@ -235,6 +238,10 @@ for var in datasets:
             if max_dict[var] == 'maxHI':
                 dfvarname = "maximum_HeatIndex"
             cmap = 'coolwarm'
+            if var[4] == 'H':
+                var_plot_name = var[0:4] + var[5:]
+            if max_dict[var] == 'meanDP':
+                var_plot_name = 'Maximum Dew Point'
             
         if any(var in s for s in min_dict.keys()):
             df = agwx_main[min_dict[var]]
@@ -245,6 +252,10 @@ for var in datasets:
             dfvarname = "minimum_" + min_dict[var]
             var_plot_name = var
             cmap = 'coolwarm'
+            if var[4] == 'L':
+                var_plot_name = var[0:4] + var[5:]
+            if min_dict[var] == 'meanDP':
+                var_plot_name = 'Minimum Dew Point'
             # convert to geotiff so we can clip the extents
         df.rio.set_crs("epsg:4326")
         df.attrs['units'] = 'Fahrenheit'
@@ -253,7 +264,7 @@ for var in datasets:
         df.rio.to_raster(tiffolder + dfvarname  + str(daysback_dict[db]) + '.tif', overwrite=True)
         cl = rioxarray.open_rasterio(tiffolder + dfvarname + str(daysback_dict[db]) +'.tif')
 
-        if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname or 'HI' in dfvarname:
+        if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname or 'HI' in dfvarname or 'WC' in dfvarname:
             cl.values[0] = ((cl.values[0] - 273.15)*(9/5)) + 32
             opLabel = dfvarname.split("_")[0] + ' (Deg F)'
         

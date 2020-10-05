@@ -123,34 +123,34 @@ cmap2 = pn.widgets.Select(name='Color Ramp', options=cmap_keys, value=cmap_keys[
 #@pn.depends(dataset.param.value, start_date.param.value, end_date.param.value, clb_min.param.value, clb_max.param.value, cmap.param.value)
 def make_plot1(dataset, start_date, end_date,cmap):              # clb_min, clb_max, 
      # Load and format the data
-    sDate = datetime(start_date.year, start_date.month, start_date.day)
+    sDate = datetime(start_date.year, start_date.month, start_date.day )
     eDate = datetime(end_date.year, end_date.month, end_date.day)
 
-    quad_title = str(str(dataset) + "    Start Date : " +
-                    datetime.strftime(sDate + timedelta(days=-1), "%Y-%m-%d") + " - End Date : " + 
-                    datetime.strftime(eDate + timedelta(days=-1), "%Y-%m-%d"))
+    quad_title = str(str(dataset) + "    Start Date: " +
+                    datetime.strftime(sDate, "%Y-%m-%d") + " 00:00 - End Date: " + 
+                    datetime.strftime(eDate, "%Y-%m-%d") + " 23:59")
     if any(dataset in s for s in mean_dict.keys()):
         df = dsRefET[mean_dict[dataset]]
         opLabel = 'Avg ' + df.units 
-        df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df = df.sel(time=slice(sDate,eDate + timedelta(days=1)))
         df = df.mean('time')
 
     if any(dataset in s for s in sum_dict.keys()):
         df = dsRefET[sum_dict[dataset]]
         opLabel = 'Total ' + df.units
-        df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df = df.sel(time=slice(sDate,eDate + timedelta(days=1)))
         df = df.sum('time')
     if dataset == 'NCEP Stage IV Precip':
         df = dsPrec
         opLabel = 'Total mm'
-        df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df = df.sel(time=slice(sDate,eDate))
         df = df.sum('time')
         dwnldName = str("ncepStageIV.nc")
     if dataset == 'NCEP Stage IV Precip - DEOS RefET':
         dfref = dsRefET['refET']
-        df1 = dfref.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df1 = dfref.sel(time=slice(sDate,eDate + timedelta(days=1)))
         df1 = df1.sum('time')
-        df2 = dsPrec.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df2 = dsPrec.sel(time=slice(sDate,eDate + timedelta(days=1)))
         df2 = df2.sum('time')
         df = df2 - df1.values
         df['Precip - ET'] = df.Precipitation_Flux
@@ -206,11 +206,12 @@ plotwindow1 = pn.Row(sel_box, make_plot1(dataset.value, start_date.value, end_da
 #@pn.depends(dataset.param.value, start_date.param.value, end_date.param.value, clb_min.param.value, clb_max.param.value, cmap.param.value)
 def make_plot2(dataset2, start_date, end_date,cmap2):              # clb_min, clb_max, 
      # Load and format the data
-    sDate = datetime(start_date.year, start_date.month, start_date.day)
+    sDate = datetime(start_date.year, start_date.month, start_date.day )
     eDate = datetime(end_date.year, end_date.month, end_date.day)
-    quad_title = str(str(dataset2) + "    Start Date : " +
-                    datetime.strftime(sDate + timedelta(days=-1), "%Y-%m-%d") + " - End Date : " + 
-                    datetime.strftime(eDate + timedelta(days=-1), "%Y-%m-%d"))
+
+    quad_title = str(str(dataset2) + "    Start Date: " +
+                    datetime.strftime(sDate, "%Y-%m-%d") + " 00:00 - End Date: " + 
+                    datetime.strftime(eDate, "%Y-%m-%d") + " 23:59")
     # special clauses for climatology file which has a dayofyear index instead of time
     if calendar.isleap(sDate.timetuple().tm_year) == False:
         redim_climo = climo.drop([60], dim='dayofyear')
@@ -240,10 +241,10 @@ def make_plot2(dataset2, start_date, end_date,cmap2):              # clb_min, cl
     if any(dataset2 in s for s in mean_dict.keys()):
         df2 = dsRefET[mean_dict[dataset2]]
         opLabel = "Avg Diff. (" + df2.units + ")"
-        df2 = df2.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df2 = df2.sel(time=slice(sDate,eDate + timedelta(days=1)))
         df2 = df2.mean('time')
         cf = redim_climo[mean_dict[dataset2]]
-        cf = cf.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        cf = cf.sel(time=slice(sDate,eDate + timedelta(days=1)))
         cf = cf.mean('time')
         df2 = df2 - cf
         tem_vmin = np.min(df2.values)
@@ -257,11 +258,11 @@ def make_plot2(dataset2, start_date, end_date,cmap2):              # clb_min, cl
 
     if any(dataset2 in s for s in sum_dict.keys()):
         df = dsRefET[sum_dict[dataset2]]
-        opLabel = "Total Diff. (" + df.units + ")"
-        df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        opLabel = "Total Diff. (" + df2.units + ")"
+        df = df.sel(time=slice(sDate,eDate + timedelta(days=1)))
         df = df.sum('time')
         cf = redim_climo[sum_dict[dataset2]]
-        cf = cf.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        cf = cf.sel(time=slice(sDate,eDate + timedelta(days=1)))
         cf = cf.sum('time')
         df2 = df - cf
         tem_vmin = np.min(df2.values)
@@ -275,10 +276,10 @@ def make_plot2(dataset2, start_date, end_date,cmap2):              # clb_min, cl
     if dataset2 == 'NCEP Stage IV Precip':
         df = dsPrec
         opLabel = "Total Diff. (mm)"
-        df = df.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        df = df.sel(time=slice(sDate,eDate + timedelta(days=1)))
         df = df.sum('time')
         cf = redim_climo['NCEPstageIVPrecip']
-        cf = cf.sel(time=slice(sDate + timedelta(days=-1),eDate + timedelta(days=-1)))
+        cf = cf.sel(time=slice(sDate,eDate + timedelta(days=1)))
         cf = cf.sum('time')
         df2 = df - cf.values
         dwnldName = str("ncepStageIV.nc")
@@ -331,10 +332,12 @@ instruction2 = '<div style="font-size:25px">Select a dataset, set your parameter
 oggm_logo   = '<a href="http://cema.udel.edu/"><img src="https://lh3.googleusercontent.com/proxy/WDIKz3hvsUgUMPZJpPgUfaznp5BiT-04YPlehRy2BV2HHYCw9xWRH5RwRD3MVCPmcXp6Ouq-8axaYra-KjwjAidNZ4LC" width=170></a>'
 pn_logo     = '<a href="https://panel.pyviz.org"><img src="http://panel.pyviz.org/_static/logo_stacked.png" width=140></a>'
 cema_logo = '/home/james/agriculture/shapefolder/cema2logo.png'
+
 header2 = pn.Row(pn.panel(cema_logo, width=170),  pn.layout.Spacer(width=10), 
                 pn.Column(pn.Pane(title2, width=1000), pn.Pane(instruction2, width=1000)))
 
 plotwindow2 = pn.Row(sel_box2, make_plot2(dataset2.value, start_date.value, end_date.value, cmap2.value)[0]) #clbmin clbmax
+
 
 
 # In[300]:
