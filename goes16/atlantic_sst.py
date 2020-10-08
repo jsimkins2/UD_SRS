@@ -21,6 +21,7 @@ from os.path import isfile, join
 import pandas as pd
 import cartopy
 import matplotlib.ticker as mticker
+import cmocean
 # open the main dataset
 main_sst = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/GOESR_SST_DAILY.nc")
 main_sst = main_sst.reindex(latitude=list(reversed(main_sst.latitude)))
@@ -60,7 +61,7 @@ fig = plt.figure(figsize=[16, 16], dpi=100)
 ax = fig.add_subplot(1,1,1, projection=proj)
 ax.set_extent((dat['longitude'].min(), dat['longitude'].max(), dat['latitude'].min(), dat['latitude'].max()), crs=proj)
 
-im = ax.pcolormesh(dat['longitude'], dat['latitude'], dat, cmap='jet', vmin=32, vmax=90)
+im = ax.pcolormesh(dat['longitude'], dat['latitude'], dat, cmap=cmocean.cm.thermal, vmin=32, vmax=90)
 cbaxes = inset_axes(ax, width="100%", height="3%", loc='lower center', borderpad=0) 
 cb1 = fig.colorbar(im, orientation='horizontal', cax=cbaxes, ticks=[32, 40, 50, 60, 70, 80, 90])
 cb1.ax.set_xticklabels(['','40' +  u"\u00b0" +  'F',  '50' +  u"\u00b0" +  'F',  '60' +  u"\u00b0" +  'F',
@@ -73,7 +74,7 @@ gl = ax.gridlines(crs=proj, linewidth=0.5, color='black', alpha=0.5, linestyle='
 gl.xlabels_bottom = False
 gl.ylabels_left = False
 ax.set_title("")
-ax.add_feature(cartopy.feature.LAND,facecolor='gray')
+ax.add_feature(cartopy.feature.LAND,facecolor='lightslategray')
 ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
                                 edgecolor='black', facecolor='none',linewidth=1))
 ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '50m',
@@ -112,7 +113,7 @@ fig = plt.figure(figsize=[12, 12], dpi=100)
 ax = fig.add_subplot(1,1,1, projection=proj)
 ax.set_extent((-80, -68, 33, 44), crs=proj)
 
-im = ax.pcolormesh(dat['longitude'], dat['latitude'], dat, cmap='jet', vmin=32, vmax=90)
+im = ax.pcolormesh(dat['longitude'], dat['latitude'], dat, cmap=cmocean.cm.thermal, vmin=32, vmax=90)
 cbaxes = inset_axes(ax, width="100%", height="3%", loc='lower center', borderpad=0) 
 cb1 = fig.colorbar(im, orientation='horizontal', cax=cbaxes, ticks=[32, 40, 50, 60, 70, 80, 90])
 cb1.ax.set_xticklabels(['','40' +  u"\u00b0" +  'F',  '50' +  u"\u00b0" +  'F',  '60' +  u"\u00b0" +  'F',
@@ -130,7 +131,7 @@ ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
 #ax.add_feature(cfeature.NaturalEarthFeature('physical', 'land', '50m',
 #                               edgecolor='black', facecolor='gray',linewidth=1))
 ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '50m',
-                                edgecolor='black', facecolor='gray',linewidth=0.5))
+                                edgecolor='black', facecolor='lightslategray',linewidth=0.5))
                                 
 fig.patches.extend([plt.Rectangle((toprecx,toprecy),0.774,0.022,
                               fill=True, color='darkslateblue', alpha=1, zorder=1000,
