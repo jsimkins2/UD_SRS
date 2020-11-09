@@ -104,7 +104,7 @@ def create_gif(workdir, imgdir, gifname):
     dur_vals = []
     for i in range(0,imglen -1):
         if i != imglen:
-            dur_vals.append(.07)
+            dur_vals.append(.2)
     dur_vals.append(2)
     for i in img_names:
         input_file=imgdir + str(i)
