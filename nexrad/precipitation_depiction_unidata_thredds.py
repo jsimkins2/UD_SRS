@@ -106,7 +106,6 @@ def create_gif(workdir, imgdir, gifname):
         if i != imglen:
             dur_vals.append(.07)
     dur_vals.append(2)
-    
     for i in img_names:
         input_file=imgdir + str(i)
         images.append(imageio.imread(input_file))
@@ -116,7 +115,6 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     my_gf = pyart.filters.GateFilter(radar)
     my_gf.exclude_below('reflectivity', 12)
     my_ds_gf = pyart.correct.despeckle_field(radar, 'reflectivity', gatefilter=my_gf)
-    
     timestamp = radar.time['units'].split(' ')[-1].split('T')
     timestamp = timestamp[0] + ' ' + timestamp[1][:-1]
     timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S') + timedelta(minutes=4)
@@ -132,7 +130,6 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
       et = "EST"
     else:
       et = "EDT"
-    
     lats = radar.gate_latitude
     lons = radar.gate_longitude
     min_lon = -78.24357604980469 #lons['data'].min() + 2.5
@@ -151,16 +148,13 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     rav_lats = lats.ravel()
     rav_lons = lons.ravel()
     rav_ref = my_ref.ravel()
-    
     nlon = 500; nlat = 500 #can be changed, but seems good.
     #Grid Data using matplotlib
     grid_lons = np.linspace(boundinglon[0],boundinglon[1],nlon)
     grid_lats = np.linspace(boundinglat[0],boundinglat[1],nlat)
     glon,glat = np.meshgrid(grid_lons,grid_lats)
-    
     # Interpolate data onto grid using linear interpolation
     gref = griddata((rav_lons,rav_lats),rav_ref,(glon,glat),method='linear')
-    
     # load in the temperatures data
     grid850=np.load(datadir + 'grid850.npy')
     grid925=np.load(datadir + 'grid925.npy')
@@ -194,8 +188,8 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     im5 = ax.contour(glon, glat, gridthick,levels=[5450, 5500,5550,5600,5650, 5700,5750, 5800], colors='k',linestyles='--', transform = ccrs.PlateCarree())
     im6 = ax.contour(glon, glat, gridthick,levels = [5200, 5250, 5300, 5350,5400], colors='blue',linestyles='--',linewidths=2, transform = ccrs.PlateCarree())
     # add contour labels
-    plt.clabel(im5, fmt='%1.0f', transform=ccrs.PlateCarree())
-    plt.clabel(im6,fmt='%1.0f', transform=ccrs.PlateCarree())
+    plt.clabel(im5, fmt='%1.0f')
+    plt.clabel(im6,fmt='%1.0f')
     
     # add colorbars
     cbaxes = fig.add_axes([0.93, 0.15, 0.02, 0.15]) 

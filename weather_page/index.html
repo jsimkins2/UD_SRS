@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>CEMA Weather Page</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  margin: 0;
+  background-color:lightslategray;
+  width: 70%;
+  max-width: 1000px;
+  margin: auto
+}
+
+/* Thumbnails */
+img {
+  border: 1px solid #ddd; /* Gray border */
+  border-radius: 4px;  /* Rounded border */
+  padding: 5px; /* Some padding */
+  width: 200px; /* Set a small width */
+}
+
+/* Add a hover effect (blue shadow) */
+img:hover {
+  box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+}
+
+/* constraining the width/placement of the columns/rows of thumbnails */
+.content {
+  max-width: 50px;
+  margin: auto;
+}
+
+/* Style the header */
+.header {
+  padding: 30px;
+  text-align: center;
+  background: darkslategray;
+  color: white;
+}
+
+/* Increase the font size of the h1 element */
+.header h1 {
+  font-size: 40px;
+  background-color: darkslategray;
+}
+
+</style>
+</head>
+
+
+<body>
+<div class="header">
+  <h1>CEMA Weather Page</h1>
+  <iframe src="http://free.timeanddate.com/clock/i7gq0y69/fn13/tc0ff/ftb/bas0/bac0ff/tt1/tw0/tm3/td2" frameborder="0" width="100" 	height="18" align="left" vertical-align="top"></iframe>
+  <a href="http://www.deos.udel.edu/">DEOS</a>
+  <a href="http://cema.udel.edu/">CEMA</a>
+  <a href="http://udsrs.udel.edu/">UDSRS</a>
+  <a href="http://basin.ceoe.udel.edu/erddap/info/index.html?page=1&itemsPerPage=1000">ERDDAP</a>
+  <iframe src="http://free.timeanddate.com/clock/i7gq0y69/fn13/tc0ff/ftb/bas0/bac0ff/th1/ta1" frameborder="0" width="100" height="18" align="right" vertical-align="top"></iframe>
+</div>
+
+ <head>
+    <style>
+    {
+        box-sizing: border-box;
+    }
+    /* Set additional styling options for the columns */
+    .column {
+    float: left;
+    }
+
+    /* Set width length for the left, right and middle columns */
+    .left {
+    width: 25%;
+    }
+
+    .middle {
+    width: 25%;
+    }
+    
+    .middle2 {
+    width: 25%;
+    }
+    
+    .right {
+    width: 25%;
+    }
+
+    .row:after {
+    content: "";
+    display: table;
+    clear: both;
+    }
+    
+    .thumbnail {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    }
+    .thumbnail img {
+    position: absolute;
+    left: 100%;
+    top: 100%;
+    height: 100%;
+    width: auto;
+    -webkit-transform: translate(-100%,-85%);
+        -ms-transform: translate(-100%,-85%);
+            transform: translate(-100%,-85%);
+  	}
+  	.thumbnail img.portrait {
+    width: 100%;
+    height: auto;
+  }
+    </style>
+ </head>
+ 
+ 
+ <body>
+    <div class="row">
+        <div class="column left">
+          <div style="content">
+          <a href="https://www.nhc.noaa.gov/xgtwo/two_atl_2d0.png">
+            <img src="../imagery/pivotal/two_atl_2d0.png" alt="NHC Hurricane">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/atlantic_hurricane_band13.gif">
+            <img src="../imagery/pivotal/atlhurr13.png" alt="G16 Band 13 Atlantic Basin">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/ocean/G16_anomaly_atlantic.png">
+            <img src="../imagery/ocean/G16_anomaly_atlantic.png" alt="G16 SST Anomaly Atlantic">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/ocean/G16_anomaly_delaware.png">
+            <img src="../imagery/ocean/G16_anomaly_delaware.png" alt="G16 SST Anomaly Delaware">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/ocean/G16_anomaly_atlantic.png">
+            <img src="../imagery/ocean/G16_atlantic.png" alt="G16 SST Atlantic">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/ocean/G16_anomaly_delaware.png">
+            <img src="../imagery/ocean/G16_delaware.png" alt="G16 SST Delaware">
+          </a>
+          <a target="_blank" href="http://www.ssd.noaa.gov/PS/TROP/DATA/RT/SST/ATL/20.jpg">
+            <img src="http://www.ssd.noaa.gov/PS/TROP/DATA/RT/SST/ATL/20.jpg" alt="SST ">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/mesoscale_1_band13.gif">
+            <img src="../imagery/pivotal/meso1.png" alt="Meso 1 Band 13">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/mesoscale_2_band13.gif">
+            <img src="../imagery/pivotal/meso2.png" alt="Meso 2 Band 13">
+          </a>
+          </div>
+        </div>
+        <div class="column middle">
+          <div style="content">
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/truecolor_midatlantic.gif">
+            <img src="../imagery/pivotal/tc_mid.png" alt="G16 TrueColor MidAtlantic">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/lightning_radar_goes_midatlantic.gif">
+            <img src="../imagery/pivotal/lrgmid.png" alt="G16 TrueColor Radar MidAtlantic">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/kdox_radar.gif">
+            <img src="../imagery/pivotal/refkdox.png" alt="KDOX Radar">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/Band10_midatlantic.gif">
+            <img src="../imagery/pivotal/midatl_band10.png" alt="G16 Band 10">
+          </a>
+          <a href="http://basin.ceoe.udel.edu/imagery/Band13_midatlantic.gif">
+            <img src="../imagery/pivotal/midatl_band13.png">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/kdox_velocity.gif">
+            <img src="../imagery/pivotal/velkdox.png" alt="KDOX Velocity">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/radar_midatlantic.gif">
+            <img src="../imagery/pivotal/tcmid.png" alt="Midatlantic MRMS">
+          </a>
+          <a target="_blank" href="http://www.deos.udel.edu/images/current/airtemps.png">
+            <img src="http://www.deos.udel.edu/images/current/airtemps.png" alt="DEOS Air Temp">
+          </a>
+          <a target="_blank" href="http://www.deos.udel.edu/images/current/dttemps.png">
+            <img src="http://www.deos.udel.edu/images/current/dttemps.png" alt="DEOS Dew Point">
+          </a>
+          <a target="_blank" href="http://www.deos.udel.edu/images/current/rain24.png">
+            <img src="http://www.deos.udel.edu/images/current/rain24.png" alt="Rain 24 Hour">
+          </a>
+          <a target="_blank" href="http://www.deos.udel.edu/images/current/rh.png">
+            <img src="http://www.deos.udel.edu/images/current/rh.png" alt="Relative Humidity ">
+          </a>
+          <a target="_blank" href="http://www.deos.udel.edu/images/current/ws.png">
+            <img src="http://www.deos.udel.edu/images/current/ws.png" alt="Wind Speed">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/AgWx/water_quantity/DEOSprecip_YTD.png">
+            <img src="../imagery/AgWx/water_quantity/DEOSprecip_YTD.png">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/AgWx/departures/total_difference_DEOSPrecip_30.png">
+            <img src="../imagery/AgWx/departures/total_difference_DEOSPrecip_30.png" alt="NCEP Stage IV Weekly Aggregation">
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/ncepStageIV_midatlantic_day.png">
+            <img src="../imagery/ncepStageIV_midatlantic_day.png" alt="NCEP Stage IV Daily Aggregation">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/ncepStageIV_midatlantic_week.png">
+            <img src="../imagery/ncepStageIV_midatlantic_week.png" alt="NCEP Stage IV Weekly Aggregation">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/AgWx/county/New%20Castle_YTD_precipitation.png">
+            <img src="../imagery/AgWx/county/New%20Castle_YTD_precipitation.png" alt="NCC YTD Precip Agg">
+          </a>
+          </div>
+        </div>
+        
+        
+        <div class="column middle2">
+          <div style="content">
+          <a href="https://www.pivotalweather.com/maps.php?ds=hazards&p=ref1km_ptype&r=us_ma">
+            <img src="../imagery/pivotal/nwshaz.us_ma.png">
+          </a>
+          <a target="_blank" href="https://www.pivotalweather.com/maps.php?ds=spc&p=spcd1cat&r=us_ma">
+            <img src="../imagery/pivotal/spcd1cat.us_ma.png" alt="G16 TrueColor MidAtlantic">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/Band10_midatlantic.gif">
+            <img src="../imagery/pivotal/sfctd_b.us_ma.png" alt="G16 Band 10">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/kdox_radar.gif">
+            <img src="../imagery/pivotal/1monprcp.us_ma.png" alt="KDOX Radar">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/kdox_velocity.gif">
+            <img src="../imagery/pivotal/1montemp.us_ma.png " alt="KDOX Velocity">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/radar_midatlantic.gif">
+            <img src="../imagery/pivotal/610prcp.us_ma.png" alt="Midatlantic MRMS">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/truecolor_midatlantic.gif">
+            <img src="../imagery/pivotal/droughtotlk.us_ma.png" alt="G16 TrueColor MidAtlantic">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/Band10_midatlantic.gif">
+            <img src="../imagery/pivotal/ndfd_24hgust.us_ma.png" alt="G16 Band 10">
+          </a>
+          <a href="https://www.pivotalweather.com/maps.php?ds=ndfd&p=spcd1cat&r=us_ma">
+            <img src="../imagery/pivotal/ndfd_sfctmax.us_ma.png">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu/imagery/kdox_radar.gif">
+            <img src="../imagery/pivotal/ndfd_48hqpf.us_ma.png" alt="KDOX Radar">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu//imagery/kdox_velocity.gif">
+            <img src="../imagery/pivotal/ndfd_48hsnow.us_ma.png" alt="KDOX Velocity">
+          </a>
+          <a target="_blank" href="http://basin.ceoe.udel.edu//imagery/radar_midatlantic.gif">
+            <img src="../imagery/pivotal/ndfd_sfctmax.us_ma.png" alt="Midatlantic MRMS">
+          </a>
+          </div>
+        </div>
+        
+        
+        
+        <div class="column right">
+          <div style="content">
+          <a target="_blank" href="https://iri.columbia.edu/wp-content/uploads/2020/09/figure1.png">
+            <img src="../imagery/pivotal/figure1.png" alt="ENSO Forecast Columbia">
+          </a>
+          <a target="_blank" href="https://psl.noaa.gov/forecasts/reforecast2/teleconn/images/4indices.png">
+            <img src="../imagery/pivotal/4indices.png" alt="Teleconnection Forecast">
+          </a>
+          <a target="_blank" href="https://psl.noaa.gov/map/images/sst/sst.anom.seasonal.gif">
+            <img src="../imagery/pivotal/sst.anom.seasonal.gif" alt="G16 TrueColor MidAtlantic">
+          </a>
+          <a target="_blank" href="https://www.cpc.ncep.noaa.gov/products/precip/CWlink/MJO/ensplume_full.gif">
+            <img src="../imagery/pivotal/ensplume_full.gif" alt="MJO">
+          </a>
+          <a target="_blank" href="https://psl.noaa.gov/map/images/olr/olr.anom.90day.gif">
+            <img src="../imagery/pivotal/olr.anom.90day.gif" alt="G16 Band 10">
+          </a>
+          <a href="https://psl.noaa.gov/map/images/rnl/500z_90b.rnl.gif">
+            <img src="../imagery/pivotal/500z_90b.rnl.gif">
+          </a>
+          <a target="_blank" href="https://psl.noaa.gov/forecasts/reforecast2/analogs/images/deterministic_168to336hrs_latest.png">
+            <img src="../imagery/pivotal/deterministic_168to336hrs_latest.png" alt="KDOX Radar">
+          </a>
+          <a target="_blank" href="https://psl.noaa.gov/forecasts/reforecast2/wx_maps/images/z500_mean_f240_nhsm.png">
+            <img src="../imagery/pivotal/z500_mean_f240_nhsm.png" alt="KDOX Velocity">
+          </a>
+
+          <a target="_blank" href="https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/figure02.gif">
+            <img src="../imagery/pivotal/figure02.gif" alt="Midatlantic MRMS">
+          </a>
+         
+          <a target="_blank" href="https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/figure06.gif">
+            <img src="../imagery/pivotal/figure06.gif" alt="Midatlantic MRMS">
+          </a>
+          
+
+          </div>
+        </div>
+    </div>
+
+
+</body>
+</html>
+
+
+

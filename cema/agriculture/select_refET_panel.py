@@ -162,7 +162,7 @@ def make_plot1(dataset, start_date, end_date,cmap):              # clb_min, clb_
     y = 'latitude'
      # create the Altair chart object
     chart = df.hvplot.quadmesh(width=width, height=height, x=x, y=y, cmap=cmap_dict[cmap], 
-            project=True, geo=True,title=quad_title,xlim=xlim,ylim=ylim,label=opLabel, #clim=(vmin,vmax)
+            project=True, geo=True,title=quad_title,xlim=xlim,ylim=ylim,label=opLabel,
             rasterize=True, dynamic=False) * shp * shp1
     return chart, df
 
@@ -193,7 +193,7 @@ title1       = '<div style="font-size:50px">CEMA Agriculture Dashboard</div>'
 instruction = '<div style="font-size:25px">Select a dataset, set your parameters, and click plot</div>'
 oggm_logo   = '<a href="http://cema.udel.edu/"><img src="https://lh3.googleusercontent.com/proxy/WDIKz3hvsUgUMPZJpPgUfaznp5BiT-04YPlehRy2BV2HHYCw9xWRH5RwRD3MVCPmcXp6Ouq-8axaYra-KjwjAidNZ4LC" width=170></a>'
 pn_logo     = '<a href="https://panel.pyviz.org"><img src="http://panel.pyviz.org/_static/logo_stacked.png" width=140></a>'
-cema_logo = '/Users/james/Downloads/cema2logo.png'
+cema_logo = '/home/james/agriculture/shapefolder/cema2logo.png'
 
 header = pn.Row(pn.panel(cema_logo, width=170),  pn.layout.Spacer(width=10), 
                 pn.Column(pn.Pane(title1, width=1000), pn.Pane(instruction, width=1000)))
@@ -248,6 +248,8 @@ def make_plot2(dataset2, start_date, end_date,cmap2):              # clb_min, cl
         cf = cf.sel(time=slice(sDate,eDate + timedelta(days=1)))
         cf = cf.mean('time')
         df2 = df2 - cf
+        vmin=-5
+        vmax=5
         tem_vmin = np.min(df2.values)
         tem_vmax = np.max(df2.values)
         if abs(tem_vmin) >= abs(tem_vmax):
@@ -266,6 +268,8 @@ def make_plot2(dataset2, start_date, end_date,cmap2):              # clb_min, cl
         cf = cf.sel(time=slice(sDate,eDate + timedelta(days=1)))
         cf = cf.sum('time')
         df2 = df - cf
+        vmin=-5
+        vmax=5
         tem_vmin = np.min(df2.values)
         tem_vmax = np.max(df2.values)
         if abs(tem_vmin) >= abs(tem_vmax):
@@ -284,6 +288,8 @@ def make_plot2(dataset2, start_date, end_date,cmap2):              # clb_min, cl
         cf = cf.sum('time')
         df2 = df - cf.values
         dwnldName = str("ncepStageIV.nc")
+        vmin=-5
+        vmax=5
         tem_vmin = np.min(df2.Precipitation_Flux.values)
         tem_vmax = np.max(df2.Precipitation_Flux.values)
         if abs(tem_vmin) >= abs(tem_vmax):
@@ -332,7 +338,7 @@ title2       = '<div style="font-size:50px">CEMA Agricultural Departure Dashboar
 instruction2 = '<div style="font-size:25px">Select a dataset, set your parameters, and click plot</div>'
 oggm_logo   = '<a href="http://cema.udel.edu/"><img src="https://lh3.googleusercontent.com/proxy/WDIKz3hvsUgUMPZJpPgUfaznp5BiT-04YPlehRy2BV2HHYCw9xWRH5RwRD3MVCPmcXp6Ouq-8axaYra-KjwjAidNZ4LC" width=170></a>'
 pn_logo     = '<a href="https://panel.pyviz.org"><img src="http://panel.pyviz.org/_static/logo_stacked.png" width=140></a>'
-cema_logo = '/Users/james/Downloads/cema2logo.png'
+cema_logo = '/home/james/agriculture/shapefolder/cema2logo.png'
 
 header2 = pn.Row(pn.panel(cema_logo, width=170),  pn.layout.Spacer(width=10), 
                 pn.Column(pn.Pane(title2, width=1000), pn.Pane(instruction2, width=1000)))
