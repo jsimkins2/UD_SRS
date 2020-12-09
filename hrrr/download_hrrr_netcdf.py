@@ -85,6 +85,8 @@ if os.path.isfile(datadir + dataset_name[:-5] + 'nc') == False:
     except:
         try:
             time[:] = tempiso['time1'][1].values
+        except:
+            pass
     tsurf[:]= ds.metpy.parse_cf('Temperature_height_above_ground')[1][0].values
     t925[:]=tempiso[1][3].values
     t850[:]=tempiso[1][2].values
