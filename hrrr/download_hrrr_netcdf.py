@@ -51,8 +51,15 @@ if os.path.isfile(datadir + dataset_name[:-5] + 'nc') == False:
     y.units = tempiso['y'].units
     
     time = f.createVariable('time', 'f8', 'time')
-    time.standard_name = tempiso['time'][1].standard_name
-    time.long_name = tempiso['time'][1].long_name
+    try:
+        time.standard_name = tempiso['time'][1].standard_name
+        time.long_name = tempiso['time'][1].long_name
+    except:
+        try:
+            time.standard_name = tempiso['time1'][1].standard_name
+            time.long_name = tempiso['time1'][1].long_name
+        except:
+            pass
     
     proj = f.createVariable('projection', 'f4')
     proj.crs = 'lambert_conformal_conic'
