@@ -31,3 +31,8 @@ ls /home/sat_ops/goesR/radar/tcmid -tr | tail -n 1 | xargs -I{} scp /home/sat_op
 ls /home/sat_ops/goesR/radar/tcconus -tr | tail -n 1 | xargs -I{} scp /home/sat_ops/goesR/radar/tcconus/{} /var/www/html/imagery/pivotal/tcconus.png
 
 mogrify -resize 200 /var/www/html/imagery/pivotal/*.png
+
+scp /home/sat_ops/goesR/github/UD_SRS/weather_page/index.html /var/www/html/weather_page/
+
+
+

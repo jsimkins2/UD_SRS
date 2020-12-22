@@ -30,7 +30,10 @@ fi
 
 
 wget https://iri.columbia.edu/wp-content/uploads/$year/$month/figure1.png -P /home/sat_ops/weather_page/
-wget https://psl.noaa.gov/forecasts/reforecast2/teleconn/images/4indices.png -P /home/sat_ops/weather_page/
+wget https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/ao.sprd2.gif -P /home/sat_ops/weather_page/
+wget https://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/pna.sprd2.gif -P /home/sat_ops/weather_page/
+wget https://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/nao.sprd2.gif -P /home/sat_ops/weather_page/
+wget https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/aao/aao.sprd2.gif -P /home/sat_ops/weather_page/
 wget https://psl.noaa.gov/map/images/sst/sst.anom.seasonal.gif -P /home/sat_ops/weather_page/
 #mv sst.anom.seasonal.gif sst.anom.seasonal.png
 wget https://www.cpc.ncep.noaa.gov/products/precip/CWlink/MJO/ensplume_full.gif -P /home/sat_ops/weather_page/
