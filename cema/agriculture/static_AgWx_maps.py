@@ -30,7 +30,7 @@ from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 import rioxarray
 from matplotlib.offsetbox import AnchoredText
-
+import calendar
 # declare paths
 #shapePaths = "/Users/James/Downloads/mapLayers/"
 #colorPaths = "/Users/James/Downloads/colorramps/"
@@ -586,6 +586,7 @@ co_names = ['Chester', 'New Castle', 'Kent', 'Sussex']
 nowtime = datetime.utcnow()
 ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
 daysback_dict = dict(zip(['YTD'], [np.int(np.abs(ytd.days))]))#dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [np.int(np.abs(ytd.days)), 90, 30, 7, 1]))
+doy_len = 366 if calendar.isleap(nowdate.year) == True else 365
 
 # Precipitation Map
 nowdate=datetime.utcnow()
@@ -596,14 +597,14 @@ for db in daysback_dict.keys():
         df = df.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
         df.values = df.values * (0.0393701)
         cf = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['dailyprecip']
-        cf = cf.isel(dayofyear=slice(0, 366))
+        cf = cf.isel(dayofyear=slice(0, doy_len))
         cf.values = cf.values * (0.0393701)
         ncep = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + countydf[co])['NCEPstageIVPrecip']
         ncep = ncep.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
         ncep.values = ncep.values * (0.0393701)
         ncepClim = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['NCEPstageIVPrecip']
         ncepClim.values = ncepClim.values * (0.0393701)
-        ncepClim = ncepClim.isel(dayofyear=slice(0, 366))
+        ncepClim = ncepClim.isel(dayofyear=slice(0, doy_len))
         #Set X range here:
         left = date(nowdate.year, 1, 1)  #Makes it easy to quickly change the range
         right = date(nowdate.year, 12, 31)
@@ -661,11 +662,11 @@ for db in daysback_dict.keys():
         time_recent = pd.to_datetime(df.time.values[-1])
         df = df.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
         cf = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['HDD']
-        cf = cf.isel(dayofyear=slice(0, 366))
+        cf = cf.isel(dayofyear=slice(0, doy_len))
         ncep = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + countydf[co])['CDD']
         ncep = ncep.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
         ncepClim = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['CDD']
-        ncepClim = ncepClim.isel(dayofyear=slice(0, 366))
+        ncepClim = ncepClim.isel(dayofyear=slice(0, doy_len))
         #Set X range here:
         left = date(nowdate.year, 1, 1)  #Makes it easy to quickly change the range
         right = date(nowdate.year, 12, 31)
@@ -723,11 +724,11 @@ for db in daysback_dict.keys():
         time_recent = pd.to_datetime(df.time.values[-1])
         df = df.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
         cf = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['GDD']
-        cf = cf.isel(dayofyear=slice(0, 366))
+        cf = cf.isel(dayofyear=slice(0, doy_len))
         ncep = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + countydf[co])['energyDens']
         ncep = ncep.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
         ncepClim = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['energyDens']
-        ncepClim = ncepClim.isel(dayofyear=slice(0, 366))
+        ncepClim = ncepClim.isel(dayofyear=slice(0, doy_len))
         #Set X range here:
         left = date(nowdate.year, 1, 1)  #Makes it easy to quickly change the range
         right = date(nowdate.year, 12, 31)
