@@ -45,21 +45,12 @@ def JulianDate_to_MMDDYYY(y,jd):
         month = month + 1
     return month,jd,y
 
-datadir = "/home/sat_ops/goesR/data/sst/backfill/b15temp/"
-sst_data = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
 datadir = "/home/sat_ops/goesR/data/sst/backfill/ssttemp/"
-b15data = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))]) #
+sst_data = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
 
 ldatetime = []
-for t in b15data:
-    jday = t.split('_s')[1][:-3][4:7]
-    year = t.split('_s')[1][:-3][0:4]
-    mdy = JulianDate_to_MMDDYYY(int(year),int(jday))
-    hms = t.split('_s')[1][:-3][7:13]
-    t = str(mdy[2]) + jday + hms
-    ldatetime.append(datetime.strptime(t, '%Y%j%H%M%S'))
 
-ldatetime = sorted(ldatetime)
+
 for fname in sst_data:
     ds = xr.open_dataset("/home/sat_ops/goesR/data/sst/backfill/ssttemp/" + fname)
     dat = ds.metpy.parse_cf('SST')
@@ -72,15 +63,6 @@ for fname in sst_data:
     ftime = fname.split('_')[3][1:-3]
 
     gdatetime=datetime.strptime(ftime, '%Y%j%H%M')
-    b15index= ldatetime.index(nearest(ldatetime, gdatetime))
-
-    ds = Dataset("/home/sat_ops/goesR/data/sst/backfill/b15temp/" + b15data[b15index])
-    print(str(b15data[b15index]) + " matched with " + str(fname))
-    ds = NetCDF4DataStore(ds)
-    ds = xr.open_dataset(ds)
-    d2 = ds
-    dat15 = d2.metpy.parse_cf('CMI_C15')
-
 
     f = Dataset("/home/sat_ops/goesR/data/sst/backfill/raw/" + str(nowdate.year) + "/" + str(fname),'w', format='NETCDF4') #'w' stands for write
     # dimensions
@@ -128,16 +110,10 @@ for fname in sst_data:
     dqf.flag_meanings = d.variables['DQF'].flag_meanings
     dqf.grid_mapping = 'goes_imager_projection'
 
-    band15 = f.createVariable('Band15', 'f4', ('time', 'y', 'x'))
-    band15.long_name = dat15.long_name
-    band15.standard_name = dat15.standard_name
-    band15.units = dat15.units
-
     # data
     x[:] = dat['x'].values
     y[:] = dat['y'].values
     sst[:]= dat.values
     dqf[:]=dat_dqf
-    band15[:]=dat15.values
     time[:] = dat['t'].values
     f.close()

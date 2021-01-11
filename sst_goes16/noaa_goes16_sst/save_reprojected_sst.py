@@ -50,16 +50,11 @@ for dataset in filenames:
                     "/home/sat_ops/goesR/data/sst/rast_dqf/" + str(nowdate.year) + "/DQF" + str(dataset))
                 new = xr.open_dataset(
                     "/home/sat_ops/goesR/data/sst/rast_sst/" + str(nowdate.year) + "/SST" + str(dataset))
-    
-                dat15 = xr.open_dataset(
-                    "/home/sat_ops/goesR/data/sst/rast_b15/" + str(nowdate.year) + "/B15" + str(dataset))
-    
+
                 new = new.where((new['latitude'] > 16) & (new['latitude'] < 52) & (
                     new['longitude'] > -100) & (new['longitude'] < -50), drop=True)
                 dat_dqf = dat_dqf.where((dat_dqf['latitude'] > 16) & (dat_dqf['latitude'] < 52) & (
                     dat_dqf['longitude'] > -100) & (dat_dqf['longitude'] < -50), drop=True)
-                dat15 = dat15.where((dat15['latitude'] > 16) & (dat15['latitude'] < 52) & (
-                    dat15['longitude'] > -100) & (dat15['longitude'] < -50), drop=True)
     
                 # now write it all to netcdf!
                 f = Dataset("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" +
@@ -103,20 +98,11 @@ for dataset in filenames:
                 dqf.flag_values = d.variables['DQF'].flag_values
                 dqf.flag_meanings = d.variables['DQF'].flag_meanings
     
-                band15 = f.createVariable(
-                    'Band15', 'f4', ('time', 'latitude', 'longitude'))
-                band15.long_name = "GOES-16 Band 15 Brightness Temperature"
-                band15.standard_name = "brightness_temperature"
-                band15.units = "kelvin"
-                band15.valid_min = 0
-                band15.valid_max = 4095
-    
                 # data
                 latitude[:] = new['latitude'].values
                 longitude[:] = new['longitude'].values
                 sst[:] = new['sst'].values
                 dqf[:] = dat_dqf['dqf'].values
-                band15[:] = dat15['b15'].values
                 time[:] = (dat['time'].values.astype(
                     'uint64') / 1e9).astype('uint32')
     
@@ -176,91 +162,3 @@ for dataset in filenames:
             print('all caught up!')
 
 
-# make a current daily compsite of the most recent file
-outpath = "/data/GOES/GOES-R/1day/"
-today = pd.date_range(pd.datetime.today(), pd.datetime.today()).tolist()
-goes_nc = xr.open_dataset(
-    "http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
-goes_nc = goes_nc.sel(time=datetime.strftime(today[0].date(), '%Y-%m-%d'))
-goes_nc = goes_nc.drop('Band15')
-newtimestamp = goes_nc.time.values[-1]
-for t in range(len(goes_nc.time.values)):
-    x = goes_nc['SST'][t]
-    goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
-    #x = goes_nc['DQF'][t]
-    #goes_nc['DQF'][t] = x.where(goes_nc['DQF'][t] == 3)
-
-
-goes_nc['sst'] = goes_nc['SST']
-goes_nc = goes_nc.drop(['SST'])
-
-goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_1day_' + str(today[0].year) + str("{0:0=3d}".format(
-    today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', format='NETCDF3_CLASSIC')
-
-# resample to a daily composite
-goes_nc = goes_nc.drop(['DQF'])
-goes_nc = goes_nc.resample(time='1D').mean('time')
-
-newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
-goes_nc.time.values = np.array([newtimestamp], dtype='float64')
-goes_nc.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
-
-outpath = "/data/GOES/GOES-R/daily_composite/"
-goes_nc.to_netcdf(path=outpath + '/' + str(today[0].year) + '/GOES16_SST_dailycomposite_' + str(today[0].year) + str("{0:0=3d}".format(
-    today[0].dayofyear)) + '_' + str("{0:0=2d}".format(today[0].month)) + str("{0:0=2d}".format(today[0].day)) + '.nc', format='NETCDF3_CLASSIC')
-
-
-# now make a rolling 1 day aka last 24 hours IN CELSIUS
-goes_nc = xr.open_dataset(
-    "http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
-# grab the last 24 hours of sst dataset
-goes_nc = goes_nc.isel(time=range(-24, 0))
-newtimestamp = goes_nc.time.values[-1]
-goes_nc = goes_nc.drop('Band15')
-for t in range(len(goes_nc.time.values)):
-    x = goes_nc['SST'][t]
-    goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
-
-goes_nc = goes_nc.drop(['DQF'])
-goes_nc['SST'] = goes_nc['SST'] - 273.15
-dat = goes_nc
-dat['sst'] = dat['SST']
-dat = dat.drop(['SST'])
-dat = dat.where(dat.sst > -1)
-dat.attrs['units'] = 'Celsius'
-dat = dat.mean('time')
-newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
-x = dat.assign_coords(time=newtimestamp)
-dat = x.expand_dims('time')
-dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
-outpath = "/data/GOES/GOES-R/rolling_1day/"
-dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',
-                  format='NETCDF3_CLASSIC')
-
-
-# now make a rolling 1 day aka last 24 hours IN FAHRENHEIT
-goes_nc = xr.open_dataset(
-    "http://basin.ceoe.udel.edu/thredds/dodsC/goes_r_sst.nc")
-# grab the last 24 hours of sst dataset
-goes_nc = goes_nc.isel(time=range(-24, 0))
-newtimestamp = goes_nc.time.values[-1]
-goes_nc = goes_nc.drop('Band15')
-for t in range(len(goes_nc.time.values)):
-    x = goes_nc['SST'][t]
-    goes_nc['SST'][t] = x.where(goes_nc['DQF'][t] == 0)
-
-goes_nc = goes_nc.drop(['DQF'])
-goes_nc['SST'] = (goes_nc['SST'] - 273.15)*(9/5) + 32
-dat = goes_nc
-dat['sst'] = dat['SST']
-dat = dat.drop(['SST'])
-dat = dat.where(dat.sst > 31)
-dat.attrs['units'] = 'Fahrenheit'
-dat = dat.mean('time')
-newtimestamp = (newtimestamp - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
-x = dat.assign_coords(time=newtimestamp)
-dat = x.expand_dims('time')
-dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
-outpath = "/data/GOES/GOES-R/rolling_1day_fahrenheit/"
-dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day_fahrenheit.nc',
-                  format='NETCDF3_CLASSIC')

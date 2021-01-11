@@ -40,17 +40,6 @@ for (y in yearseq){
                   varname="dqf", varunit="Kelvin", longname="data quality flags",
                   xname="longitude", yname="latitude")
       
-      b15 = ncvar_get(goesfile, "Band15")
-      b15_raster = raster(b15)
-      b15_raster = t(b15_raster)
-      extent(b15_raster)=extent(-5433893, 5433893, -5433893, 5433893)
-      crs(b15_raster) = "+units=m +lon_0=-75.0 +h=35786023.0 +sweep=x +proj=geos"
-      print("writing b15 file")
-      projected_b15 = projectRaster(b15_raster, crs = newproj)
-      writeRaster(projected_b15, filename=paste0(datadir, "rast_b15/", y, "/B15", i), format="CDF", overwrite=TRUE,
-                  varname="b15", varunit="Kelvin", longname="Band 15 brightness_temperature",
-                  xname="longitude", yname="latitude")
-      
       nc_close(goesfile)
       },error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
     }

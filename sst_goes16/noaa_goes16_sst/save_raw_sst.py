@@ -77,16 +77,6 @@ for url in urlstr:
                             dat = dat.where(dat > -1)
                             dat.values[np.isnan(dat.values)] = -999
 
-                            # Now grab band 15
-                            gdatetime=datetime.strptime(sstFile.split('_')[3][1:-1], '%Y%j%H%M%S')
-                            b15index= ldatetime.index(nearest(ldatetime, gdatetime))
-
-                            ds = Dataset("/home/sat_ops/goesR/data/fulldisk/" + b15data[b15index])
-                            ds = NetCDF4DataStore(ds)
-                            ds = xr.open_dataset(ds)
-                            d2 = ds
-                            dat15 = d2.metpy.parse_cf('CMI_C15')
-
                             f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(fname),'w', format='NETCDF4') #'w' stands for write
                             # dimensions
                             f.createDimension('x', dat['x'].size)
@@ -132,11 +122,6 @@ for url in urlstr:
                             dqf.flag_values = d.variables['DQF'].flag_values
                             dqf.flag_meanings = d.variables['DQF'].flag_meanings
                             dqf.grid_mapping = d.variables['DQF'].grid_mapping
-
-                            band15 = f.createVariable('Band15', 'f4', ('time', 'y', 'x'))
-                            band15.long_name = dat15.long_name
-                            band15.standard_name = dat15.standard_name
-                            band15.units = dat15.units
 
                             # data
                             x[:] = dat['x'].values

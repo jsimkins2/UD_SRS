@@ -13,10 +13,6 @@ sstflipped = t(sstvar)
 sstflipped = apply(sstflipped, 2, rev)
 sst = t(sstflipped)
 
-b15var = ncvar_get(sstfile, "Band15")
-b15flipped  = t(b15var)
-b15flipped = apply(b15flipped, 2, rev)
-b15  = t(b15flipped)
 
 dqfvar = ncvar_get(sstfile, "DQF")
 dqfflipped = t(dqfvar)
@@ -26,7 +22,6 @@ dqf = t(dqfflipped)
 
 ncvar_put(sstfile, varid = 'DQF', vals = dqf)
 ncvar_put(sstfile, varid = 'SST', vals = sst)
-ncvar_put(sstfile, varid = 'Band15', vals = b15)
 ncvar_put(sstfile, varid = 'latitude', vals = lat)
 nc_close(sstfile)
 print(paste0("Done flipping ", fname))
