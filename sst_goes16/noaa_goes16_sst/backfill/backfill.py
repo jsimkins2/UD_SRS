@@ -46,14 +46,14 @@ def JulianDate_to_MMDDYYY(y,jd):
     return month,jd,y
 
 #datadir = "/data/GOES/GOES-R/backfill/"
-datadir = "/home/sat_ops/goesR/data/noaa_sst/backfill/ssttemp"
+datadir = "/data/GOES/GOES-R/backfill/2018/"
 sst_data = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
 
 ldatetime = []
 
 
 for fname in sst_data:
-    ds = xr.open_dataset("/home/sat_ops/goesR/data/noaa_sst/backfill/ssttemp/" + fname)
+    ds = xr.open_dataset(datadir + fname)
     dat = ds.metpy.parse_cf('SST')
     proj = dat.metpy.cartopy_crs
     dat_dqf = ds.metpy.parse_cf('DQF')

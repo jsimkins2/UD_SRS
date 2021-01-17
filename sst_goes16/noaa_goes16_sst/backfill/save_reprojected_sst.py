@@ -122,16 +122,17 @@ for dataset in filenames:
 
             flip_lat = "Rscript /home/sat_ops/goesR/data/noaa_sst/backfill/flip_lat_sst.R " + fname
             os.system(flip_lat)
-            
-            os_dat  = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/rast_dqf/" + str(gdatetime.year) + "/*"
-            os.system(os_dat)
-            os_dat = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/rast_sst/" + str(gdatetime.year) + "/*"
-            os.system(os_dat)
-
 
         else:
             print('all caught up!')
 
+
+os_dat  = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/rast_dqf/" + str(gdatetime.year) + "/*"
+os.system(os_dat)
+os_dat = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/rast_sst/" + str(gdatetime.year) + "/*"
+os.system(os_dat)
+os_dat = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/raw/" + str(gdatetime.year) + "/*"
+os.system(os_dat)
 
 
 
