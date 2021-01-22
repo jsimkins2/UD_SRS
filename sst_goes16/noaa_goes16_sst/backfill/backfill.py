@@ -183,7 +183,7 @@ for fname in sst_data:
             dqf.flag_values = d.variables['DQF'].flag_values
             dqf.flag_meanings = d.variables['DQF'].flag_meanings
     
-    
+            latitude[:] = new['latitude'].values
             longitude[:] = new['longitude'].values
             sst[:]= new['sst'].values
             dqf[:]=dat_dqf['dqf'].values
