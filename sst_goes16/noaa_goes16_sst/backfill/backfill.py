@@ -46,7 +46,7 @@ def JulianDate_to_MMDDYYY(y,jd):
     return month,jd,y
 
 #datadir = "/data/GOES/GOES-R/backfill/"
-datadir = "/data/GOES/GOES-R/backfill/2018/"
+datadir = "/data/GOES/GOES-R/backfill/2019/"
 sst_data = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
 
 
@@ -70,7 +70,7 @@ for fname in sst_data:
             dat = dat.where(dat > -1)
             dat.values[np.isnan(dat.values)] = -999
         
-            f = Dataset("/home/sat_ops/goesR/data/noaa_sst/backfill/raw/" + str(nowdate.year) + "/" + str(fname),'w', format='NETCDF4') #'w' stands for write
+            f = Dataset("/home/sat_ops/goesR/data/noaa_sst/backfill/raw/" + str(nowdate.year) + "/" + str(dataset_name),'w', format='NETCDF4') #'w' stands for write
             # dimensions
             f.createDimension('x', dat['x'].size)
             f.createDimension('y', dat['y'].size)
@@ -125,7 +125,7 @@ for fname in sst_data:
             f.close()
             
             print("completed initial saving of raw file")
-            reproject = "Rscript /home/sat_ops/goesR/data/noaa_sst/backfill/reproject_sst.R " + str(fname)
+            reproject = "Rscript /home/sat_ops/goesR/data/noaa_sst/backfill/reproject_sst.R " + str(dataset_name)
             os.system(reproject)
             
             print("ALL DONE REPROJECTING")
@@ -137,9 +137,9 @@ for fname in sst_data:
             ds = xr.open_dataset(ds)
             dat = ds.metpy.parse_cf('SST')
             proj = dat.metpy.cartopy_crs
-            print("/home/sat_ops/goesR/data/noaa_sst/backfill/rast_sst/" + str(nowdate.year) + "/SST" + str(dataset))
-            dat_dqf  = xr.open_dataset("/home/sat_ops/goesR/data/noaa_sst/backfill/rast_dqf/" + str(nowdate.year) + "/DQF" + str(dataset))
-            new = xr.open_dataset("/home/sat_ops/goesR/data/noaa_sst/backfill/rast_sst/" + str(nowdate.year) + "/SST" + str(dataset))
+            print("/home/sat_ops/goesR/data/noaa_sst/backfill/rast_sst/" + str(nowdate.year) + "/SST" + str(dataset_name))
+            dat_dqf  = xr.open_dataset("/home/sat_ops/goesR/data/noaa_sst/backfill/rast_dqf/" + str(nowdate.year) + "/DQF" + str(dataset_name))
+            new = xr.open_dataset("/home/sat_ops/goesR/data/noaa_sst/backfill/rast_sst/" + str(nowdate.year) + "/SST" + str(dataset_name))
     
             new = new.where((new['latitude']>16) & (new['latitude']<52) & (new['longitude']>-100) & (new['longitude']<-50), drop=True)
             dat_dqf = dat_dqf.where((dat_dqf['latitude']>16) & (dat_dqf['latitude']<52) & (dat_dqf['longitude']>-100) & (dat_dqf['longitude']<-50), drop=True)
@@ -212,12 +212,12 @@ for fname in sst_data:
             print("flipping lat")
             flip_lat = "Rscript /home/sat_ops/goesR/data/noaa_sst/backfill/flip_lat_sst.R " + fname2
             os.system(flip_lat)
-            os_dat1  = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/rast_dqf/" + str(nowdate.year) + "/DQF" + str(dataset)
+            os_dat1  = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/rast_dqf/" + str(nowdate.year) + "/DQF" + str(dataset_name)
             os.system(os_dat1)
-            os_dat2 = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/rast_sst/" + str(nowdate.year) + "/SST" + str(dataset)
+            os_dat2 = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/rast_sst/" + str(nowdate.year) + "/SST" + str(dataset_name)
             print(os_dat2)
             os.system(os_dat2)
-            os_dat3 = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/raw/" + str(nowdate.year) + "/" + str(fname)
+            os_dat3 = "rm /home/sat_ops/goesR/data/noaa_sst/backfill/raw/" + str(nowdate.year) + "/" + str(dataset_name)
             os.system(os_dat3)
 
 
