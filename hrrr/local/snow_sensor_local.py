@@ -261,7 +261,7 @@ im5 = ax.contour(glon, glat, gridthick,levels=[5450, 5500,5550,5600,5650, 5700,5
 im6 = ax.contour(glon, glat, gridthick,levels = [5200, 5250, 5300, 5350,5400], colors='blue',linestyles='--',linewidths=2, transform = ccrs.PlateCarree())
 
 for l in range(0,len(stationLons)):
-    text = plt.text(stationLons[l],stationLats[l],snow_stations[l], size=6.5,weight='bold',verticalalignment='center',
+    text = plt.text(stationLons[l],stationLats[l],snow_stations[l], size=7,weight='bold',verticalalignment='center',
     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
                         
