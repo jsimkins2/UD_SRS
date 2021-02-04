@@ -52,7 +52,7 @@ GeoAxes._pcolormesh_patched = Axes.pcolormesh
 
 # Some plotting work here with help from Dan Moore
 def regrid_to_cartesian(radar, lon0, lat0):
-    display = pyart.graph.RadarMapDisplayCartopy(radar)
+    display = pyart.graph.RadarMapDisplay(radar)
     x,y = display._get_x_y(0,True,None)
     x = x*1000; y = y*1000
     lambert_aea = {'proj': 'laea',
@@ -136,7 +136,7 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     min_lat = 36.69588851928711 #lats['data'].min() + 2
     max_lat = 40.95521545410156 #lats['data'].max() - 2
     max_lon = -72.63585662841797 #lons['data'].max() - 2.5
-    display = pyart.graph.RadarMapDisplayCartopy(radar)
+    display = pyart.graph.RadarMapDisplay(radar)
     lat0 = display.loc[0]
     lon0 = display.loc[1]
     boundinglat = [min_lat, max_lat]
