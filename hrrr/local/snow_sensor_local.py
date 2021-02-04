@@ -160,10 +160,11 @@ workdir = 'Users/james/downloads'
 datadir = '/Users/james/Downloads/hrrr_temp/'
 conv_thresh = 8 #dBZ
 # create colormaps for each precip type
-cmap_rain = LinearSegmentedColormap.from_list('mycmap', ['honeydew', 'palegreen', 'mediumspringgreen','darkseagreen','seagreen', 'green', 'darkgreen'], N=20)
-cmap_ice = LinearSegmentedColormap.from_list('mycmap', ['mistyrose', 'pink','hotpink', 'deeppink', 'mediumvioletred'], N=20)
-cmap_sleet = LinearSegmentedColormap.from_list('mycmap', ['Lavender', 'Violet', 'DarkViolet', 'purple'], N=20)
-cmap_snow = LinearSegmentedColormap.from_list('mycmap', ['powderblue', 'deepskyblue', 'dodgerblue', 'blue', 'mediumblue','midnightblue'],N=20)
+
+cmap_rain = LinearSegmentedColormap.from_list('mycmap', [(0,'honeydew'), (.2,'palegreen'),(.4,'darkseagreen'),(.6,'seagreen'), (.8,'green'), (1,'darkgreen')], N=50)
+cmap_ice = LinearSegmentedColormap.from_list('mycmap', [(0,'mistyrose'), (.25,'pink'),(.5,'hotpink'), (.75,'deeppink'), (1,'mediumvioletred')], N=50)
+cmap_sleet = LinearSegmentedColormap.from_list('mycmap', [(0,'Lavender'), (.33,'Violet'), (.66, 'DarkViolet'), (1,'purple')], N=50)
+cmap_snow = LinearSegmentedColormap.from_list('mycmap', [(0,'powderblue'), (.2,'deepskyblue'), (.4,'dodgerblue'), (.6,'blue'), (.8,'mediumblue'),(1,'midnightblue')],N=50)
 
 
 radar = pyart.io.read_nexrad_cdm(dataset.access_urls['OPENDAP'])
