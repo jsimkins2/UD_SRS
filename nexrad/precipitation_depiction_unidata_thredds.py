@@ -225,8 +225,87 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
         
     plt.savefig(imgdir + str(dataset) + '.png', bbox_inches='tight',dpi=90)
     plt.close()
+    
+    ############################## DEOS SNOW SENSOR PLOT ########################################
+    min_lon = -76.35 #DEOS lons 
+    min_lat = 38.0 #DEOS lats
+    max_lat = 40.6 #DEOS lats 
+    max_lon =  -74.68 #DEOS lons 
+    snow_stations = ['DTLY','DCLY','DGRN','DPRC','DWCC','DHOC','DAGF','DGLW','DDMV','DBKB','DPPN','DDFS','DSMY','DWDS','DPAR',
+                     'DFRE','DHAR','DDAG','DBNG','DSTK','DNAS','DELN','DLEW','DSEA','DBRG','DLAU','DNOT','DSGM','DTDF','DWBD',
+                     'DWCH','DWHW','DWPK','DWWK']
+    import pandas as pd
+    import matplotlib.patheffects as path_effects
+    loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
+    stationLats=list()
+    stationLons=list()
+    for key in snow_stations:
+        stationLats.append(loc_deos[key]['latitude'])
+        stationLons.append(loc_deos[key]['longitude'])
 
 
+    ########################### Plot Snow Sensor ###################################3
+    fig=plt.figure(figsize=[12,10], dpi=90)
+    ax = plt.subplot(1,1,1, projection=ccrs.PlateCarree())
+    ax.set_extent((min_lon, max_lon, min_lat, 40.4))
+    ax.plot(lon0, lat0,color='k', linewidth=4, marker='o', transform=ccrs.PlateCarree())
+    im1 = ax.pcolormesh(glon, glat,rain,cmap=cmap_rain, vmin=0, vmax=50, transform = ccrs.PlateCarree())
+    im2 = ax.pcolormesh(glon, glat,ice,cmap=cmap_ice, vmin=0, vmax=50,transform = ccrs.PlateCarree())
+    im3 = ax.pcolormesh(glon, glat,sleet,cmap=cmap_sleet, vmin=0, vmax=50,transform = ccrs.PlateCarree())
+    im4 = ax.pcolormesh(glon, glat,snow,cmap=cmap_snow, vmin=0, vmax=50,transform = ccrs.PlateCarree())
+    
+    # plot up the title 
+    title = 'CEMA Precipitation Type & 1000-500mb Thickness Lines '
+    timestr = local.strftime('%Y-%m-%d %H:%M ') + et
+    plt.title(title + "\n" + timestr, fontsize=12)
+    
+    im5 = ax.contour(glon, glat, gridthick,levels=[5450, 5500,5550,5600,5650, 5700,5750, 5800], colors='k',linestyles='--', transform = ccrs.PlateCarree())
+    im6 = ax.contour(glon, glat, gridthick,levels = [5200, 5250, 5300, 5350,5400], colors='blue',linestyles='--',linewidths=2, transform = ccrs.PlateCarree())
+    
+    for l in range(0,len(stationLons)):
+        text = plt.text(stationLons[l],stationLats[l],snow_stations[l], size=7,weight='bold',verticalalignment='center',
+        horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
+        text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
+                            
+    # add contour labels
+    plt.clabel(im5, fmt='%1.0f')
+    plt.clabel(im6,fmt='%1.0f')
+    
+    # add colorbars
+    cbaxes = fig.add_axes([0.75, 0.15, 0.02, 0.15]) 
+    cb1 = plt.colorbar(im1, cax = cbaxes, )  
+    cb1.ax.get_yaxis().labelpad = 6
+    cb1.ax.set_ylabel('Rainfall  [dBZ]', fontsize=12)
+    cb1.set_ticks([0, 10,20, 30, 40, 50])
+    
+    cbaxes = fig.add_axes([0.75, 0.333, 0.02, 0.15]) 
+    cb2 = plt.colorbar(im2, cax = cbaxes)  
+    cb2.ax.get_yaxis().labelpad = 12
+    cb2.ax.set_ylabel('Ice  [dBZ]', fontsize=12)
+    cb2.set_ticks([0, 10,20, 30, 40, 50])
+    
+    cbaxes = fig.add_axes([0.75, 0.513, 0.02, 0.15]) 
+    cb3 = plt.colorbar(im3, cax = cbaxes)  
+    cb3.ax.get_yaxis().labelpad = 12
+    cb3.ax.set_ylabel('Sleet  [dBZ]', fontsize=12)
+    cb3.set_ticks([0, 10,20, 30, 40, 50])
+    
+    cbaxes = fig.add_axes([0.75, 0.7, 0.02, 0.15]) 
+    cb4 = plt.colorbar(im4, cax = cbaxes)  
+    cb4.ax.get_yaxis().labelpad = 12
+    cb4.ax.set_ylabel('Snowfall  [dBZ]', fontsize=12)
+    cb4.set_ticks([0, 10,20, 30, 40, 50])
+    
+    # plot coasts/states/counties/lakes
+    request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png")
+    ax.add_image(request, 7, zorder=0, interpolation='none')
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '10m',edgecolor='black', facecolor='none',linewidth=1.5))
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '10m',edgecolor='black', facecolor='none',linewidth=1.5))
+    ax.add_feature(USCOUNTIES.with_scale('500k'), linewidth=0.5, edgecolor="black")
+    
+    imgdir = workdir + 'snowsensor' + site + '/'
+    plt.savefig(imgdir + str(dataset) + '.png', bbox_inches='tight',dpi=90)
+    plt.close()
 
 # try each radar location
 
@@ -272,8 +351,8 @@ workdir = '/home/sat_ops/goesR/radar/prectype/'
 datadir = '/home/sat_ops/goesR/radar/prectype/hrrr_temp/'
 conv_thresh = 8 #dBZ
 # create colormaps for each precip type
-cmap_rain = LinearSegmentedColormap.from_list('mycmap', ['palegreen', 'springgreen','darkseagreen','mediumseagreen','seagreen', 'green', 'darkgreen'], N=20)
-cmap_ice = LinearSegmentedColormap.from_list('mycmap', ['lightpink','Pink', 'HotPink', 'deeppink'], N=20)
+cmap_rain = LinearSegmentedColormap.from_list('mycmap', ['honeydew', 'palegreen', 'mediumspringgreen','darkseagreen','seagreen', 'green', 'darkgreen'], N=20)
+cmap_ice = LinearSegmentedColormap.from_list('mycmap', ['mistyrose', 'pink','hotpink', 'deeppink', 'mediumvioletred'], N=20)
 cmap_sleet = LinearSegmentedColormap.from_list('mycmap', ['Lavender', 'Violet', 'DarkViolet', 'purple'], N=20)
 cmap_snow = LinearSegmentedColormap.from_list('mycmap', ['powderblue', 'deepskyblue', 'dodgerblue', 'blue', 'mediumblue','midnightblue'],N=20)
 
