@@ -363,5 +363,6 @@ if os.path.isfile(workdir + 'prec' + site + '/' + str(dataset) + ".png") == Fals
     # plot precip depiction
     imgdir = workdir + 'prec' + site + '/'
     plot_precipitation_depiction(radar=radar, dataset=dataset, imgdir=imgdir)
-    create_gif(workdir=workdir, imgdir=imgdir, gifname="kdox_prectype.gif")
+    create_gif(workdir=workdir, imgdir=workdir + 'prec' + site + '/', gifname="kdox_prectype.gif")
+    create_gif(workdir=workdir, imgdir=workdir + 'snowsensor' + site + '/', gifname="snow_sensor_prectype.gif")
     
