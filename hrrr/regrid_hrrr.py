@@ -45,6 +45,7 @@ hrrrdata = datadir + ''.join(([f for f in filenames if f[0:3]=='rep']))
 print('starting the hrrr layer processing')
 
 ds = xr.open_dataset(hrrrdata)
+ds = ds.sel(latitude=slice(max_lat, min_lat), longitude=slice(min_lon, max_lon))
 # parse the temperature at various heights
 tsurf = ds.metpy.parse_cf('temperature_surface')
 t850 = ds.metpy.parse_cf('temperature_850')

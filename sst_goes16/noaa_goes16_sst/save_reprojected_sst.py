@@ -25,7 +25,7 @@ plt.switch_backend('agg')
 
 nowdate = datetime.utcnow()
 
-datadir = "/home/sat_ops/goesR/data/sst/rast_sst/" + str(nowdate.year) + "/"
+datadir = "/home/sat_ops/goesR/data/noaa_sst/rast_sst/" + str(nowdate.year) + "/"
 filenames = sorted([f for f in listdir(datadir) if isfile(join(datadir, f))])
 
 for dataset in filenames:
@@ -40,16 +40,16 @@ for dataset in filenames:
         if os.path.isfile("/data/GOES/GOES-R/suspect/" + str(dataset_name)) == False:
             print(str(dataset))
             try:
-                d = Dataset("/home/sat_ops/goesR/data/sst/raw/" +
+                d = Dataset("/home/sat_ops/goesR/data/noaa_sst/raw/" +
                             str(nowdate.year) + "/" + dataset)
                 ds = NetCDF4DataStore(d)
                 ds = xr.open_dataset(ds)
                 dat = ds.metpy.parse_cf('SST')
                 proj = dat.metpy.cartopy_crs
                 dat_dqf = xr.open_dataset(
-                    "/home/sat_ops/goesR/data/sst/rast_dqf/" + str(nowdate.year) + "/DQF" + str(dataset))
+                    "/home/sat_ops/goesR/data/noaa_sst/rast_dqf/" + str(nowdate.year) + "/DQF" + str(dataset))
                 new = xr.open_dataset(
-                    "/home/sat_ops/goesR/data/sst/rast_sst/" + str(nowdate.year) + "/SST" + str(dataset))
+                    "/home/sat_ops/goesR/data/noaa_sst/rast_sst/" + str(nowdate.year) + "/SST" + str(dataset))
 
                 new = new.where((new['latitude'] > 16) & (new['latitude'] < 52) & (
                     new['longitude'] > -100) & (new['longitude'] < -50), drop=True)
@@ -127,7 +127,7 @@ for dataset in filenames:
                 temp_str = "ncks " + fname + " " + fname + " -L 5 -O"
                 os.system(temp_str)
     
-                flip_lat = "Rscript /home/sat_ops/goesR/data/sst/scripts/flip_lat_sst.R " + fname
+                flip_lat = "Rscript /home/sat_ops/goesR/data/noaa_sst/scripts/flip_lat_sst.R " + fname
                 os.system(flip_lat)
     
                 # quality control
