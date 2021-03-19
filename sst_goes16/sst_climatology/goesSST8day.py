@@ -1,25 +1,12 @@
 import pandas as pd
-import sys
-from os.path import isfile, join
-from os import listdir
 import os
 import os.path
-from time import mktime
 import time
-from dateutil import tz
-import cartopy.io.img_tiles as cimgt
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-from netCDF4 import Dataset, num2date
-from xarray.backends import NetCDF4DataStore
-from matplotlib import patheffects
 import xarray as xr
-from netCDF4 import Dataset
+from datetime import datetime as datetime
+from datetime import timedelta
 import numpy as np
-import metpy
-from datetime import datetime, timedelta, date
-import cartopy.feature as cfeature
-import matplotlib.pyplot as plt
-import pandas as pd
+
 
 start_date = datetime.utcnow() - timedelta(days=10)
 end_date = datetime.utcnow()
@@ -27,8 +14,7 @@ daterange = pd.date_range(start_date, end_date)
 
 workdir = '/data/aquaGoesSST/C'
 # now make a rolling 1 day aka last 24 hours
-goes_main = xr.open_dataset(
-    "http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
+goes_main = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
 
 for d in daterange:
     # grab the last 24 hours of sst dataset
