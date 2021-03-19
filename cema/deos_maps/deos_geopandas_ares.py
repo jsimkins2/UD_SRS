@@ -334,10 +334,9 @@ for var in list(nameDict.keys()):
             txt_cmap =  pd.read_csv(colorPaths + 'rain_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
 
         if var == 'Air Temperature':
-            temp = temp - 273.15
-            temp = (temp*(9/5)) + 32
-            temp[temp < -30] = np.nan
-            temp[temp > 120] = np.nan
+            # qual control in kelvin now
+            temp[temp < 238] = np.nan
+            temp[temp > 322] = np.nan
             airT_array = temp
             vmin=-30
             vmax=120
@@ -345,10 +344,8 @@ for var in list(nameDict.keys()):
             txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
 
         if var == 'Dew Point Temperature':
-            temp = temp - 273.15
-            temp = (temp*(9/5)) + 32
-            temp[temp < 0] = np.nan
-            temp[temp > 90] = np.nan
+            temp[temp < 255] = np.nan
+            temp[temp > 305] = np.nan
             dewP_array = temp
             vmin=-40
             vmax=120
@@ -428,6 +425,20 @@ for var in list(nameDict.keys()):
             bounds.extend(list(lin))
 
         norm = BoundaryNorm(bounds,ncolors=cmap.N)
+        
+        # placing the unit shift code here, after the idw routine
+        if var == 'Air Temperature':
+            cl.values[0] = cl.values[0] - 273.15
+            cl.values[0] = (cl.values[0]*(9/5)) + 32
+            temp = temp - 273.15
+            temp = (temp*(9/5)) + 32
+            
+        if var == 'Dew Point Temperature':
+            cl.values[0] = cl.values[0] - 273.15
+            cl.values[0] = (cl.values[0]*(9/5)) + 32
+            temp = temp - 273.15
+            temp = (temp*(9/5)) + 32
+        
         #or lons[l] != -75.913585
 
         fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
@@ -713,10 +724,8 @@ temp = temp + list([t1,t2,t3,t4])
 lons=np.array(lons)
 lats=np.array(lats)
 temp = np.array(temp)
-temp = temp - 273.15
-temp = (temp*(9/5)) + 32
-temp[temp < -50] == np.nan
-temp[temp > 40] == np.nan
+temp[temp < 227] == np.nan
+temp[temp > 277] == np.nan
 
 ### now read in heat index if it exists
 var = 'Heat Index'
@@ -766,10 +775,8 @@ lons=np.array(lons)
 lats=np.array(lats)
 temp2 = np.array(temp2)
 
-temp2 = temp2 - 273.15
-temp2 = (temp2*(9/5)) + 32
-temp2[temp2 < 80] == np.nan
-temp2[temp2 > 130] == np.nan
+temp2[temp2 < 299] == np.nan
+temp2[temp2 > 327] == np.nan
 vmin=-30
 vmax=120
 rounder = 1
@@ -822,6 +829,10 @@ xds = rioxarray.open_rasterio('/home/map_maker/deos_maps/temp/FeelsLike.tif')
 clipped = xds.rio.clip(deos_boundarys.geometry.apply(mapping), xds.rio.crs, drop=True)
 cl = clipped.rio.clip(inland_bays.geometry.apply(mapping), oldproj.proj4_init, drop=False, invert=True)
 
+feelsLike = feelsLike - 273.15
+feelsLike = (feelsLike*(9/5)) + 32
+cl.values[0] = cl.values[0] - 273.15
+cl.values[0] = (cl.values[0]*(9/5)) + 32
 
 
 ### Call the function make_cmap which returns your colormap

@@ -8,11 +8,14 @@ ymdGoes = format(as.POSIXct(d$dim$time$vals,origin = "1970-01-01",tz = "GMT"),fo
 
 if (!file.exists(paste0("/data/aquaGoesSST/C/", substr(ymdGoes, 1, 4), "/SSTanomalyGoesAqua8dayCelsius", ymdGoes, ".nc"))){
   print(ymdGoes)
-  sst <- ncvar_get(d, "sst")
+  sst <- ncvar_get(d, "sea_surface_temperature")
+  bias <- ncvar_get(d, "sses_bias")
   lon <- ncvar_get(d, "longitude")
   lat <- ncvar_get(d, "latitude")
   nc_close(d)
   
+  sst = sst - bias
+  sst = sst - 273.15
   xy <- cbind(rep(lon, length(lat)), rep(lat, each=length(lon)))
   xyv <- na.omit(cbind(xy, as.vector(sst)))
   r <- raster(extent(range(lon), range(lat)), res=1/30)

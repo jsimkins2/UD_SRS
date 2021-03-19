@@ -6,7 +6,7 @@ options(warn=-1)
 
 endyr = lubridate::year(Sys.Date())
 yearseq = seq(2018,endyr)
-datadir = "/home/sat_ops/goesR/data/sst/"
+datadir = "/home/sat_ops/goesR/data/noaa_sst/"
 for (y in yearseq){
   fnamelist = list.files(paste0(datadir,"raw/", y, "/"))
   for (i in fnamelist){

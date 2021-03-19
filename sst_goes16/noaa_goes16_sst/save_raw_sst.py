@@ -35,22 +35,14 @@ mainURL = 'https://thredds.ucar.edu/thredds/catalog/satellite/goes/east/products
 testURL = 'https://thredds-test.unidata.ucar.edu/thredds/catalog/satellite/goes/east/products/SeaSurfaceTemperature/FullDisk/'
 urlstr = [mainURL, testURL]
 
-b15data = [f for f in listdir("/home/sat_ops/goesR/data/fulldisk/") if isfile(join("/home/sat_ops/goesR/data/fulldisk/", f))]
-ldatetime = []
-for t in b15data:
-    t = t.split('_s')[1][:-4]
-    ldatetime.append(datetime.strptime(t, '%Y%j%H%M%S'))
 
 # Begin loop
 for url in urlstr:
     for d in range(0,2): #dicatates how many days back we go. If we are missing large chunks of data this can be manipulated
         temday = nowdate - timedelta(days=d)
-        # UCAR Thredds Server call, use try here in case there isn't any data for the whole day
         try:
             cat = TDSCatalog(url + str(temday.year) + str("%02d"%temday.month) + str("%02d"%temday.day) + '/catalog.xml')
-
             dataset_names = sorted(cat.datasets.keys())
-
             # check to see if we already have the dataset name saved, note that we change the name to M3 so ERDDAP can sort the data
             for sstFile in dataset_names:
                 # rename in case they added an M6 instead of M3
@@ -59,25 +51,21 @@ for url in urlstr:
                 else:
                     fname = str(sstFile)
                 #make sure the file doesn't already exist
-                if os.path.isfile("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(fname)) == False:
+                if os.path.isfile("/home/sat_ops/goesR/data/noaa_sst/raw/" + str(nowdate.year) + "/" + str(fname)) == False:
                     if os.path.isfile("/data/GOES/GOES-R/sst/" + str(nowdate.year) + "/" + str(fname)) == False:
                         if os.path.isfile("/data/GOES/GOES-R/suspect/" + str(fname)) == False:
                             print('downloading ' + fname + ' to raw folder')
-
                             dataset = cat.datasets[sstFile]
                             ds = dataset.remote_access(service='OPENDAP')
                             d = ds
                             ds = NetCDF4DataStore(ds)
                             ds = xr.open_dataset(ds)
                             dat = ds.metpy.parse_cf('SST')
-
                             proj = dat.metpy.cartopy_crs
                             dat_dqf = ds.metpy.parse_cf('DQF')
-
                             dat = dat.where(dat > -1)
                             dat.values[np.isnan(dat.values)] = -999
-
-                            f = Dataset("/home/sat_ops/goesR/data/sst/raw/" + str(nowdate.year) + "/" + str(fname),'w', format='NETCDF4') #'w' stands for write
+                            f = Dataset("/home/sat_ops/goesR/data/noaa_sst/raw/" + str(nowdate.year) + "/" + str(fname),'w', format='NETCDF4') #'w' stands for write
                             # dimensions
                             f.createDimension('x', dat['x'].size)
                             f.createDimension('y', dat['y'].size)
@@ -128,7 +116,6 @@ for url in urlstr:
                             y[:] = dat['y'].values
                             sst[:]= dat.values
                             dqf[:]=dat_dqf
-                            band15[:]=dat15.values
                             time[:] = dat['t'].values
                             f.close()
 
