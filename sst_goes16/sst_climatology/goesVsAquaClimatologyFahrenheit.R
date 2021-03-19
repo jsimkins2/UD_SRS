@@ -40,8 +40,7 @@ if (!file.exists(paste0("/data/aquaGoesSST/F/", substr(ymdGoes, 1, 4), "/SSTanom
   r2 = (r2 *(9/5)) + 32
   sstanom = r-r2
   
-  # convert to Fahrenheit
-  sstanoom = (sstanom * (9/5)) + 32
+
   lon3 = unique(coordinates(sstanom)[,1])
   lat3 = unique(coordinates(sstanom)[,2])
   # create and write the netCDF file -- ncdf4 version
