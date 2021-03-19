@@ -28,7 +28,7 @@ daterange = pd.date_range(start_date, end_date)
 workdir = '/data/aquaGoesSST/C'
 # now make a rolling 1 day aka last 24 hours
 goes_main = xr.open_dataset(
-    "http://basin.ceoe.udel.edu/thredds/dodsC/GOESR_SST_DAILY.nc")
+    "http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
 
 for d in daterange:
     # grab the last 24 hours of sst dataset
