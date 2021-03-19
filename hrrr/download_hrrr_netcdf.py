@@ -98,7 +98,10 @@ if os.path.isfile(datadir + dataset_name[:-5] + 'nc') == False:
     print('beginning the R reprojection')
     os.system("Rscript /home/sat_ops/goesR/github/UD_SRS/hrrr/reproject_hrrr.R " + dataset_name[:-5] + 'nc')
 
-if os.path.isfile(datadir + 'gridsurf.npy') == False:
-    print('regridding the hrrr')
-    os.system("python3 /home/sat_ops/goesR/github/UD_SRS/hrrr/regrid_hrrr.py")
+    if os.path.isfile(datadir + 'gridsurf.npy') == False:
+        print('regridding the hrrr')
+        os.system("python3 /home/sat_ops/goesR/github/UD_SRS/hrrr/regrid_hrrr.py")
+else:
+    print("Dataset already downloaded")
+
     
