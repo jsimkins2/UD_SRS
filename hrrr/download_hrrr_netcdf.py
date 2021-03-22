@@ -101,4 +101,10 @@ if os.path.isfile(datadir + dataset_name[:-5] + 'nc') == False:
     if os.path.isfile(datadir + 'gridsurf.npy') == False:
         print('regridding the hrrr')
         os.system("python3 /home/sat_ops/goesR/github/UD_SRS/hrrr/regrid_hrrr.py")
+<<<<<<< HEAD
+else:
+    print("Dataset already downloaded")
+
+=======
+>>>>>>> 069cd09891b2bfbf7a7a603f5c219eed12415de9
     

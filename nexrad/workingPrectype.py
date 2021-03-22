@@ -52,7 +52,7 @@ GeoAxes._pcolormesh_patched = Axes.pcolormesh
 
 # Some plotting work here with help from Dan Moore
 def regrid_to_cartesian(radar, lon0, lat0):
-    display = pyart.graph.RadarMapDisplay(radar)
+    display = pyart.graph.RadarMapDisplayCartopy(radar)
     x,y = display._get_x_y(0,True,None)
     x = x*1000; y = y*1000
     lambert_aea = {'proj': 'laea',
@@ -136,18 +136,15 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     min_lat = 36.69588851928711 #lats['data'].min() + 2
     max_lat = 40.95521545410156 #lats['data'].max() - 2
     max_lon = -72.63585662841797 #lons['data'].max() - 2.5
-    display = pyart.graph.RadarMapDisplay(radar)
+    display = pyart.graph.RadarMapDisplayCartopy(radar)
     lat0 = display.loc[0]
     lon0 = display.loc[1]
     boundinglat = [min_lat, max_lat]
     boundinglon = [min_lon, max_lon]
-    
-    print("now working on raveling the data")
     lons, lats = regrid_to_cartesian(radar, lon0, lat0)
     my_ref = radar.get_field(0, 'reflectivity')
     unmasked = ma.getdata(my_ref)
     my_ref = trim_rad_data(lats, lons, unmasked, boundinglat, boundinglon)
-    print('passed trim rad data')
     rav_lats = lats.ravel()
     rav_lons = lons.ravel()
     rav_ref = my_ref.ravel()
@@ -156,18 +153,14 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
     grid_lons = np.linspace(boundinglon[0],boundinglon[1],nlon)
     grid_lats = np.linspace(boundinglat[0],boundinglat[1],nlat)
     glon,glat = np.meshgrid(grid_lons,grid_lats)
-    print('griddataa')
     # Interpolate data onto grid using linear interpolation
     gref = griddata((rav_lons,rav_lats),rav_ref,(glon,glat),method='linear')
     # load in the temperatures data
-    print("loading grid850")
     grid850=np.load(datadir + 'grid850.npy')
-    print("loading grid925")
     grid925=np.load(datadir + 'grid925.npy')
     gridsurf=np.load(datadir + 'gridsurf.npy')
     gridthick=np.load(datadir + 'gridthick.npy')
-    # create a masked array for each precipitation typei
-    print("creating a masked array for each precipitation type")
+    # create a masked array for each precipitation type
     rain = (gridsurf > 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
     rain = np.ma.masked_array(gref, ~rain)
     ice = (grid850 > 273.15) & (grid925 > 273.15) & (gridsurf < 273.15) &  (np.isfinite(gref)) & (np.isfinite(grid850)) & (np.isfinite(grid925)) & (np.isfinite(gridsurf))
@@ -232,88 +225,8 @@ def plot_precipitation_depiction(radar, dataset, imgdir):
         
     plt.savefig(imgdir + str(dataset) + '.png', bbox_inches='tight',dpi=90)
     plt.close()
-    
-    ############################## DEOS SNOW SENSOR PLOT ########################################
-    deos_min_lon = -76.35 #DEOS lons 
-    deos_min_lat = 38.0 #DEOS lats
-    deos_max_lat = 40.6 #DEOS lats 
-    deos_max_lon =  -74.68 #DEOS lons 
-    snow_stations = ['DTLY','DCLY','DGRN','DPRC','DWCC','DHOC','DAGF','DGLW','DDMV','DBKB','DPPN','DDFS','DSMY','DWDS','DPAR',
-                     'DFRE','DHAR','DDAG','DBNG','DSTK','DNAS','DELN','DLEW','DSEA','DBRG','DLAU','DNOT','DSGM','DTDF','DWBD',
-                     'DWCH','DWHW','DWPK','DWWK']
-    import pandas as pd
-    import matplotlib.patheffects as path_effects
-    loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
-    stationLats=list()
-    stationLons=list()
-    for key in snow_stations:
-        stationLats.append(loc_deos[key]['latitude'])
-        stationLons.append(loc_deos[key]['longitude'])
-    
-    print("got snow sensor lat/lon information")
 
-    ########################### Plot Snow Sensor ###################################3
-    fig=plt.figure(figsize=[12,10], dpi=90)
-    ax = plt.subplot(1,1,1, projection=ccrs.PlateCarree())
-    ax.set_extent((deos_min_lon, deos_max_lon, deos_min_lat, 40.4))
-    ax.plot(lon0, lat0,color='k', linewidth=4, marker='o', transform=ccrs.PlateCarree())
-    im1 = ax.pcolormesh(glon, glat,rain,cmap=cmap_rain, vmin=0, vmax=50, transform = ccrs.PlateCarree())
-    im2 = ax.pcolormesh(glon, glat,ice,cmap=cmap_ice, vmin=0, vmax=50,transform = ccrs.PlateCarree())
-    im3 = ax.pcolormesh(glon, glat,sleet,cmap=cmap_sleet, vmin=0, vmax=50,transform = ccrs.PlateCarree())
-    im4 = ax.pcolormesh(glon, glat,snow,cmap=cmap_snow, vmin=0, vmax=50,transform = ccrs.PlateCarree())
-    
-    # plot up the title 
-    title = 'CEMA Precipitation Type & 1000-500mb Thickness Lines '
-    timestr = local.strftime('%Y-%m-%d %H:%M ') + et
-    plt.title(title + "\n" + timestr, fontsize=12)
-    
-    im5 = ax.contour(glon, glat, gridthick,levels=[5450, 5500,5550,5600,5650, 5700,5750, 5800], colors='k',linestyles='--', transform = ccrs.PlateCarree())
-    im6 = ax.contour(glon, glat, gridthick,levels = [5200, 5250, 5300, 5350,5400], colors='blue',linestyles='--',linewidths=2, transform = ccrs.PlateCarree())
-    
-    for l in range(0,len(stationLons)):
-        text = plt.text(stationLons[l],stationLats[l],snow_stations[l], size=7,weight='bold',verticalalignment='center',
-        horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
-        text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
-                            
-    # add contour labels
-    plt.clabel(im5, fmt='%1.0f')
-    plt.clabel(im6,fmt='%1.0f')
-    
-    # add colorbars
-    cbaxes = fig.add_axes([0.75, 0.15, 0.02, 0.15]) 
-    cb1 = plt.colorbar(im1, cax = cbaxes, )  
-    cb1.ax.get_yaxis().labelpad = 6
-    cb1.ax.set_ylabel('Rainfall  [dBZ]', fontsize=12)
-    cb1.set_ticks([0, 10,20, 30, 40, 50])
-    
-    cbaxes = fig.add_axes([0.75, 0.333, 0.02, 0.15]) 
-    cb2 = plt.colorbar(im2, cax = cbaxes)  
-    cb2.ax.get_yaxis().labelpad = 12
-    cb2.ax.set_ylabel('Ice  [dBZ]', fontsize=12)
-    cb2.set_ticks([0, 10,20, 30, 40, 50])
-    
-    cbaxes = fig.add_axes([0.75, 0.513, 0.02, 0.15]) 
-    cb3 = plt.colorbar(im3, cax = cbaxes)  
-    cb3.ax.get_yaxis().labelpad = 12
-    cb3.ax.set_ylabel('Sleet  [dBZ]', fontsize=12)
-    cb3.set_ticks([0, 10,20, 30, 40, 50])
-    
-    cbaxes = fig.add_axes([0.75, 0.7, 0.02, 0.15]) 
-    cb4 = plt.colorbar(im4, cax = cbaxes)  
-    cb4.ax.get_yaxis().labelpad = 12
-    cb4.ax.set_ylabel('Snowfall  [dBZ]', fontsize=12)
-    cb4.set_ticks([0, 10,20, 30, 40, 50])
-    
-    # plot coasts/states/counties/lakes
-    request = cimgt.GoogleTiles(url="https://cartodb-basemaps-d.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png")
-    ax.add_image(request, 7, zorder=0, interpolation='none')
-    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '10m',edgecolor='black', facecolor='none',linewidth=1.5))
-    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '10m',edgecolor='black', facecolor='none',linewidth=1.5))
-    ax.add_feature(USCOUNTIES.with_scale('500k'), linewidth=0.5, edgecolor="black")
-    
-    imgdir = workdir + 'snowsensor' + site + '/'
-    plt.savefig(imgdir + str(dataset) + '.png', bbox_inches='tight',dpi=90)
-    plt.close()
+
 
 # try each radar location
 
@@ -359,18 +272,17 @@ workdir = '/home/sat_ops/goesR/radar/prectype/'
 datadir = '/home/sat_ops/goesR/radar/prectype/hrrr_temp/'
 conv_thresh = 8 #dBZ
 # create colormaps for each precip type
-cmap_rain = LinearSegmentedColormap.from_list('mycmap', [(0,'honeydew'), (.2,'palegreen'),(.4,'darkseagreen'),(.6,'seagreen'), (.8,'green'), (1,'darkgreen')], N=50)
-cmap_ice = LinearSegmentedColormap.from_list('mycmap', [(0,'mistyrose'), (.25,'pink'),(.5,'hotpink'), (.75,'deeppink'), (1,'mediumvioletred')], N=50)
-cmap_sleet = LinearSegmentedColormap.from_list('mycmap', [(0,'Lavender'), (.33,'Violet'), (.66, 'DarkViolet'), (1,'purple')], N=50)
-cmap_snow = LinearSegmentedColormap.from_list('mycmap', [(0,'powderblue'), (.2,'deepskyblue'), (.4,'dodgerblue'), (.6,'blue'), (.8,'mediumblue'),(1,'midnightblue')],N=50)
+cmap_rain = LinearSegmentedColormap.from_list('mycmap', ['palegreen', 'springgreen','darkseagreen','mediumseagreen','seagreen', 'green', 'darkgreen'], N=20)
+cmap_ice = LinearSegmentedColormap.from_list('mycmap', ['lightpink','Pink', 'HotPink', 'deeppink'], N=20)
+cmap_sleet = LinearSegmentedColormap.from_list('mycmap', ['Lavender', 'Violet', 'DarkViolet', 'purple'], N=20)
+cmap_snow = LinearSegmentedColormap.from_list('mycmap', ['powderblue', 'deepskyblue', 'dodgerblue', 'blue', 'mediumblue','midnightblue'],N=20)
 
 if os.path.isfile(workdir + 'prec' + site + '/' + str(dataset) + ".png") == False:
     # open the radar data
     radar = pyart.io.read_nexrad_cdm(dataset.access_urls['OPENDAP'])
-    print("proceeding with radar!") 
+    
     # plot precip depiction
     imgdir = workdir + 'prec' + site + '/'
     plot_precipitation_depiction(radar=radar, dataset=dataset, imgdir=imgdir)
-    create_gif(workdir=workdir, imgdir=workdir + 'prec' + site + '/', gifname="kdox_prectype.gif")
-    create_gif(workdir=workdir, imgdir=workdir + 'snowsensor' + site + '/', gifname="snow_sensor_prectype.gif")
+    create_gif(workdir=workdir, imgdir=imgdir, gifname="kdox_prectype.gif")
     
