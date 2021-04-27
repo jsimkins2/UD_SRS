@@ -1,3 +1,8 @@
+# this script loads in the cmipc goes16 files (combined goes16 file for all bands) and then parses
+# out each individual band and plots said band. 
+# note that this script is a bit outdated as it used Basemap from matplotlib (deprecated) 
+# instead of cartopy
+
 # script designed for basin.ceoe.udel.edu
 # James Simkins
 import matplotlib
@@ -34,7 +39,7 @@ workdir = "/home/sat_ops/goesR/indbands/"
 datadir = "/home/sat_ops/goesR/data/mcmipc/"
 site = 'KDOX'
 
-
+# band number
 nums = [01,02,03,04,05,06,07,010,011,10,11,12,13,14,15,16]
 abi_no = []
 for n in nums:
@@ -73,15 +78,17 @@ DH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
     llcrnrlat=lat0-4.5,llcrnrlon=lon0-5.5,
     urcrnrlat=lat0+5,urcrnrlon=lon0+5.5,resolution='h') 
     
-
+# grab file list for multi band cmip conus data
 mcmipc_list = [f for f in listdir(datadir) if isfile(join(datadir, f))]
 fnamelist = sorted(mcmipc_list)[-3:]
 
+# remove filenames from list if we've already processed the data
 dataset_list = []
 for r in fnamelist:
     if os.path.isfile(workdir + 'conus/imgband01/' + r.split('.')[0] + ".png") == False:
         dataset_list.append(r)
-        
+
+# begin the main loop        
 if len(dataset_list) > 0:       
     for n in dataset_list:
         Cnight = Dataset(datadir + n, 'r')

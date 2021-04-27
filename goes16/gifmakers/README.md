@@ -1,0 +1,1 @@
+I extracted the gif making routines for each application. This was an effort to clean up the code but it never materialized. I'll keep these files around, but all of these routines are within their respective application script.

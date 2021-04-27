@@ -1,0 +1,1 @@
+A collection of scripts for GOES16 satellite data download, curation, image creation, and animation. Most of the images or animations created here are real-time products that are located on UD Basin's imagery folder
