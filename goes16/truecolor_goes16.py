@@ -76,6 +76,7 @@ lon0 = loc[1] ; lat0 = loc[0]
 # create a logfile with most recent files created in the shell script
 file_names = [f for f in listdir(datadir) if isfile(join(datadir, f))]
 
+# split the filename into parts so we can extract the datestring
 fnamelist = []
 for i in range(0,len(file_names)):
     fname = str(file_names[i].split("_", 4)[3])
@@ -83,7 +84,10 @@ for i in range(0,len(file_names)):
     fname = fname[1:]
     fnamelist.append(fname)
 
+# fname list is only going to be 3 files long
 fnamelist = sorted(fnamelist, key=int)[-3:]
+
+# grab all the lightning (GLM) data
 GLM_files = [f for f in listdir(ltngdir) if isfile(join(ltngdir, f))]
 GLM_names = []
 
@@ -93,6 +97,7 @@ for i in range(0,len(GLM_files)):
     fname = fname[1:]
     GLM_names.append(fname)
 
+# lightning list will have 201 length
 lnamelist = sorted(GLM_names, key=int)[-201:]
 # sort through the files and make sure that they don't exist before we process them
 ldatetime = []
@@ -115,12 +120,14 @@ if len(ABI_datetime) > 0:
         t = ABI_datetime[n][:-3]
         print(t)
         gdatetime=datetime.strptime(t, '%Y%j%H%M')
+        # match the goes cmipc time with lightning time
         ltng_index = ldatetime.index(nearest(ldatetime, gdatetime))
         if ltng_index < 15:
             ltng_files = lnamelist[ltng_index - ltng_index + 1: ltng_index]
         else:
             ltng_files = lnamelist[ltng_index - 15: ltng_index]
         
+        # there's m3, m4, and m6 modes for goes16 data - open whatever mode it is
         C_file = datadir + 'OR_ABI-L2-MCMIPC-M3_G16_s' + str(ABI_datetime[n]) + '.nc'  # GOES16 East
         if os.path.isfile(C_file) == False:
             C_file = datadir + 'OR_ABI-L2-MCMIPC-M4_G16_s' + str(ABI_datetime[n]) + '.nc'
@@ -137,7 +144,7 @@ if len(ABI_datetime) > 0:
                     server.sendmail("goessatelliteudel@gmail.com", "simkins@udel.edu", msg)
                     server.quit()
         
-        # below is code from Brian Blaylock of Univ Utah, thanks Brian!
+        # open our Combined (C) file for goes16
         Cnight = Dataset(C_file, 'r')
         
         # Load the RGB arrays
@@ -184,6 +191,8 @@ if len(ABI_datetime) > 0:
         ltng_lat = {}
         ltng_lon = {}
         
+        # open up the lightning files that have been matched with the goes16 file
+        # record the lat/lon location of the lightning flash and place them in ltng_lat/lon
         for lt in range(0, len(ltng_files)):
             ltfile = ltng_files[lt]
             L_file = ltngdir + 'OR_GLM-L2-LCFA_G16_s' + str(ltfile) + '.nc'  # GOES16 East
@@ -195,12 +204,14 @@ if len(ABI_datetime) > 0:
                 ltngxr = ltngxr.metpy.parse_cf("flash_energy")
                 ltngproj = ltngxr.metpy.cartopy_crs
         
+        # tell flash count it's zero if there are no strikes 
         for lt in range(0, len(ltng_lat)):
             if lt==0:
                 conus_flash_count = 0
             ylt = len(ltng_lat[lt])
             conus_flash_count = conus_flash_count + ylt
         
+        # perform the same operations for mid atlantic flash counts
         for lt in range(0, len(ltng_lat)):
             subset = []
             llat=34.32556
@@ -216,7 +227,7 @@ if len(ABI_datetime) > 0:
                     subset.append(latval)
             midatl_flash_count = midatl_flash_count + len(subset)
 
-        # Modify the RGB color contrast
+        # Modify the RGB color contrast to enhance the image
         contrast = 125
         RGB_contrast = contrast_correction(np.dstack([R, G_true, B]), contrast)
         RGB_contrast_IR = np.dstack([np.maximum(RGB_contrast[:,:,0], cleanIR), np.maximum(RGB_contrast[:,:,1], cleanIR), np.maximum(RGB_contrast[:,:,2], cleanIR)])

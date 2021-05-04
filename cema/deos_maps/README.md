@@ -1,0 +1,1 @@
+These plots create the live feed of DEOS maps at deos.udel.edu. Each is meant for a separate server, but deos_geopandas_ares.py is the most up to data version of the script because that's the server we use for DEOS maps. 

@@ -1,4 +1,4 @@
-# This is a quick patch for the mesoscale scans
+# This script processes the mesoscale GOES16 data
 # we need to do true color and band 13 here
 # first let's just test it out and then afterwards we can 
 import matplotlib as mpl
@@ -51,7 +51,7 @@ def contrast_correction(color, contrast):
     COLOR = np.maximum(COLOR, 0)
     return COLOR
 
-
+# grab filenames for hte first mesoscale sensor MCMIPM1, then the second MCMIPM2
 file_names = [f for f in listdir(datadir) if isfile(join(datadir, f))]
 list2 = ['MCMIPM1']
 m1list = [i for i in file_names if any(b in i for b in list2)]

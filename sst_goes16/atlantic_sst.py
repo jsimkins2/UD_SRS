@@ -1,4 +1,4 @@
-
+# this script makes an image of SST over the NW Atlantic
 from datetime import datetime, timedelta
 import cartopy.feature as cfeature
 import matplotlib.pyplot as plt

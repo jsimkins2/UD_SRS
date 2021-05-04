@@ -1,3 +1,6 @@
+# this product maps the last 5 minutes of lightning flashes in the US/mid atlantic
+# The colorbar used is ROY, with the older flashes being red and newer flashes yellow
+
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt

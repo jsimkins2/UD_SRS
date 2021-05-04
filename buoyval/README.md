@@ -1,0 +1,1 @@
+These scripts were used for the satellite SST data vs buoy in-situ data validation experiment. Basically, we grab satellite data and match it to the closest buoy data value. This set of experiments determined that JPL goes16 was the most accurate sst product we currently have
