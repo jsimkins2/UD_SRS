@@ -1,4 +1,9 @@
+# this script serves to create the static maps of the DEOS AgWx spatial dataset
+# We plot all variables (including NCEP Stage IV precip which the DEOS AgWx grid was matched to)
+# for a number of time periods (1 day, 1 week, 1 month, 3 months, etc.)
+
 # static ag weather maps hosted on /var/www/html/imagery/AgWx/
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt

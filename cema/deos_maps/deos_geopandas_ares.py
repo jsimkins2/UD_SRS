@@ -1,4 +1,6 @@
-# deos geopandas to be run at home
+# THIS IS THE PRIMARY DEOS REAL-TIME MAPS SCRIPT
+# this runs on ares and is the most up to date version of this script
+
 import os
 from datetime import datetime, timedelta
 stat = os.stat("/home/deos/web_push/map_data.json")

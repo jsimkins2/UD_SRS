@@ -1,3 +1,6 @@
+# this script creates the DEOS AgWx spatial dataset
+# we interpolate DEOS station data to a spatial map using Inverse Distance Weighted Routines
+
 from datetime import datetime, timedelta, date
 import geopandas as gpd
 import rioxarray
