@@ -269,7 +269,7 @@ for var in datasets:
         df.rio.to_raster(tiffolder + dfvarname  + str(daysback_dict[db]) + '.tif', overwrite=True)
         cl = rioxarray.open_rasterio(tiffolder + dfvarname + str(daysback_dict[db]) +'.tif')
 
-        if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname or 'HI' in dfvarname or 'WC' in dfvarname:
+        if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname or 'HI' in dfvarname or 'nWC' in dfvarname or 'xWC' in dfvarname:
             cl.values[0] = ((cl.values[0] - 273.15)*(9/5)) + 32
             opLabel = dfvarname.split("_")[0] + ' (Deg F)'
         

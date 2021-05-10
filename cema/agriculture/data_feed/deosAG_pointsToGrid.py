@@ -96,9 +96,11 @@ nameDict = dict(zip(['Mean Daily Temp.','Max Daily Temp.','Min Daily Temp.','Hea
                      ['meanTemp', 'maxTemp', 'minTemp', 'HDD', 'CDD', 'meanWS', 'dailyprecip', 'meanDP','energyDens',
                       'refET', 'GDD', 'meanRH', 'maxRH', 'minRH', 'meanST', 'maxST', 'minST', 'meanVWC', 'maxVWC', 'minVWC',
                       'meanSolar', 'meanWD', 'dailyGust', 'dailyMinWC', 'maxHI']))
-fancyDict = dict(zip(list(nameDict.values()), ['Kelvin', 'Kelvin', 'Kelvin', ' ', ' ', 'm.s-1', 'mm', 'Kelvin', 'J.m-2',
-                                               'mm.day-1', ' ', '%', '%', '%', 'Kelvin', 'Kelvin', 'Kelvin', ' ', ' ', ' ', 'J.m-2',
-                                               'Rad', 'm.s-1', 'Kelvin', 'Kelvin']))
+fancyDict = dict(zip(list(nameDict.values()), ['Kelvin', 'Kelvin', 'Kelvin', ' ', ' ', 
+                                               'm.s-1', 'mm', 'Kelvin', 'J.m-2',
+                                               'mm.day-1', ' ', '%', '%', '%', 
+                                               'Kelvin', 'Kelvin', 'Kelvin', ' ', ' ', ' ', 
+                                               'J.m-2','Rad', 'm.s-1', 'Kelvin', 'Kelvin']))
 # create a dictionary for months
 monthDict = dict(zip([1,2,3,4,5,6,7,8,9,10,11,12], ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']))
 
