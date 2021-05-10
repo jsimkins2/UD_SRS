@@ -526,7 +526,7 @@ for var in datasets:
         cl = rioxarray.open_rasterio(tiffolder + dfvarname + str(daysback_dict[db]) +'.tif')
 
         if 'Temp' in dfvarname or 'ST' in dfvarname or 'HeatIndex' in dfvarname or 'DP' in dfvarname or 'HI' in dfvarname:
-            cl.values[0] = ((cl.values[0] - 273.15)*(9/5))
+            cl.values[0] = ((cl.values[0])*(9/5))
             opLabel = 'Difference (Deg F)'
         
         if 'Gust' in dfvarname or 'Speed' in dfvarname:
