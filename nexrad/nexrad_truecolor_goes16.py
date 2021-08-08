@@ -1,13 +1,22 @@
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-from mpl_toolkits.basemap import Basemap
+#from mpl_toolkits.basemap import Basemap
+import cartopy.crs as ccrs
+import numpy as np
+import cartopy.feature as cfeature
+import cartopy.io.img_tiles as cimgt
+import cartopy.crs as ccrs
+import metpy
+from metpy.plots import colortables as ctables
+import xarray as xr
+
 from siphon.catalog import TDSCatalog
 import urllib
 from netCDF4 import Dataset, num2date
 from matplotlib import ticker
 import matplotlib as mpl
-import pyart
+#import pyart
 from dateutil import tz
 import time
 from time import mktime
@@ -28,8 +37,8 @@ imgdir = "/home/sat_ops/goesR/radar/tcconus/"
 ltngdir = "/home/sat_ops/goesR/data/glm/"
 site = 'KDOX'
 ################ Grab the Lat/Lon of the site we want ####################
-loc = pyart.io.nexrad_common.get_nexrad_location(site)
-lon0 = loc[1] ; lat0 = loc[0]
+#loc = pyart.io.nexrad_common.get_nexrad_location(site)
+#lon0 = loc[1] ; lat0 = loc[0]
 ############# Declare Functions ############
 
 def nearest(items, pivot):
@@ -43,20 +52,20 @@ def contrast_correction(color, contrast):
     return COLOR
     
 # Define projections
-mH = Basemap(resolution='i', projection='lcc', area_thresh=1500, \
-            width=1800*3000, height=1060*3100, \
-            lat_1=38.5, lat_2=38.5, \
-            lat_0=38.5, lon_0=-97.5)
+#mH = Basemap(resolution='i', projection='lcc', area_thresh=1500, \
+#            width=1800*3000, height=1060*3100, \
+#            lat_1=38.5, lat_2=38.5, \
+ #           lat_0=38.5, lon_0=-97.5)
 
-DH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
-    llcrnrlat=lat0-4.5,llcrnrlon=lon0-5.5,
-    urcrnrlat=lat0+5,urcrnrlon=lon0+5.5,resolution='h') 
+#DH = Basemap(projection='lcc',lon_0=lon0,lat_0=lat0,
+#    llcrnrlat=lat0-4.5,llcrnrlon=lon0-5.5,
+ #   urcrnrlat=lat0+5,urcrnrlon=lon0+5.5,resolution='h') 
 
 ######################### NEXRAD #############################
 # Go to the Unidata Thredds Server for the Current Day
 nowdate = datetime.utcnow()
-cat = TDSCatalog('http://thredds-jumbo.unidata.ucar.edu/thredds/catalog/grib/nexrad/composite/unidata/NEXRAD_Unidata_Reflectivity-' + \
-                  str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/catalog.xml')
+# https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/BaseRef/latest.html
+cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/BaseRef/catalog.xml')
 
 # run through the last 5 files for now and we'll see whether or not we've already created them or not
 raw_list = []
@@ -87,22 +96,22 @@ for x in mcmipc_list:
 
 ########################### Begin the loop for the matched data and plot image ################################
 for i in range(0,len(dataset_list)):
-    cat = TDSCatalog('http://thredds-jumbo.unidata.ucar.edu/thredds/catalog/grib/nexrad/composite/unidata/NEXRAD_Unidata_Reflectivity-' + \
-                  str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/' + dataset_list[i] + '/catalog.xml')
+    cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/BaseRef/catalog.xml')
     dataset_name = sorted(cat.datasets.keys())[-1]
     nexrad_name = cat.datasets[dataset_name]
     nexrad = nexrad_name.remote_access()
     refltime=0
     
-    geoy = np.array(nexrad.variables['y'][:]) * 1000.
-    geox = np.array(nexrad.variables['x'][:]) * 1000.
-    refl = np.array(nexrad.variables['Base_reflectivity_surface_layer'][refltime,:,:])
-    proj_var = nexrad.variables['LambertConformal_Projection']
+    geoy = np.array(nexrad.variables['lat'][:])
+    geox = np.array(nexrad.variables['lon'][:])
+    refl = np.array(nexrad.variables['MergedBaseReflectivityQC_altitude_above_msl'][refltime,:,:])
+    proj_var = nexrad.variables['LatLon_Projection']
     time_var = nexrad.variables['time']
-    timestamp = num2date(time_var[:].squeeze(), time_var.units)
+    # cf_datetimes kwarg - https://github.com/pvlib/pvlib-python/issues/944
+    timestamp = num2date(time_var[:].squeeze(), time_var.units, only_use_cftime_datetimes=False)
 
     ############# Read the goes file ###############
-    C_file = mcmipc_list[gdatetime.index(nearest(gdatetime, timestamp))]
+    C_file = mcmipc_list[gdatetime.index(nearest(gdatetime, timestamp[i]))]
     # match the lightning files to the goes files
     tem = C_file.split('s')[1][:-4]
     goesdatetime=datetime.strptime(tem, '%Y%j%H%M%S')
@@ -114,6 +123,9 @@ for i in range(0,len(dataset_list)):
     
     
     Cnight = Dataset(datadir + C_file, 'r')
+    Cnight2 = xr.open_dataset(datadir + C_file)
+    dat = Cnight2.metpy.parse_cf("CMI_C01")
+    goesproj = dat.metpy.cartopy_crs
     
     # Load the RGB arrays
     R = Cnight.variables['CMI_C02'][:].data
@@ -159,8 +171,10 @@ for i in range(0,len(dataset_list)):
     RGB_contrast_IR = np.dstack([np.maximum(RGB_contrast[:,:,0], cleanIR), np.maximum(RGB_contrast[:,:,1], cleanIR), np.maximum(RGB_contrast[:,:,2], cleanIR)])
     
     # Satellite Date, height, lon, sweep
+    
     add_seconds = Cnight.variables['t'][0]
-    DATE = datetime(2000, 1, 1, 12) + timedelta(seconds=add_seconds)
+    print(type(add_seconds))
+    DATE = datetime(2000, 1, 1, 12) + timedelta(seconds=int(add_seconds))
     sat_h = Cnight.variables['goes_imager_projection'].perspective_point_height
     sat_lon = Cnight.variables['goes_imager_projection'].longitude_of_projection_origin
     sat_sweep = Cnight.variables['goes_imager_projection'].sweep_angle_axis
@@ -209,41 +223,51 @@ for i in range(0,len(dataset_list)):
     # create a meshgrid so that they are the same size and we can convert the projection coordinates to lat lon so basemap can understand them
     XX, YY = np.meshgrid(geox, geoy)
     nexlons, nexlats = lcc(XX, YY, inverse=True)
-    cmap = 'pyart_NWSRef'
+    cmap = 'jet'
     levs = np.linspace(0,80,41,endpoint=True)
     norm = mpl.colors.BoundaryNorm(levs,256)
 
+
     ##################################### CONUS Plotting #################################
     rec_height = 120000
-    rec_width = mH.xmax
-    # Now we can plot the GOES data on the HRRR map domain and projection
-    plt.figure(figsize=[16, 12], dpi=100)
-    xH, yH = mH(lons, lats)
-    # The values of R are ignored becuase we plot the color in colorTuple, but pcolormesh still needs its shape.
-    newmap = mH.pcolormesh(xH, yH, R, color=colorTuple, linewidth=0)
-    newmap.set_array(None) # without this line, the linewidth is set to zero, but the RGB colorTuple is ignored. I don't know why.
-    mH.pcolormesh(nexlons, nexlats, dBZ, latlon=True,
-          cmap=cmap,
-          vmax=80, vmin=0)
-    mH.drawstates(color='k')
-    mH.drawcountries()
-    mH.drawcoastlines(linewidth=0.7,color='k')
+    rec_width = 9000
+    newproj=ccrs.LambertConformal()
+    proj=ccrs.PlateCarree()
     
-    cb = mH.colorbar(location='bottom', size = '2%', pad = '-1.95%', ticks=[5, 15, 25, 35, 45, 55, 65, 75])
-    cb.ax.set_xticklabels(['5', '15', '25', '35', '45', '55', '65', '75'])
-    cb.outline.set_visible(False) # Remove the colorbar outline
-    cb.ax.tick_params(width = 0) # Remove the colorbar ticks 
-    cb.ax.xaxis.set_tick_params(pad=-13.75) # Put the colobar labels inside the colorbar
-    cb.ax.tick_params(axis='x', colors='black', labelsize=10) # Change the color and size of the colorbar labels
+    # Now we can plot the GOES data on the HRRR map domain and projection
+    fig = plt.figure(figsize=[16,9], dpi=100)
+    ax = fig.add_subplot(1,1,1, projection=newproj)
+    im = ax.pcolormesh(dat['x'], dat['y'], R, color=colorTuple, transform=goesproj)
+    ax.set_extent((-70, -120, 20, 50))
+    
+    plt.pcolormesh(geox, np.flipud(geoy), np.flipud(dBZ[0]), 
+      cmap=ctables.get_colortable('NWSReflectivity'),vmax=80, vmin=0,transform=proj)
+
+    timestr = 'test'#local.strftime('%Y-%m-%d %H:%M ') + et
+
+    fig.text(0.5,0.9, 'GOES16 Atlantic Basin - Powered By CEMA\n'
+            + timestr,horizontalalignment='center',fontsize=16)
+    ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
+                                    edgecolor='black', facecolor='none',linewidth=0.3))
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes', '50m',
+                                    edgecolor='black', facecolor='none',linewidth=0.3))
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land', '50m',
+                                    edgecolor='black', facecolor='none',linewidth=0.3))
+    
+    #cb = mH.colorbar(location='bottom', size = '2%', pad = '-1.95%', ticks=[5, 15, 25, 35, 45, 55, 65, 75])
+    #cb.ax.set_xticklabels(['5', '15', '25', '35', '45', '55', '65', '75'])
+    #cb.outline.set_visible(False) # Remove the colorbar outline
+    #cb.ax.tick_params(width = 0) # Remove the colorbar ticks 
+    #cb.ax.xaxis.set_tick_params(pad=-13.75) # Put the colobar labels inside the colorbar
+    #cb.ax.tick_params(axis='x', colors='black', labelsize=10) # Change the color and size of the colorbar labels
     
     clabeltext='Reflectivity [dBZ]'
     title = 'NOAA GOES-16 & NEXRAD II Reflectivity'
-    timestr = local.strftime('%Y-%m-%d %H:%M ') + et
     currentAxis = plt.gca()
     currentAxis.add_patch(Rectangle((0, 0), 1000000000, rec_height * 1.3, alpha=1, zorder=3, facecolor='darkslateblue'))
     plt.text(9000, 90000,clabeltext,horizontalalignment='left', color = 'white', size=11)
     # btw, 5400000 comes from the width of mH basemap
-    currentAxis.add_patch(Rectangle((0, mH.ymax - rec_height), rec_width, rec_height , alpha=1, zorder=3, edgecolor='black',facecolor='white'))
+    #currentAxis.add_patch(Rectangle((0, mH.ymax - rec_height), rec_width, rec_height , alpha=1, zorder=3, edgecolor='black',facecolor='white'))
     plt.text(4440000, 3200000,timestr,horizontalalignment='left', color = 'black', size=14)
     plt.text(9000, 3200000,title,horizontalalignment='left', color = 'black', size=14)
     
@@ -257,7 +281,7 @@ for i in range(0,len(dataset_list)):
     output_file = workdir + 'tcconus/' + str(nexrad_name) + ".png"
     plt.savefig(output_file, dpi=100, bbox_inches='tight')
     plt.close()
-    
+    '''
     ########################################################################
     ################# NOW PLOT MIDATLANTIC DOMAIN ########################
     ########################################################################
@@ -441,3 +465,4 @@ for i in img_names:
     input_file=imgdir + str(i)
     images.append(imageio.imread(input_file))
 imageio.mimsave(workdir + 'lightning_radar_goes_midatlantic.gif', images, duration=dur_vals)
+'''
