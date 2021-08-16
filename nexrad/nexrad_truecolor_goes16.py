@@ -86,7 +86,7 @@ proj_var = nexrad.variables['LatLon_Projection']
 time_var = nexrad.variables['time']
 created_plot = False
 
-fileind = [-5,-4,-3,-2,-1]
+fileind = [-3,-2,-1]
 for i in fileind:
     print(i)
     refltime=i
