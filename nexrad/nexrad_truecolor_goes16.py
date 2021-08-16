@@ -88,7 +88,6 @@ created_plot = False
 
 fileind = [-3,-2,-1]
 for i in fileind:
-    print(i)
     refltime=i
     refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time=refltime, altitude_above_msl=0)
     geoy = np.array(nexrad.variables['lat'][:])
@@ -97,7 +96,6 @@ for i in fileind:
     timestamp = pd.Timestamp(refl.time.values).to_pydatetime()
     output_file = workdir + 'tcconus/' + str(timestamp.strftime('%Y%m%d%_H%M')) + "nexradTCC.png"
     if os.path.isfile(output_file) == False:
-        print(output_file)
         ############# Read the goes file ###############
         C_file = mcmipc_list[gdatetime.index(nearest(gdatetime, timestamp))]
             # match the lightning files to the goes files

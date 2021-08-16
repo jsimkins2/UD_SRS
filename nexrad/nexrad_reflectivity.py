@@ -68,7 +68,6 @@ created_plot = False
 
 fileind = [-3,-2,-1]
 for i in fileind:
-    print(i)
     refltime=i
     refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time=refltime, altitude_above_msl=0)
     geoy = np.array(nexrad.variables['lat'][:])
