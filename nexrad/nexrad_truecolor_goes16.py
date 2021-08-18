@@ -94,7 +94,7 @@ for i in fileind:
     geox = np.array(nexrad.variables['lon'][:])
     # cf_datetimes kwarg - https://github.com/pvlib/pvlib-python/issues/944
     timestamp = pd.Timestamp(refl.time.values).to_pydatetime()
-    output_file = workdir + 'tcconus/' + str(timestamp.strftime('%Y%m%d%_H%M')) + "nexradTCC.png"
+    output_file = workdir + 'tcconus/' + str(timestamp.strftime('%Y%m%d_%H%M')) + "nexradTCC.png"
     if os.path.isfile(output_file) == False:
         ############# Read the goes file ###############
         C_file = mcmipc_list[gdatetime.index(nearest(gdatetime, timestamp))]
