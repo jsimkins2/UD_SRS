@@ -81,12 +81,12 @@ cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/BaseRe
 
 nexrad_name = cat.datasets['Full Collection Dataset']
 nexrad = nexrad_name.remote_access(use_xarray=True)
-nexrad = nexrad.isel(time=slice(len(nexrad.time.values)-6,len(nexrad.time.values)))
+nexrad = nexrad.isel(time=slice(len(nexrad.time.values)-4,len(nexrad.time.values)))
 proj_var = nexrad.variables['LatLon_Projection']
 time_var = nexrad.variables['time']
 created_plot = False
 
-fileind = [-3,-2,-1]
+fileind = [-1]
 for i in fileind:
     refltime=i
     refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time=refltime, altitude_above_msl=0)

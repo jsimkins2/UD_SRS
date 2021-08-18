@@ -66,7 +66,7 @@ proj_var = nexrad.variables['LatLon_Projection']
 time_var = nexrad.variables['time']
 created_plot = False
 
-fileind = [-3,-2,-1]
+fileind = [-1]
 for i in fileind:
     refltime=i
     refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time=refltime, altitude_above_msl=0)
