@@ -32,6 +32,7 @@ for t in jpl.time.values:
     epoch_jpl.append(datetime.fromtimestamp(mktime(t_)).timestamp())
     datetimes_jpl.append(str("{0:0=4d}".format(t_.tm_year) + "_" + "{0:0=2d}".format(t_.tm_mon) + "{0:0=2d}".format(t_.tm_mday) + "_" + "{0:0=2d}".format(t_.tm_hour) + "{0:0=2d}".format(t_.tm_min)))
 
+# adding delta datetimes because we need to watch for bad timestamps uploaded to the jpl thredds server
 delta_datetimes = list(np.diff(epoch_jpl))
 delta_datetimes.append(delta_datetimes[-1])
 delta_datetimes.append(delta_datetimes[-1])
@@ -169,7 +170,11 @@ x = dat.assign_coords(time=newtimestamp)
 dat = x.expand_dims('time')
 dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 # have to add the following line becuase of a weird xarray netcdf4 error when writing the xarray to netcdf
-del goes_nc.attrs['_NCProperties']
+# adding a try except here because this problem may be fixed?
+try:
+    del goes_nc.attrs['_NCProperties']
+except:
+    pass
 print("writing out 1day")
 outpath = "/data/GOES/GOES-R/rolling_1day/"
 dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day.nc',mode='w',
@@ -204,7 +209,11 @@ x = dat.assign_coords(time=newtimestamp)
 dat = x.expand_dims('time')
 dat.time.attrs['units'] = 'seconds since 1970-01-01 00:00:00'
 # have to add the following line becuase of a weird xarray netcdf4 error when writing the xarray to netcdf
-del goes_nc.attrs['_NCProperties']
+# adding a try except here because this problem may be fixed?
+try:
+    del goes_nc.attrs['_NCProperties']
+except:
+    pass
 print("writing out 1day")
 outpath = "/data/GOES/GOES-R/rolling_1day_fahrenheit/"
 dat.to_netcdf(path=outpath + 'GOES16_SST_rolling_1day_fahrenheit.nc', mode='w',

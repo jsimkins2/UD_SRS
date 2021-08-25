@@ -23,7 +23,7 @@ import cartopy
 import matplotlib.ticker as mticker
 import cmocean
 # open the main dataset
-main_sst = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/GOESR_SST_DAILY.nc")
+main_sst = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/daily_composite_JPL_SST.nc")
 main_sst = main_sst.reindex(latitude=list(reversed(main_sst.latitude)))
 
 dat = main_sst.metpy.parse_cf('sst')[-1]
