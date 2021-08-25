@@ -6,7 +6,7 @@ import pandas as pd
 import netCDF4
 from datetime import datetime, timedelta
 from netCDF4 import Dataset
-from time import mktime
+from time import mktime, sleep
 
 # define helper function for removing problem attributes - I don't know if we use this at all but I'm afraid to take it out... 4/15/2019
 def remove_problematic_attrs(ds):
@@ -138,7 +138,7 @@ for sstDate in datetimes_jpl:
                 f.acknowledgement = "These data were provided by Group for High Resolution Sea Surface Temperature (GHRSST) and the National Oceanic and Atmospheric Administration (NOAA)"
                 f.close()
 
-time.sleep(10)
+sleep(10)
 # now make a rolling 1 day aka last 24 hours IN CELSIUS
 goes_main = xr.open_dataset(
     "http://basin.ceoe.udel.edu/thredds/dodsC/GOESJPLSST.nc")
