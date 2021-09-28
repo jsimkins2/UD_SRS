@@ -216,17 +216,27 @@ deos_boundarys = gpd.read_file(shapePaths + 'deoscounties.shp')
 bigdeos = gpd.read_file(shapePaths + 'TRISTATE_OVERVIEW.shp')
 inland_bays = gpd.read_file(shapePaths + 'InlandBays.shp')
 state_outline = gpd.read_file(shapePaths + 'tristateMultiaddedPACo.shp')
+state_counties = gpd.read_file("/Users/james/Downloads/USA_Counties/USA_Counties.shp")
+new_counties = state_counties[state_counties["NAME"] == "Wicomico"]
+new_counties = new_counties.append(state_counties[state_counties ["NAME"] == "Chester"])
+new_counties = new_counties.append(state_counties[state_counties["NAME"] == "New Castle"])
+new_counties = new_counties.append(state_counties[state_counties["NAME"] == "Sussex"])
+state_counties = state_counties[state_counties["STATE_NAME"] == "Delaware"]
+new_counties = new_counties.append(state_counties[state_counties["NAME"] == "Kent"])
 
 # create cartopy instance of obscure projection
 c = Proj('+proj=tmerc +lat_0=38 +lon_0=-75.41666666666667 +k=0.999995 +x_0=200000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
 oldproj = proj_to_cartopy(c)
 
-# grab data from json files
-deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data2.json")
+# grab data from json fileshttp://128.175.28.202/deos_json/map_data.json
+deos_data = pd.read_json("http://128.175.28.202/deos_json/map_data.json")
 loc_deos = pd.read_json("http://128.175.28.202/deos_json/station_metadata.json")
 # deos_data['2020-02-06 18:30:00'][2302]
 # index is the station nunumbers 
 station_id = list(deos_data.index)
+
+if 1649 not in station_id:
+    station_id.append(1649)
 # need to find time value
 date_deos = deos_data.columns[0]
 dst = "EST" if time.localtime().tm_isdst==0 else "EDT"
@@ -335,7 +345,7 @@ for var in list(nameDict.keys()):
             txt_cmap =  pd.read_csv(colorPaths + 'at_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
             
         if var == 'Barometric Pressure':
-                vmin=940
+            vmin=940
             vmax=1050
             temp[temp < 930] = np.nan
             temp[temp > 1100] = np.nan
@@ -373,7 +383,7 @@ for var in list(nameDict.keys()):
         y = np.linspace(min(lats), max(lats), 750)
         xi,yi = np.meshgrid(x,y)
         # interpolate
-        #zi = griddata((lons,lats),temp,(xi,yi),method='cubic')
+        #zi = grdata((lons,lats),temp,(xi,yi),method='cubic')
         # try the idw interpolation scheme
         xi, yi = xi.flatten(), yi.flatten()
 
@@ -407,11 +417,13 @@ for var in list(nameDict.keys()):
             bounds.extend(list(lin))
             
         norm = BoundaryNorm(bounds,ncolors=cmap.N)
+
         #or lons[l] != -75.913585 
 
         fig = plt.figure(figsize=(12,12))
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
-        ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
+        ax.set_extent([-76.15, -75.03, 38.32, 40.26], crs=ccrs.PlateCarree())
+        new_counties['geometry'].index.values
         for ind in range(0,len(bigdeos)):
                 ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                               facecolor='silver', edgecolor='black')
@@ -419,32 +431,43 @@ for var in list(nameDict.keys()):
         for l in range(0,len(lons)):
             if var == 'Relative humidity':
                 if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.727202:
-                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=9,weight='bold',transform=ccrs.PlateCarree(),zorder=7)
+                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=9,weight='bold',transform=ccrs.PlateCarree(),zorder=75)
+                    text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
+                if lons[l] == -75.838585 or lons[l] == -75.913585 or lats[l] == 38.341476:
+                    text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=10,weight='bold',transform=ccrs.PlateCarree(),zorder=75)
                     text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
             if var == 'Barometric Pressure':
                 if lons[l] != -75.7311 and lons[l] != 75.6108 and lons[l] != -75.2472 and lons[l] != -75.118033 and lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202:
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=9,weight='bold',verticalalignment='center',
-                    horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
+                    horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=55)
+                    text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
+                if lons[l] == -75.838585 or lons[l] == -75.913585 or lats[l] == 38.341476:
+                    text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=10,weight='bold',verticalalignment='center',
+                    horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=55)
                     text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
             if var == 'Gage Precipitation (60)' or var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed' or var == 'Peak Wind Gust Speed (60)' or var == '24 Hour Precipitation':
                 if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
                     text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=9,weight='bold',verticalalignment='center',
-                    horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
+                    horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=55)
+                    text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
+                if lons[l] == -75.838585 or lons[l] == -75.913585 or lats[l] == 38.341476:
+                    text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=10,weight='bold',verticalalignment='center',
+                    horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=55)
                     text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
         for ind in range(0,len(deos_boundarys)):
             ax.add_geometries([deos_boundarys['geometry'][ind]], ccrs.PlateCarree(),
-                              facecolor='none', edgecolor='gray', zorder=3, linewidth=1.5)
+                              facecolor='none', edgecolor='gray', zorder=30, linewidth=1.5)
         for ind in range(0,len(inland_bays)):
             ax.add_geometries([inland_bays['geometry'][ind]], oldproj,
                               facecolor='white', edgecolor='black',zorder=3, linewidth=1.5)
         ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
         ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=1.5)
         #plt.title(nameDict[var])
-        plt.text(-76.13, 38.503, fancyDict[var],horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
-        plt.text(-76.13, 38.473, deos_dateSTR,horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
+        plt.text(-75.43, 39.43, fancyDict[var],horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
+        plt.text(-75.4, 39.4, deos_dateSTR,horizontalalignment='left',color='white',weight='bold',size=9,zorder=30,transform=ccrs.PlateCarree())
 
         im1 = image.imread("Downloads/maplayers/deos_logo.png")
-        plt.figimage(im1, 25, 40 ,zorder=30, alpha=1)
+        plt.figimage(im1, 210, 390 ,zorder=30, alpha=1)
         plt.savefig("Downloads/" + nameDict[var] + ".png")
 
 
