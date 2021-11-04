@@ -1,5 +1,6 @@
 # THIS IS THE PRIMARY DEOS REAL-TIME MAPS SCRIPT
-# Updated 9/27/2021
+# Updated 10/18/2021
+# added solar radiation to deos variable list
 
 import os
 from datetime import datetime, timedelta
@@ -240,8 +241,8 @@ for s in list(loc_deos.columns):
 
 rev_station_dict = dict(zip(station_dict.values(),station_dict.keys()))
 
-nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temperature','Wind Speed','Wind Direction','Barometric Pressure','Relative humidity', '24 Hour Precipitation', 'Peak Wind Gust Speed (60)'], ['precip', 'airT', 'dewP', 'wspeed', 'wdir', 'pres', 'rh', '24hr_precip', 'gust']))
-fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)', '24-hr Rain (in)', '1-hr Peak Wind Gust (mph)']))
+nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temperature','Wind Speed','Wind Direction','Barometric Pressure','Relative humidity', '24 Hour Precipitation', 'Peak Wind Gust Speed (60)', 'Solar Radiation'], ['precip', 'airT', 'dewP', 'wspeed', 'wdir', 'pres', 'rh', '24hr_precip', 'gust', 'swdown']))
+fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)', '24-hr Rain (in)', '1-hr Peak Wind Gust (mph)', 'Solar Radiation (W.m-2)']))
 for var in list(nameDict.keys()):
     lats=list()
     lons=list()
@@ -387,6 +388,16 @@ for var in list(nameDict.keys()):
             vmax=120
             rounder = 1
             txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+            
+        if var == 'Solar Radiation':
+            temp = temp
+            temp[temp < 0] = np.nan
+            temp[temp > 1000] = np.nan
+            vmin=0
+            vmax=1000
+            rounder = 0
+            txt_cmap =  pd.read_csv(colorPaths + 'solar_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+
 
         lons,lats, temp = remove_nan_observations(lons,lats, temp)
         x = np.linspace(min(lons), max(lons), 750)
@@ -458,8 +469,8 @@ for var in list(nameDict.keys()):
                 if lons[l] == -75.838585 or lons[l] == -75.913585 or lats[l] == 38.341476:
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=6.9,weight='bold',transform=ccrs.PlateCarree(),zorder=7)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
-            if var == 'Barometric Pressure':
-                if lons[l] != 75.6108 and lons[l] != -75.118033 and lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202 and lons[l] != -75.838585 and lons[l] != -75.913585 and lats[l] != 38.341476:
+            if var == 'Barometric Pressure' or var == 'Solar Radiation':
+                if lons[l] != 75.6108 and lons[l] != -75.118033 and lons[l] != -76.35 and lons[l] != -74.68 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.682511 and lons[l] != -75.727202 and lons[l] != -75.838585 and lons[l] != -75.913585 and lats[l] != 38.341476 and lons[l] != -75.054492:
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=5.8,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=5)
                     text.set_path_effects([path_effects.Stroke(linewidth=2.5, foreground='white'),path_effects.Normal()])
@@ -494,7 +505,7 @@ for var in list(nameDict.keys()):
         ax.add_geometries([state_outline['geometry'][74]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
         ax.add_geometries([bigdeos['geometry'][121]], oldproj, facecolor='none', edgecolor='black',zorder=3, linewidth=0.5)
         #plt.title(nameDict[var])
-        if var == 'Peak Wind Gust Speed (60)':
+        if var == 'Peak Wind Gust Speed (60)' or var =='Solar Radiation':
             plt.text(-75.44, 39.43, fancyDict[var],horizontalalignment='left',weight='bold',color='white',size=4.9,zorder=30,transform=ccrs.PlateCarree())
             plt.text(-75.43, 39.4, deos_dateSTR,horizontalalignment='left',weight='bold',color='white',size=6,zorder=30,transform=ccrs.PlateCarree())
         else:

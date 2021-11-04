@@ -1,4 +1,5 @@
 # deos geopandas to be run at home 
+# use geo39 environment on laptop
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -251,8 +252,8 @@ rev_station_dict = dict(zip(station_dict.values(),station_dict.keys()))
 
 
 
-nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temperature','Wind Speed','Wind Direction','Barometric Pressure','Relative humidity', '24 Hour Precipitation', 'Peak Wind Gust Speed (60)'], ['precip', 'airT', 'dewP', 'wspeed', 'wdir', 'pres', 'rh', 'dailyprecip', 'gust']))
-fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)', '24-hr Rain (in)', '1-hr Peak Wind Gust (mph)']))
+nameDict = dict(zip(['Gage Precipitation (60)','Air Temperature','Dew Point Temperature','Wind Speed','Wind Direction','Barometric Pressure','Relative humidity', '24 Hour Precipitation', 'Peak Wind Gust Speed (60)', 'Solar Radiation'], ['precip', 'airT', 'dewP', 'wspeed', 'wdir', 'pres', 'rh', 'dailyprecip', 'gust', 'swdown']))
+fancyDict = dict(zip(list(nameDict.keys()), ['1-hr Rain (in)', 'Air Temperature (F)', 'Dew Point (F)', '5-min Wind Speed', 'Wind', 'Pressure (mb)', 'Relative Humidity (%)', '24-hr Rain (in)', '1-hr Peak Wind Gust (mph)', 'Solar Radiation (W.m-2)']))
 for var in list(nameDict.keys()):
     lats=list()
     lons=list()
@@ -377,6 +378,16 @@ for var in list(nameDict.keys()):
             vmax=52
             rounder = 1
             txt_cmap =  pd.read_csv(colorPaths + 'ws_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+        
+        if var == 'Solar Radiation':
+            temp = temp
+            temp[temp < 0] = np.nan
+            temp[temp > 1000] = np.nan
+            vmin=0
+            vmax=1000
+            rounder = 0
+            txt_cmap =  pd.read_csv(colorPaths + 'solar_ramp.txt', header=None,names=['bound', 'r', 'g', 'b', 'a'],delimiter=' ')
+
 
         lons,lats, temp = remove_nan_observations(lons,lats, temp)
         x = np.linspace(min(lons), max(lons), 750)
@@ -423,13 +434,12 @@ for var in list(nameDict.keys()):
         fig = plt.figure(figsize=(12,12))
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
         ax.set_extent([-76.15, -75.03, 38.32, 40.26], crs=ccrs.PlateCarree())
-        new_counties['geometry'].index.values
         for ind in range(0,len(bigdeos)):
                 ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                               facecolor='silver', edgecolor='black')
         im=ax.pcolormesh(cl['x'].values,cl['y'].values,cl.values[0],cmap=cmap,norm=norm,transform=ccrs.PlateCarree(),zorder=2)
         for l in range(0,len(lons)):
-            if var == 'Relative humidity':
+            if var == 'Relative humidity' or var == 'Solar Radiation':
                 if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.727202:
                     text = plt.text(lons[l],lats[l],str(int(round(temp[l], rounder))), size=9,weight='bold',transform=ccrs.PlateCarree(),zorder=75)
                     text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
@@ -445,7 +455,7 @@ for var in list(nameDict.keys()):
                     text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=10,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=55)
                     text.set_path_effects([path_effects.Stroke(linewidth=4, foreground='white'),path_effects.Normal()])
-            if var == 'Gage Precipitation (60)' or var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed' or var == 'Peak Wind Gust Speed (60)' or var == '24 Hour Precipitation':
+            if var == 'Gage Precipitation (60)'  or var == 'Air Temperature' or var == 'Dew Point Temperature' or var == 'Wind Speed' or var == 'Peak Wind Gust Speed (60)' or var == '24 Hour Precipitation':
                 if lons[l] != -76.15 and lons[l] != -74.98 and lons[l] != -75.062685 and lons[l] != -75.118033 and lons[l] != -75.247235 and lons[l] != -75.640685 and lons[l] != -75.527755 and lons[l] != -75.118033 and lons[l] != -75.148629 and lons[l] != -75.727202:
                     text = plt.text(lons[l],lats[l],str(round(temp[l], rounder)), size=9,weight='bold',verticalalignment='center',
                     horizontalalignment='center',transform=ccrs.PlateCarree(),zorder=55)
