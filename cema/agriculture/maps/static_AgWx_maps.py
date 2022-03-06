@@ -162,12 +162,14 @@ bounds=(-76.2,38.3,-74.85, 40.3)
 agwx_main = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/DEOSAG.nc")
 agwx_main = agwx_main.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(bounds[0],bounds[2]))
 
-# open NCEP stage IV QC dataset
-dsPrec = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/NCEPIVQC.nc")
-dsPrec = dsPrec.sel(lat=slice(bounds[1], bounds[3]), 
-                    lon=slice(bounds[0],bounds[2]), 
-                    time=slice(datetime.strptime("2014-01-01", "%Y-%m-%d"),
+# write the most recent year to local disk
+ds_write = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/NCEPIVQC.nc").sel(time=slice(datetime.strptime(str(str(date.today().year) + "-01-01"), "%Y-%m-%d"),date.today()))
+ds_write.to_netcdf(str("/home/sat_ops/deos/ncep_stageIV/aggregate_quality/ncep_stageIV_quality24hr_" + str(date.today().year) + ".nc"), mode='w')
+
+dsPrec = xr.open_mfdataset("/home/sat_ops/deos/ncep_stageIV/aggregate_quality/*").sel(time=slice(datetime.strptime("2017-01-01", "%Y-%m-%d"),
                               date.today()))
+dsPrec = dsPrec.sel(lat=slice(bounds[1], bounds[3]), 
+                    lon=slice(bounds[0],bounds[2]))
 
 dsPrec = dsPrec.reindex(lat=list(reversed(dsPrec.lat)))
 dsPrec = dsPrec.rename(name_dict= {'lat' : 'latitude'})
@@ -195,6 +197,7 @@ nowtime = datetime.utcnow()
 ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
 daysback_dict = dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [np.int(np.abs(ytd.days)), 90, 30, 7, 1]))
 datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + list(max_dict.keys()) + list(min_dict.keys())
+
 
 nowdate=datetime.utcnow()
 for var in datasets:
@@ -322,9 +325,10 @@ for var in datasets:
             plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
             plt.savefig("/var/www/html/imagery/AgWx/weather/" + dfvarname + "_" + str(daysback_dict[db]) + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
         plt.close()
+        df.close()
 
 
-
+print('starting precip')
 datasets = ['Reference Evapotranspiration', 'dailyprecip', 'NCEP Stage IV Precip', 'NCEP Stage IV Precip - DEOS RefET']
 daysback_dict = dict(zip(['18 Months', '12 Months', 'YTD', '6 Months', '3 Months', '1 Month', '1 Week', '1 Day'], [540, 360,np.int(np.abs(ytd.days)), 180, 90, 30, 7, 1]))
 cmap = 'BrBG'
@@ -422,10 +426,11 @@ for var in datasets:
             plt.savefig("/var/www/html/imagery/AgWx/water_quantity/" + dfvarname + "_" + str(daysback_dict[db]) + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
 
         plt.close()
-        
+        df.close()
 
 # now create the departure maps 
 # load in the datasets
+print('onto departure maps')
 climo = xr.open_dataset("/data/DEOS/doy_climatology/deos_doy_climatology.nc")
 nowtime = datetime.utcnow()
 ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
@@ -434,6 +439,7 @@ datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + ['Reference Evapotra
 
 nowdate=datetime.utcnow()
 for var in datasets:
+    print(var)
     for db in daysback_dict.keys():
         if any(var in s for s in mean_dict.keys()):
             df = agwx_main[mean_dict[var]]
@@ -581,10 +587,15 @@ for var in datasets:
             plt.figimage(im1, 18, 50 ,zorder=30, alpha=1)
             plt.savefig("/var/www/html/imagery/AgWx/departures/" + dfvarname + "_" + str(daysback_dict[db]) + ".png",bbox_inches='tight',pad_inches = 0,dpi=my_dpi*1.3)
         plt.close()
+        df.close()
+        cl.close()
+        cf.close()
 
+climo.close()
 # cumulative county maps
 # open up the county agwx datasets
 # list of dataframes
+print("at county maps now")
 countydf = ['chester_agwx.nc', 'ncc_agwx.nc', 'kentc_agwx.nc', 'sussex_agwx.nc']
 doydf = ['chester_agwx_climatology.nc', 'ncc_agwx_climatology.nc', 'kent_agwx_climatology.nc', 'sussex_agwx_climatology.nc']
 co_names = ['Chester', 'New Castle', 'Kent', 'Sussex']
@@ -657,7 +668,9 @@ for db in daysback_dict.keys():
         plt.figimage(im1, 1450, 75 ,zorder=30, alpha=1)
         fig.tight_layout()
         plt.savefig("/var/www/html/imagery/AgWx/county/" + co_names[co] + "_YTD_precipitation.png",bbox_inches='tight',pad_inches = 0.1,dpi=my_dpi*1.3)
-
+        plt.close()
+        df.close()
+        cf.close()
 
 # HDD and CDD 
 nowdate=datetime.utcnow()
@@ -720,7 +733,10 @@ for db in daysback_dict.keys():
         plt.figimage(im1, 1450, 75 ,zorder=30, alpha=1)
         fig.tight_layout()
         plt.savefig("/var/www/html/imagery/AgWx/county/" + co_names[co] + "_YTD_HDD_CDD.png",bbox_inches='tight',pad_inches = 0.1,dpi=my_dpi*1.3)
-
+        plt.close()
+        df.close()
+        cf.close()
+        
 # GDD and Energy Density
 nowdate=datetime.utcnow()
 for db in daysback_dict.keys():
@@ -782,4 +798,6 @@ for db in daysback_dict.keys():
         plt.figimage(im1, 1450, 75 ,zorder=30, alpha=1)
         fig.tight_layout()
         plt.savefig("/var/www/html/imagery/AgWx/county/" + co_names[co] + "_YTD_GDD_Energy.png",bbox_inches='tight',pad_inches = 0.1,dpi=my_dpi*1.3)
-
+        plt.close()
+        df.close()
+        cf.close()
