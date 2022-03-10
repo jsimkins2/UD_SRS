@@ -57,21 +57,21 @@ def contrast_correction(color, contrast):
 # Go to the Unidata Thredds Server for the Current Day
 nowdate = datetime.utcnow()
 # https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/BaseRef/latest.html
-cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/nexrad/composite/gini/n0q/1km/' + \
-                  str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/catalog.xml')
-nexrad_name = cat.datasets[0]
+cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/CONUS/BaseRef/catalog.html')
+
+nexrad_name = cat.datasets['Full Collection Dataset']
 nexrad = nexrad_name.remote_access(use_xarray=True)
-#nexrad = nexrad.isel(time=slice(len(nexrad.time.values)-6,len(nexrad.time.values)))
-#proj_var = nexrad.variables['grid_mapping_name']
+nexrad = nexrad.isel(time=slice(len(nexrad.time.values)-6,len(nexrad.time.values)))
+proj_var = nexrad.variables['LatLon_Projection']
 time_var = nexrad.variables['time']
 created_plot = False
 
 fileind = [-1]
 for i in fileind:
-    refltime=0
-    refl = nexrad['Unknown'].isel(time=refltime)
-    geoy = np.array(nexrad.variables['y'][:])
-    geox = np.array(nexrad.variables['x'][:])
+    refltime=i
+    refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time=refltime, altitude_above_msl=0)
+    geoy = np.array(nexrad.variables['lat'][:])
+    geox = np.array(nexrad.variables['lon'][:])
     # cf_datetimes kwarg - https://github.com/pvlib/pvlib-python/issues/944
     timestamp = pd.Timestamp(refl.time.values).to_pydatetime()
     output_file = workdir + 'imgconus/' + str(timestamp.strftime('%Y%m%d_%H%M')) + "nexradC.png"
@@ -121,7 +121,7 @@ for i in fileind:
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
         rad = ax.pcolormesh(geox, np.flipud(geoy), np.flipud(dBZ), 
-          cmap=ctables.get_colortable('NWSReflectivity'),vmax=80, vmin=0,transform=ccrs.LambertConformal())
+          cmap=ctables.get_colortable('NWSReflectivity'),vmax=80, vmin=0,transform=ccrs.PlateCarree())
         ax.set_extent((-65, -128, 21, 50), crs=ccrs.PlateCarree())  
         ax.set_title("")
         ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
@@ -180,7 +180,7 @@ for i in fileind:
         fig = plt.figure(figsize=[fs_x, fs_y], dpi=dpi)
         ax = fig.add_subplot(1,1,1, projection=newproj)
         rad = ax.pcolormesh(geox, np.flipud(geoy), np.flipud(dBZ), 
-          cmap=ctables.get_colortable('NWSReflectivity'),vmax=80, vmin=0,transform=ccrs.LambertConformal())
+          cmap=ctables.get_colortable('NWSReflectivity'),vmax=80, vmin=0,transform=ccrs.PlateCarree())
         ax.set_extent((-69, -81, 34.5, 43.7))
         ax.set_title("")
         ax.add_feature(cfeature.NaturalEarthFeature('physical', 'coastline', '10m',
@@ -252,4 +252,3 @@ if created_plot==True:
         input_file=imgdir + str(i)
         images.append(imageio.imread(input_file))
     imageio.mimsave(workdir + 'radar_midatlantic.gif', images, duration=dur_vals)
-
