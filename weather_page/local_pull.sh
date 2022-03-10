@@ -30,6 +30,15 @@ ls /home/sat_ops/goesR/radar/tcmid -tr | tail -n 1 | xargs -I{} scp /home/sat_op
 
 ls /home/sat_ops/goesR/radar/tcconus -tr | tail -n 1 | xargs -I{} scp /home/sat_ops/goesR/radar/tcconus/{} /var/www/html/imagery/pivotal/tcconus.png
 
+wget http://deos.udel.edu/images/home_map/deos_airT.png -P /home/sat_ops/weather_page/
+wget http://www.deos.udel.edu/images/current/dttemps.png -P /home/sat_ops/weather_page/
+wget http://www.deos.udel.edu/images/current/rain24.png -P /home/sat_ops/weather_page/
+wget http://www.deos.udel.edu/images/current/rh.png -P /home/sat_ops/weather_page/
+wget http://www.deos.udel.edu/images/current/ws.png -P /home/sat_ops/weather_page/
+
+mv /home/sat_ops/weather_page/*.png /var/www/html/imagery/pivotal/
+mv /home/sat_ops/weather_page/*.gif /var/www/html/imagery/pivotal/
+
 mogrify -resize 200 /var/www/html/imagery/pivotal/*.png
 
 scp /home/sat_ops/goesR/github/UD_SRS/weather_page/index.html /var/www/html/weather_page/
