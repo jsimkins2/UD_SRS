@@ -73,7 +73,7 @@ for i in fileind:
     geoy = np.array(nexrad.variables['lat'][:])
     geox = np.array(nexrad.variables['lon'][:])
     # cf_datetimes kwarg - https://github.com/pvlib/pvlib-python/issues/944
-    timestamp = pd.Timestamp(refl.time.values).to_pydatetime()
+    timestamp = pd.Timestamp(refl.time2.values).to_pydatetime()
     output_file = workdir + 'imgconus/' + str(timestamp.strftime('%Y%m%d_%H%M')) + "nexradC.png"
     if os.path.isfile(output_file) == False:
         from_zone = tz.gettz('UTC')
