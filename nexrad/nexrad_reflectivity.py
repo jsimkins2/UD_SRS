@@ -57,8 +57,6 @@ def contrast_correction(color, contrast):
 # Go to the Unidata Thredds Server for the Current Day
 nowdate = datetime.utcnow()
 # https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/BaseRef/latest.html
-https://thredds.ucar.edu/thredds/catalog/nexrad/composite/gini/n0q/1km/20220310/catalog.html
-20220310/catalog.html
 cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/nexrad/composite/gini/ntq/1km/catalog.xml')
 cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/nexrad/composite/gini/n0q/1km/' + \
                   str(nowdate.year) + str("%02d"%nowdate.month) + str("%02d"%nowdate.day) + '/catalog.xml')
