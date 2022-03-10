@@ -69,7 +69,7 @@ created_plot = False
 fileind = [-1]
 for i in fileind:
     refltime=i
-    refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time=refltime, altitude_above_msl=0)
+    refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time2=refltime, altitude_above_msl=0)
     geoy = np.array(nexrad.variables['lat'][:])
     geox = np.array(nexrad.variables['lon'][:])
     # cf_datetimes kwarg - https://github.com/pvlib/pvlib-python/issues/944
