@@ -69,7 +69,7 @@ created_plot = False
 fileind = [-1]
 for i in fileind:
     refltime=0
-    refl = nexrad['Unkown'].isel(time=refltime)
+    refl = nexrad['Unknown'].isel(time=refltime)
     geoy = np.array(nexrad.variables['lat'][:])
     geox = np.array(nexrad.variables['lon'][:])
     # cf_datetimes kwarg - https://github.com/pvlib/pvlib-python/issues/944
