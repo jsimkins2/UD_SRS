@@ -17,19 +17,19 @@ wget https://maps8.pivotalweather.com/maps/cpc/latest/1monprcp.us_ma.png --no-ch
 wget https://maps8.pivotalweather.com/maps/spc/spcd1cat.us_ma.png --no-check-certificate -P /home/sat_ops/weather_page/
 
 
-month=`date '+%m'`;
-year=`date '+%Y'`;
+MONTH=`date '+%m'`;
+YEAR=`date '+%Y'`;
 
-if [[ $month -eq 01 ]]
-then
-  year="$((year-1))"
-  month=12
-else
-  month="$((month-1))"
-fi
+#if [[ $MONTH -eq 01 ]]
+#then
+#  YEAR="$((YEAR-1))"
+#  MONTH=12
+#else
+#  MONTH="$((MONTH-1))"
+#fi
 
 
-wget https://iri.columbia.edu/wp-content/uploads/$year/$month/figure1.png -P /home/sat_ops/weather_page/
+wget https://iri.columbia.edu/wp-content/uploads/$YEAR/$MONTH/figure1.png -P /home/sat_ops/weather_page/
 wget https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/ao.sprd2.gif -P /home/sat_ops/weather_page/
 wget https://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/pna.sprd2.gif -P /home/sat_ops/weather_page/
 wget https://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/nao.sprd2.gif -P /home/sat_ops/weather_page/
