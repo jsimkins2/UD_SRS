@@ -70,8 +70,8 @@ fileind = [-1]
 for i in fileind:
     refltime=0
     refl = nexrad['Unknown'].isel(time=refltime)
-    geoy = np.array(nexrad.variables['lat'][:])
-    geox = np.array(nexrad.variables['lon'][:])
+    geoy = np.array(nexrad.variables['y'][:])
+    geox = np.array(nexrad.variables['x'][:])
     # cf_datetimes kwarg - https://github.com/pvlib/pvlib-python/issues/944
     timestamp = pd.Timestamp(refl.time.values).to_pydatetime()
     output_file = workdir + 'imgconus/' + str(timestamp.strftime('%Y%m%d_%H%M')) + "nexradC.png"
