@@ -77,7 +77,7 @@ for x in mcmipc_list:
 # Go to the Unidata Thredds Server for the Current Day
 nowdate = datetime.utcnow()
 # https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/BaseRef/latest.html
-cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/BaseRef/catalog.xml')
+cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/CONUS/BaseRef/catalog.html')
 
 nexrad_name = cat.datasets['Full Collection Dataset']
 nexrad = nexrad_name.remote_access(use_xarray=True)
