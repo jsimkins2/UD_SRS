@@ -89,8 +89,8 @@ fileind = [-1]
 for i in fileind:
     refltime=i
     refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time2=refltime, altitude_above_msl=0)
-    geoy = np.array(nexrad.variables['lat'][:])
-    geox = np.array(nexrad.variables['lon'][:])
+    geoy = np.array(refl.variables['lat'][:])
+    geox = np.array(refl.variables['lon'][:])
     # cf_datetimes kwarg - https://github.com/pvlib/pvlib-python/issues/944
     timestamp = pd.Timestamp(refl.time2.values).to_pydatetime()
     output_file = workdir + 'tcconus/' + str(timestamp.strftime('%Y%m%d_%H%M')) + "nexradTCC.png"
