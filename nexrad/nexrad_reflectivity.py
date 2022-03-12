@@ -89,8 +89,8 @@ for i in fileind:
                     print("NOT SURE WHAT THE TIME DIMENSION IS CALLED")
 
 
-    geoy = np.array(refl.variables['lat'][:])
-    geox = np.array(refl.variables['lon'][:])
+    geoy = np.array(refl['lat'].values)
+    geox = np.array(refl['lon'].values)
     # cf_datetimes kwarg - https://github.com/pvlib/pvlib-python/issues/944
     
     output_file = workdir + 'imgconus/' + str(timestamp.strftime('%Y%m%d_%H%M')) + "nexradC.png"

@@ -108,8 +108,8 @@ for i in fileind:
                 except:
                     print("NOT SURE WHAT THE TIME DIMENSION IS CALLED")
     
-    geoy = np.array(refl.variables['lat'][:])
-    geox = np.array(refl.variables['lon'][:])
+    geoy = np.array(refl['lat'].values)
+    geox = np.array(refl['lon'].values)
     output_file = workdir + 'tcconus/' + str(timestamp.strftime('%Y%m%d_%H%M')) + "nexradTCC.png"
     if os.path.isfile(output_file) == False:
         ############# Read the goes file ###############
