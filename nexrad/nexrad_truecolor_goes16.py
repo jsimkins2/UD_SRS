@@ -82,17 +82,34 @@ cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/grib/NCEP/MRMS/CONUS/
 nexrad_name = cat.datasets['Full Collection Dataset']
 nexrad = nexrad_name.remote_access(use_xarray=True)
 proj_var = nexrad.variables['LatLon_Projection']
-time_var = nexrad.variables['time']
 created_plot = False
 
 fileind = [-1]
 for i in fileind:
     refltime=i
-    refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time2=refltime, altitude_above_msl=0)
+    try:
+        refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time=refltime, altitude_above_msl=0)
+        timestamp = pd.Timestamp(refl.time.values).to_pydatetime()
+    except:
+        pass
+        try:
+            refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time2=refltime, altitude_above_msl=0)
+            timestamp = pd.Timestamp(refl.time2.values).to_pydatetime()
+        except:
+            pass
+            try:               
+                refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time3=refltime, altitude_above_msl=0)
+                timestamp = pd.Timestamp(refl.time3.values).to_pydatetime()
+            except:
+                pass
+                try:               
+                    refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time4=refltime, altitude_above_msl=0)
+                    timestamp = pd.Timestamp(refl.time4.values).to_pydatetime()
+                except:
+                    print("NOT SURE WHAT THE TIME DIMENSION IS CALLED")
+    
     geoy = np.array(refl.variables['lat'][:])
     geox = np.array(refl.variables['lon'][:])
-    # cf_datetimes kwarg - https://github.com/pvlib/pvlib-python/issues/944
-    timestamp = pd.Timestamp(refl.time2.values).to_pydatetime()
     output_file = workdir + 'tcconus/' + str(timestamp.strftime('%Y%m%d_%H%M')) + "nexradTCC.png"
     if os.path.isfile(output_file) == False:
         ############# Read the goes file ###############
