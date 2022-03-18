@@ -31,11 +31,8 @@ gv.extension('bokeh')
 bounds=(-76.2,38.3,-74.85, 40.3)
 
 # read in the refET dataset
-dsRefET = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/DEOSAG.nc")
-dsRefET = dsRefET.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(bounds[0],bounds[2]))
-
-climo = xr.open_dataset("http://basin.ceoe.udel.edu/thredds/dodsC/deos_doy_climatology.nc")
-climo = climo.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(bounds[0],bounds[2]))
+dsRefET = xr.open_dataset("/home/james/agriculture/deos_data/dsRefET.nc")
+climo = xr.open_dataset("/home/james/agriculture/deos_data/climo.nc")
 
 
 # In[ ]:
@@ -48,17 +45,14 @@ climo = climo.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(bounds[0
 
 
 # read in the ncep stage IV precip dataset
-dsPrec = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/NCEPIVQC.nc")
-dsPrec = dsPrec.sel(lat=slice(bounds[1], bounds[3]), 
-                    lon=slice(bounds[0],bounds[2]), 
-                    time=slice(datetime.strptime("2014-01-01", "%Y-%m-%d"),
-                              date.today()))
+dsPrec = xr.open_mfdataset("/home/james/agriculture/ncep_stageIV/aggregate_quality/*").sel(time=slice(datetime.strptime("2017-01-01", "%Y-%m-%d"),date.today()))
+dsPrec = dsPrec.sel(lat=slice(bounds[1], bounds[3]),
+                    lon=slice(bounds[0],bounds[2]))
 
 dsPrec = dsPrec.reindex(lat=list(reversed(dsPrec.lat)))
 dsPrec = dsPrec.rename(name_dict= {'lat' : 'latitude'})
 dsPrec = dsPrec.rename(name_dict= {'lon' : 'longitude'})
 dsPrec = dsPrec.drop('crs')
-
 
 # In[297]:
 
@@ -501,4 +495,5 @@ dashboard = pn.Column(header,pn.layout.Spacer(height=50), plotwindow1, pn.layout
                       pn.layout.Spacer(height=50), plotwindow2,
                       pn.layout.Spacer(height=50),header3, pn.layout.Spacer(height=50), plotwindow3)
 dashboard.servable()
+
 
