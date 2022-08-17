@@ -159,11 +159,7 @@ def plot_reflectivity(radar, dataset, imgdir):
     my_gf = pyart.filters.GateFilter(radar)
     my_gf.exclude_above('differential_reflectivity', 4)
     my_gf.exclude_below('reflectivity', 10)
-    # as of August 14, 2022 the below line will be excluded from the gate filtering process.
-    # this is due to the fact that the cross correlation ratio data is completely masked
-    # for the data coming in from UCAR right now. When this data becomes available again, we
-    # can turn on this filtering line once again.
-    #my_gf.exclude_below('cross_correlation_ratio', .8)
+    my_gf.exclude_below('cross_correlation_ratio', .8, exclude_masked=False)
     my_ds_gf = pyart.correct.despeckle_field(radar, 'reflectivity', gatefilter=my_gf)
     timestamp = radar.time['units'].split(' ')[-1].split('T')
     timestamp = timestamp[0] + ' ' + timestamp[1][:-1]
