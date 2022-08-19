@@ -69,24 +69,29 @@ for i in fileind:
     refltime=i
     try:
         refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time=refltime, altitude_above_msl=0)
-        timestamp = pd.Timestamp(refl.time.values).to_pydatetime()
+        timestamp = pd.Timestamp(nexrad.refvalidtime.values[i]).to_pydatetime()
     except:
         pass
         try:
             refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time2=refltime, altitude_above_msl=0)
-            timestamp = pd.Timestamp(refl.time2.values).to_pydatetime()
+            timestamp = pd.Timestamp(nexrad.refvalidtime2.values[i]).to_pydatetime()
         except:
             pass
             try:               
                 refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time3=refltime, altitude_above_msl=0)
-                timestamp = pd.Timestamp(refl.time3.values).to_pydatetime()
+                timestamp = pd.Timestamp(nexrad.refvalidtime3.values[i]).to_pydatetime()
             except:
                 pass
                 try:               
                     refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time4=refltime, altitude_above_msl=0)
-                    timestamp = pd.Timestamp(refl.time4.values).to_pydatetime()
+                    timestamp = pd.Timestamp(nexrad.refvalidtime4.values[i]).to_pydatetime()
                 except:
-                    print("NOT SURE WHAT THE TIME DIMENSION IS CALLED")
+                    pass
+                    try:
+                        refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time1=refltime, altitude_above_msl=0)
+                        timestamp = pd.Timestamp(nexrad.refvalidtime1.values[i]).to_pydatetime()
+                    except:
+                        print("NOT SURE WHAT THE TIME DIMENSION IS CALLED")
 
 
     geoy = np.array(refl['lat'].values)
