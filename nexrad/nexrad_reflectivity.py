@@ -71,9 +71,15 @@ for i in fileind:
     if tdim == 'time1':
         refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time1=refltime, altitude_above_msl=0)
         timestamp = pd.Timestamp(nexrad.refvalidtime1.values[i]).to_pydatetime()
-    if tdim == 'time3':
+    if tdim == 'tim21':
+        refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time2=refltime, altitude_above_msl=0)
+        timestamp = pd.Timestamp(nexrad.refvalidtime2.values[i]).to_pydatetime()
+    if tdim == 'time3:
         refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time3=refltime, altitude_above_msl=0)
         timestamp = pd.Timestamp(nexrad.refvalidtime3.values[i]).to_pydatetime()
+    if tdim == 'time4:
+        refl = nexrad['MergedBaseReflectivityQC_altitude_above_msl'].isel(time4=refltime, altitude_above_msl=0)
+        timestamp = pd.Timestamp(nexrad.refvalidtime4.values[i]).to_pydatetime()
 
     geoy = np.array(refl['lat'].values)
     geox = np.array(refl['lon'].values)
