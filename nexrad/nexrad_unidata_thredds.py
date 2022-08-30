@@ -288,7 +288,7 @@ def create_gif(workdir, imgdir, gifname):
 try:
     site = 'KDOX'
     nowtime = datetime.utcnow().replace(second=0, microsecond=0)
-    cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/nexrad/level2/' + site + '/' + str(nowtime.year) + str(nowtime.month).zfill(2) + str(nowtime.day).zfill(2) + '/catalog.xml')
+    cat = TDSCatalog('https://thredds-test.unidata.ucar.edu/thredds/catalog/nexrad/level2/' + site + '/' + str(nowtime.year) + str(nowtime.month).zfill(2) + str(nowtime.day).zfill(2) + '/catalog.xml')
     dataset = list(cat.datasets.values())[1]
     data_ymd = str(dataset).split('_')[2]
     data_hm = str(str(dataset).split('_')[3]).split('.')[0]
@@ -301,7 +301,7 @@ except:
     try:
         site = 'KLWX'
         nowtime = datetime.utcnow().replace(second=0, microsecond=0)
-        cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/nexrad/level2/' + site + '/' + str(nowtime.year) + str(nowtime.month).zfill(2) + str(nowtime.day).zfill(2) + '/catalog.xml')
+        cat = TDSCatalog('https://thredds-test.unidata.ucar.edu/thredds/catalog/nexrad/level2/' + site + '/' + str(nowtime.year) + str(nowtime.month).zfill(2) + str(nowtime.day).zfill(2) + '/catalog.xml')
         dataset = list(cat.datasets.values())[1]
         data_ymd = str(dataset).split('_')[2]
         data_hm = str(str(dataset).split('_')[3]).split('.')[0]
@@ -313,7 +313,7 @@ except:
         pass
         site = 'KDIX'
         nowtime = datetime.utcnow().replace(second=0, microsecond=0)
-        cat = TDSCatalog('https://thredds.ucar.edu/thredds/catalog/nexrad/level2/' + site + '/' + str(nowtime.year) + str(nowtime.month).zfill(2) + str(nowtime.day).zfill(2) + '/catalog.xml')
+        cat = TDSCatalog('https://thredds-test.unidata.ucar.edu/thredds/catalog/nexrad/level2/' + site + '/' + str(nowtime.year) + str(nowtime.month).zfill(2) + str(nowtime.day).zfill(2) + '/catalog.xml')
         dataset = list(cat.datasets.values())[1]
         data_ymd = str(dataset).split('_')[2]
         data_hm = str(str(dataset).split('_')[3]).split('.')[0]
@@ -340,7 +340,9 @@ logoy =  58.8
 
 if os.path.isfile(workdir + 'ref' + site + '/' + str(dataset) + ".png") == False:
     # open the radar data
-    radar = pyart.io.read_nexrad_cdm(dataset.access_urls['OPENDAP'])
+    os.system('wget ' + dataset.access_urls['HTTPServer'] + ' -O /home/sat_ops/goesR/radar/data/radar.ar2v')
+    radar = pyart.io.read_nexrad_archive('/home/sat_ops/goesR/radar/data/radar.ar2v')
+
     
     # plot the reflectivity
     imgdir = workdir + 'ref' + site + '/'
