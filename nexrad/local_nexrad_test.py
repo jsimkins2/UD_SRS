@@ -29,19 +29,19 @@ nowtime = datetime.utcnow().replace(second=0, microsecond=0)
 #https://thredds-jumbo.unidata.ucar.edu/thredds/catalog/nexrad/level2/catalog.html
 cat = TDSCatalog('https://thredds-test.unidata.ucar.edu/thredds/catalog/nexrad/level2/' + site + '/' + str(nowtime.year) + str(nowtime.month).zfill(2) + str(nowtime.day).zfill(2) + '/catalog.xml')
 #https://thredds-test.unidata.ucar.edu/thredds/dodsC/nexrad/level2/KDOX/20220830/Level2_KDOX_20220830_2042.ar2v
-dataset = list(cat.datasets.values())[-1]
+dataset = list(cat.datasets.values())[1]
 
 
-os.system('wget ' + dataset.access_urls['HTTPServer'] + ' /home/sat_ops/goesR/radar/data/radar.ar2v')
+os.system('wget ' + dataset.access_urls['HTTPServer'] + ' -O /Users/james/Downloads/radar.ar2v')
 
-radar = pyart.io.read_nexrad_archive('/home/sat_ops/goesR/radar/data/radar.ar2v')
+radar = pyart.io.read_nexrad_archive('/Users/james/Downloads/radar.ar2v')
 
-pyart.io.read_nexrad_archive('https://thredds-test.unidata.ucar.edu/thredds/fileServer/nexrad/level2/KDOX/20220830/Level2_KDOX_20220830_0005.ar2v')
+#pyart.io.read_nexrad_archive('https://thredds-test.unidata.ucar.edu/thredds/fileServer/nexrad/level2/KDOX/20220830/Level2_KDOX_20220830_0005.ar2v')
 
 my_gf = pyart.filters.GateFilter(radar)
 my_gf.exclude_above('differential_reflectivity', 6, exclude_masked=False)
 my_gf.exclude_below('reflectivity', 10, exclude_masked=False)
-my_gf.exclude_below('cross_correlation_ratio', 1, exclude_masked=False)
+my_gf.exclude_below('cross_correlation_ratio', 0.6, exclude_masked=False)
 my_ds_gf = pyart.correct.despeckle_field(radar, 'reflectivity', gatefilter=my_gf)
 # Here we see reflectivity values below zero masked.
 fig = plt.figure(figsize=[8, 8])
@@ -49,7 +49,7 @@ display = pyart.graph.RadarMapDisplay(radar)
 display.plot_ppi_map('reflectivity', sweep=0, resolution='50m',
                      vmin=10,min_lon=-79, max_lon=-76,
                      min_lat=38, max_lat=40,vmax=60,
-                     projection=ccrs.PlateCarree())#, gatefilter=my_ds_gf)
+                     projection=ccrs.PlateCarree(), gatefilter=my_ds_gf)
 plt.show()
 
 

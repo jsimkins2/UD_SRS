@@ -165,8 +165,9 @@ agwx_main = agwx_main.sel(latitude=slice(bounds[3], bounds[1]), longitude=slice(
 # write the most recent year to local disk
 ds_write = xr.open_dataset("http://thredds.demac.udel.edu/thredds/dodsC/NCEPIVQC.nc").sel(time=slice(datetime.strptime(str(str(date.today().year) + "-01-01"), "%Y-%m-%d"),date.today()))
 ds_write.to_netcdf(str("/home/sat_ops/deos/ncep_stageIV/aggregate_quality/ncep_stageIV_quality24hr_" + str(date.today().year) + ".nc"), mode='w')
+ds_write.close()
 
-dsPrec = xr.open_mfdataset("/home/sat_ops/deos/ncep_stageIV/aggregate_quality/*").sel(time=slice(datetime.strptime("2017-01-01", "%Y-%m-%d"),
+dsPrec = xr.open_mfdataset("/home/sat_ops/deos/ncep_stageIV/aggregate_quality/*", combine='by_coords').sel(time=slice(datetime.strptime("2019-01-01", "%Y-%m-%d"),
                               date.today()))
 dsPrec = dsPrec.sel(lat=slice(bounds[1], bounds[3]), 
                     lon=slice(bounds[0],bounds[2]))
@@ -195,11 +196,12 @@ min_dict = dict(zip(['Min Temperature', 'Min Soil Temperature','Min Wind Chill',
 
 nowtime = datetime.utcnow()
 ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
-daysback_dict = dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [np.int(np.abs(ytd.days)), 90, 30, 7, 1]))
+daysback_dict = dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [int(np.abs(ytd.days)), 90, 30, 7, 1]))
 datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + list(max_dict.keys()) + list(min_dict.keys())
 
 
 nowdate=datetime.utcnow()
+
 for var in datasets:
     for db in daysback_dict.keys():
         if any(var in s for s in mean_dict.keys()):
@@ -291,7 +293,11 @@ for var in datasets:
         
         fig = plt.figure(figsize=(380/my_dpi, 772/my_dpi), dpi=my_dpi)
         ax = fig.add_subplot(111, projection=ccrs.Mercator())
-        ax.set_extent([-76.15, -75.03, 38.44, 40.26], crs=ccrs.PlateCarree())
+        latN = 40.26
+        latS = 38.44
+        lonW = -76.15
+        lonE = -75.03
+        ax.set_extent([lonW, lonE, latS, latN], crs=ccrs.PlateCarree())
         for ind in range(0,len(bigdeos)):
                 ax.add_geometries([bigdeos['geometry'][ind]], oldproj,
                               facecolor='silver', edgecolor='black')
@@ -330,7 +336,7 @@ for var in datasets:
 
 print('starting precip')
 datasets = ['Reference Evapotranspiration', 'dailyprecip', 'NCEP Stage IV Precip', 'NCEP Stage IV Precip - DEOS RefET']
-daysback_dict = dict(zip(['18 Months', '12 Months', 'YTD', '6 Months', '3 Months', '1 Month', '1 Week', '1 Day'], [540, 360,np.int(np.abs(ytd.days)), 180, 90, 30, 7, 1]))
+daysback_dict = dict(zip(['18 Months', '12 Months', 'YTD', '6 Months', '3 Months', '1 Month', '1 Week', '1 Day'], [540, 360,int(np.abs(ytd.days)), 180, 90, 30, 7, 1]))
 cmap = 'BrBG'
 for var in datasets:
     for db in daysback_dict.keys():
@@ -434,7 +440,7 @@ print('onto departure maps')
 climo = xr.open_dataset("/data/DEOS/doy_climatology/deos_doy_climatology.nc")
 nowtime = datetime.utcnow()
 ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
-daysback_dict = dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [np.int(np.abs(ytd.days)), 90, 30, 7, 1]))
+daysback_dict = dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [int(np.abs(ytd.days)), 90, 30, 7, 1]))
 datasets = list(sum_dict.keys()) + list(mean_dict.keys()) + ['Reference Evapotranspiration', 'NCEP Stage IV Precip']
 
 nowdate=datetime.utcnow()
@@ -452,8 +458,8 @@ for var in datasets:
                 df = df.where(df > 299.817)
             cf = climo[mean_dict[var]]
             cf_min = (time_recent.timetuple().tm_yday - daysback_dict[db]) if (time_recent.timetuple().tm_yday - daysback_dict[db]) > 0 else 0
-            cf = cf.isel(dayofyear=slice(cf_min, time_recent.timetuple().tm_yday))
-            cf = cf.mean('dayofyear')
+            cf = cf.isel(time=slice(cf_min, time_recent.timetuple().tm_yday))
+            cf = cf.mean('time')
             if 'HeatIndex' in dfvarname or 'HI' in dfvarname:
                 cf = cf.where(cf > 299.817)
             df = df - cf
@@ -477,8 +483,8 @@ for var in datasets:
             dfvarname = "total_difference_" + sum_dict[var]
             cf = climo[sum_dict[var]]
             cf_min = (time_recent.timetuple().tm_yday - daysback_dict[db]) if (time_recent.timetuple().tm_yday - daysback_dict[db]) > 0 else 0
-            cf = cf.isel(dayofyear=slice(cf_min, time_recent.timetuple().tm_yday))
-            cf = cf.sum('dayofyear')
+            cf = cf.isel(time=slice(cf_min, time_recent.timetuple().tm_yday))
+            cf = cf.sum('time')
             df = df - cf
             var_plot_name = var
             if var == 'Cooling Degree Days':
@@ -499,8 +505,8 @@ for var in datasets:
             df = df.sum('time')
             cf = climo['refET']
             cf_min = (time_recent.timetuple().tm_yday - daysback_dict[db]) if (time_recent.timetuple().tm_yday - daysback_dict[db]) > 0 else 0
-            cf = cf.isel(dayofyear=slice(cf_min, time_recent.timetuple().tm_yday))
-            cf = cf.sum('dayofyear')
+            cf = cf.isel(time=slice(cf_min, time_recent.timetuple().tm_yday))
+            cf = cf.sum('time')
             df = df - cf
             dfvarname = "total_difference_refET"
             var_plot_name = var
@@ -592,212 +598,3 @@ for var in datasets:
         cf.close()
 
 climo.close()
-# cumulative county maps
-# open up the county agwx datasets
-# list of dataframes
-print("at county maps now")
-countydf = ['chester_agwx.nc', 'ncc_agwx.nc', 'kentc_agwx.nc', 'sussex_agwx.nc']
-doydf = ['chester_agwx_climatology.nc', 'ncc_agwx_climatology.nc', 'kent_agwx_climatology.nc', 'sussex_agwx_climatology.nc']
-co_names = ['Chester', 'New Castle', 'Kent', 'Sussex']
-nowtime = datetime.utcnow()
-ytd = pd.to_datetime(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d")) -  pd.to_datetime(nowtime)
-daysback_dict = dict(zip(['YTD'], [np.int(np.abs(ytd.days))]))#dict(zip(['YTD', '3 Months', '1 Month', '1 Week', '1 Day'], [np.int(np.abs(ytd.days)), 90, 30, 7, 1]))
-doy_len = 366 if calendar.isleap(nowdate.year) == True else 365
-
-# Precipitation Map
-nowdate=datetime.utcnow()
-for db in daysback_dict.keys():
-    for co in range(0,len(countydf)):
-        df = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + countydf[co])['dailyprecip']
-        time_recent = pd.to_datetime(df.time.values[-1])
-        df = df.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
-        df.values = df.values * (0.0393701)
-        cf = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['dailyprecip']
-        cf = cf.isel(dayofyear=slice(0, doy_len))
-        cf.values = cf.values * (0.0393701)
-        ncep = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + countydf[co])['NCEPstageIVPrecip']
-        ncep = ncep.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
-        ncep.values = ncep.values * (0.0393701)
-        ncepClim = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['NCEPstageIVPrecip']
-        ncepClim.values = ncepClim.values * (0.0393701)
-        ncepClim = ncepClim.isel(dayofyear=slice(0, doy_len))
-        #Set X range here:
-        left = date(nowdate.year, 1, 1)  #Makes it easy to quickly change the range
-        right = date(nowdate.year, 12, 31)
-        datelist = pd.date_range(str(str(nowdate.year) + "-01-01"), str(str(nowdate.year) + "-12-31")).tolist()
-
-        fig = plt.figure(figsize=(12,8))
-        # Create subplot of 
-        plt.subplot(2, 1, 1)
-        plt.plot(datelist, np.nancumsum(cf.values), linestyle='dashed', c="lightseagreen",  label="Climatology Cum. Sum")
-        plt.plot(df.time.values, np.nancumsum(df.values), c="darkgreen",  label="Observed Cum. Sum")
-        plt.plot(df.time.values, df.values, c="darkgreen", label="Observed (in/day)", alpha=0.5)
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-01')) #Allows me to format the date into months & days
-        plt.gca().xaxis.set_tick_params(rotation = 0)  #puts the x-axis labels on an angle
-        plt.gca().set_xbound(left, right)  #changes the range of the x-axis
-        plusminus = "+" if np.nansum(df.values) - np.nansum(cf.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values) > 0 else "-"
-        box_text = str("YTD Difference = " + plusminus + str(np.round(np.nansum(df.values) - np.nansum(cf.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values),1)) + " (in)")
-        text_box = AnchoredText(box_text, frameon=True, loc=7, pad=0.5)
-        plt.setp(text_box.patch, facecolor='white', alpha=0.5)
-        plt.gca().add_artist(text_box)
-        plt.title(str(nowtime.year) + ' ' + co_names[co] + ' County - DEOS Precipitation')
-        plt.xlabel('Date', labelpad = 5)
-        plt.ylabel('Precipitation Totals (in)', labelpad = 2)
-        plt.legend()
-        plt.grid()
-        fig.tight_layout()
-        #Create subplot of ncep
-        plt.subplot(2,1,2)
-        plt.plot(datelist, np.nancumsum(ncepClim.values), linestyle='dashed', c="deepskyblue",  label="Climatology")
-        plt.plot(ncep.time.values, np.nancumsum(ncep.values), c="blue",  label="Observed Cum. Sum")
-        plt.plot(ncep.time.values, ncep.values, c="blue", label="Observed (in/day)", alpha=0.5)
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-01')) #Allows me to format the date into months & days
-        plt.gca().xaxis.set_tick_params(rotation = 0)  #puts the x-axis labels on an angle
-        plt.gca().set_xbound(left, right)  #changes the range of the x-axis
-        plusminus = "+" if np.nansum(ncep.values) - np.nansum(ncepClim.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values) > 0 else ""
-        box_text = str("YTD Difference = " + plusminus + str(np.round(np.nansum(ncep.values) - np.nansum(ncepClim.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values),1)) + " (in)")
-        text_box = AnchoredText(box_text, frameon=True, loc=7, pad=0.5)
-        plt.setp(text_box.patch, facecolor='white', alpha=0.5)
-        plt.gca().add_artist(text_box)
-        plt.title(str(nowtime.year) + ' ' + co_names[co] + ' County - NCEP Stage IV Precipitation')
-        plt.xlabel('Date', labelpad = 5)
-        plt.ylabel('Precipitaiton Totals (in)', labelpad = 2)
-        plt.legend()
-        plt.grid()
-        im1 = image.imread(shapePaths + "deos_logo.png")
-        plt.figimage(im1, 1450, 75 ,zorder=30, alpha=1)
-        fig.tight_layout()
-        plt.savefig("/var/www/html/imagery/AgWx/county/" + co_names[co] + "_YTD_precipitation.png",bbox_inches='tight',pad_inches = 0.1,dpi=my_dpi*1.3)
-        plt.close()
-        df.close()
-        cf.close()
-
-# HDD and CDD 
-nowdate=datetime.utcnow()
-for db in daysback_dict.keys():
-    for co in range(0,len(countydf)):
-        df = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + countydf[co])['HDD']
-        time_recent = pd.to_datetime(df.time.values[-1])
-        df = df.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
-        cf = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['HDD']
-        cf = cf.isel(dayofyear=slice(0, doy_len))
-        ncep = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + countydf[co])['CDD']
-        ncep = ncep.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
-        ncepClim = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['CDD']
-        ncepClim = ncepClim.isel(dayofyear=slice(0, doy_len))
-        #Set X range here:
-        left = date(nowdate.year, 1, 1)  #Makes it easy to quickly change the range
-        right = date(nowdate.year, 12, 31)
-        datelist = pd.date_range(str(str(nowdate.year) + "-01-01"), str(str(nowdate.year) + "-12-31")).tolist()
-
-
-        fig = plt.figure(figsize=(12,8))
-        # Create subplot of 
-        plt.subplot(2, 1, 1)
-        plt.plot(datelist, np.nancumsum(cf.values), linestyle='dashed', c="coral",  label="Climatology")
-        plt.plot(df.time.values, np.nancumsum(df.values), c="maroon",  label="Observed Cum. Sum")
-        plt.plot(df.time.values, df.values, c="maroon", label="Observed", alpha=0.5)
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-01')) #Allows me to format the date into months & days
-        plt.gca().xaxis.set_tick_params(rotation = 0)  #puts the x-axis labels on an angle
-        plt.gca().set_xbound(left, right)  #changes the range of the x-axis
-        plusminus = "+" if np.nansum(df.values) - np.nansum(cf.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values) > 0 else ""
-        box_text = str("YTD Difference = " + plusminus + str(np.round(np.nansum(df.values) - np.nansum(cf.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values),1)) + "")
-        text_box = AnchoredText(box_text, frameon=True, loc=7, pad=0.5)
-        plt.setp(text_box.patch, facecolor='white', alpha=0.5)
-        plt.gca().add_artist(text_box)
-        plt.title(str(nowtime.year) + ' ' + co_names[co] + ' County - DEOS Heating Degree Days')
-        plt.xlabel('Date', labelpad = 5)
-        plt.ylabel('Total Days', labelpad = 2)
-        plt.legend()
-        plt.grid()
-        fig.tight_layout()
-        #Create subplot of ncep
-        plt.subplot(2,1,2)
-        plt.plot(datelist, np.nancumsum(ncepClim.values), linestyle='dashed', c="deepskyblue",  label="Climatology")
-        plt.plot(ncep.time.values, np.nancumsum(ncep.values), c="blue",  label="Observed Cum. Sum")
-        plt.plot(ncep.time.values, ncep.values, c="blue", label="Observed", alpha=0.5)
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-01')) #Allows me to format the date into months & days
-        plt.gca().xaxis.set_tick_params(rotation = 0)  #puts the x-axis labels on an angle
-        plt.gca().set_xbound(left, right)  #changes the range of the x-axis
-        plusminus = "+" if np.round(np.nansum(ncep.values) - np.nansum(ncepClim.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values),1) > 0 else ""
-        box_text = str("YTD Difference = " + plusminus + str(np.round(np.nansum(ncep.values) - np.nansum(ncepClim.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values),1)) + "")
-        text_box = AnchoredText(box_text, frameon=True, loc=7, pad=0.5)
-        plt.setp(text_box.patch, facecolor='white', alpha=0.5)
-        plt.gca().add_artist(text_box)
-        plt.title(str(nowtime.year) + ' ' + co_names[co] + ' County - DEOS Cooling Degree Days')
-        plt.xlabel('Date', labelpad = 5)
-        plt.ylabel('Total Days', labelpad = 1)
-        plt.legend()
-        plt.grid()
-        im1 = image.imread(shapePaths + "deos_logo.png")
-        plt.figimage(im1, 1450, 75 ,zorder=30, alpha=1)
-        fig.tight_layout()
-        plt.savefig("/var/www/html/imagery/AgWx/county/" + co_names[co] + "_YTD_HDD_CDD.png",bbox_inches='tight',pad_inches = 0.1,dpi=my_dpi*1.3)
-        plt.close()
-        df.close()
-        cf.close()
-        
-# GDD and Energy Density
-nowdate=datetime.utcnow()
-for db in daysback_dict.keys():
-    for co in range(0,len(countydf)):
-        df = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + countydf[co])['GDD']
-        time_recent = pd.to_datetime(df.time.values[-1])
-        df = df.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
-        cf = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['GDD']
-        cf = cf.isel(dayofyear=slice(0, doy_len))
-        ncep = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + countydf[co])['energyDens']
-        ncep = ncep.sel(time=slice(datetime.strptime(str(str(nowtime.year) + '-01-01'), "%Y-%m-%d"), time_recent))
-        ncepClim = xr.open_dataset('http://basin.ceoe.udel.edu/thredds/dodsC/' + doydf[co])['energyDens']
-        ncepClim = ncepClim.isel(dayofyear=slice(0, doy_len))
-        #Set X range here:
-        left = date(nowdate.year, 1, 1)  #Makes it easy to quickly change the range
-        right = date(nowdate.year, 12, 31)
-        datelist = pd.date_range(str(str(nowdate.year) + "-01-01"), str(str(nowdate.year) + "-12-31")).tolist()
-
-
-        fig = plt.figure(figsize=(12,8))
-        # Create subplot of 
-        plt.subplot(2, 1, 1)
-        plt.plot(datelist, np.nancumsum(cf.values), linestyle='dashed', c="lightseagreen",  label="Climatology")
-        plt.plot(df.time.values, np.nancumsum(df.values), c="darkgreen",  label="Observed Cum. Sum")
-        plt.plot(df.time.values, df.values, c="darkgreen", label="Observed", alpha=0.5)
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-01')) #Allows me to format the date into months & days
-        plt.gca().xaxis.set_tick_params(rotation = 0)  #puts the x-axis labels on an angle
-        plt.gca().set_xbound(left, right)  #changes the range of the x-axis
-        plusminus = "+" if np.nansum(df.values) - np.nansum(cf.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values) > 0 else ""
-        box_text = str("YTD Difference = " + plusminus + str(np.round(np.nansum(df.values) - np.nansum(cf.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values),1)) + "")
-        text_box = AnchoredText(box_text, frameon=True, loc=7, pad=0.5)
-        plt.setp(text_box.patch, facecolor='white', alpha=0.5)
-        plt.gca().add_artist(text_box)
-        plt.title(str(nowtime.year) + ' ' + co_names[co] + ' County - DEOS Growing Degree Days', pad=5)
-        plt.xlabel('Date', labelpad = 5)
-        plt.ylabel('Total Days', labelpad = 4)
-        plt.legend()
-        plt.grid()
-        fig.tight_layout()
-        #Create subplot of ncep
-        plt.subplot(2,1,2)
-        plt.plot(datelist, np.nancumsum(ncepClim.values), linestyle='dashed', c="deepskyblue",  label="Climatology")
-        plt.plot(ncep.time.values, np.nancumsum(ncep.values), c="blue",  label="Observed Cum. Sum")
-        plt.plot(ncep.time.values, ncep.values, c="blue", label="Observed", alpha=0.5)
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-01')) #Allows me to format the date into months & days
-        plt.gca().xaxis.set_tick_params(rotation = 0)  #puts the x-axis labels on an angle
-        plt.gca().set_xbound(left, right)  #changes the range of the x-axis
-        plusminus = "+" if np.round(np.nansum(ncep.values) - np.nansum(ncepClim.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values),1) > 0 else ""
-        box_text = str("YTD Difference = " + plusminus + str(np.round((np.nansum(ncep.values) - np.nansum(ncepClim.sel(dayofyear=slice(0,nowdate.timetuple().tm_yday)).values))/(1e9),2)) + " (J^9)")
-        text_box = AnchoredText(box_text, frameon=True, loc=7, pad=0.5)
-        plt.setp(text_box.patch, facecolor='white', alpha=0.5)
-        plt.gca().add_artist(text_box)
-        plt.title(str(nowtime.year) + ' ' + co_names[co] + ' County - DEOS Energy Density', pad=5)
-        plt.xlabel('Date', labelpad = 5)
-        plt.ylabel('Total Energy (J)', labelpad = 2)
-        plt.legend()
-        plt.grid()
-        im1 = image.imread(shapePaths + "deos_logo.png")
-        plt.figimage(im1, 1450, 75 ,zorder=30, alpha=1)
-        fig.tight_layout()
-        plt.savefig("/var/www/html/imagery/AgWx/county/" + co_names[co] + "_YTD_GDD_Energy.png",bbox_inches='tight',pad_inches = 0.1,dpi=my_dpi*1.3)
-        plt.close()
-        df.close()
-        cf.close()

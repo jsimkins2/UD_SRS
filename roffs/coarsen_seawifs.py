@@ -19,3 +19,8 @@ elapsed = time.time() - start_time
 # elapsed ~ 5 seconds
 
 x = xr.open_dataset('/Users/james/Downloads/seawifs_resample.nc')
+
+mylist = []
+for b in x.data_vars:
+    mylist.append(orig[b].units)
+    

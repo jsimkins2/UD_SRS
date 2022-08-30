@@ -158,7 +158,7 @@ ax.outline_patch.set_visible(False)
 for record, state in zip(shp2.records(), shp2.geometries()):
     tem = data.maxpred[str(record.attributes['station']) + '       ']
     col_ = cmap_cfms[find_nearest(colrng, tem)]
-    ax.add_geometries([state], ccrs.PlateCarree(),
+    ax.add_geometries([state], oldproj,
                       facecolor=col_, edgecolor='black', linewidth=0.5)
 
 plt.savefig('/var/www/html/applications/cfms/home_kmz/cfms_inland_bays.png', transparent=True, bbox_inches='tight', dpi=150)
