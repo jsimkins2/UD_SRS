@@ -157,9 +157,9 @@ def plot_velocity(radar, dataset, imgdir):
 def plot_reflectivity(radar, dataset, imgdir):
     print('Plotting dataset: ', dataset)
     my_gf = pyart.filters.GateFilter(radar)
-    my_gf.exclude_above('differential_reflectivity', 4,exclude_masked=False)
+    my_gf.exclude_above('differential_reflectivity', 6,exclude_masked=False)
     my_gf.exclude_below('reflectivity', 10,exclude_masked=False)
-    my_gf.exclude_below('cross_correlation_ratio', .4, exclude_masked=False)
+    my_gf.exclude_below('cross_correlation_ratio', .8, exclude_masked=False)
     my_ds_gf = pyart.correct.despeckle_field(radar, 'reflectivity', gatefilter=my_gf)
     timestamp = radar.time['units'].split(' ')[-1].split('T')
     timestamp = timestamp[0] + ' ' + timestamp[1][:-1]

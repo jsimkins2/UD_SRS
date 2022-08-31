@@ -41,13 +41,13 @@ radar = pyart.io.read_nexrad_archive('/Users/james/Downloads/radar.ar2v')
 my_gf = pyart.filters.GateFilter(radar)
 my_gf.exclude_above('differential_reflectivity', 6, exclude_masked=False)
 my_gf.exclude_below('reflectivity', 10, exclude_masked=False)
-my_gf.exclude_below('cross_correlation_ratio', 0.6, exclude_masked=False)
+my_gf.exclude_below('cross_correlation_ratio', 0.8, exclude_masked=False)
 my_ds_gf = pyart.correct.despeckle_field(radar, 'reflectivity', gatefilter=my_gf)
 # Here we see reflectivity values below zero masked.
 fig = plt.figure(figsize=[8, 8])
 display = pyart.graph.RadarMapDisplay(radar)
 display.plot_ppi_map('reflectivity', sweep=0, resolution='50m',
-                     vmin=10,min_lon=-79, max_lon=-76,
+                     vmin=10,min_lon=-78, max_lon=-75,
                      min_lat=38, max_lat=40,vmax=60,
                      projection=ccrs.PlateCarree(), gatefilter=my_ds_gf)
 plt.show()
